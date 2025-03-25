@@ -28,18 +28,6 @@ zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
 bot = telebot.TeleBot("7920158658:AAGyY9jA2B5Z3_n3vZzzQBDYaJoAddPqZ7s")  # Sử dụng token thựchực
-app = Flask(__name__)
-@app.route("/" + TOKEN, methods=['POST'])            
-def webhook():
-    json_update = request.get_data().decode('utf-8')
-    update = telebot.types.Update.de_json(json_update)
-    bot.process_new_updates([update])
-    return "OK", 200
-
-@app.route('/')
-def home():
-    return "Bot is running!", 200
-
 #phu 8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI
 print("Bot đã được khởi động thành công")
 users_keys = {}
