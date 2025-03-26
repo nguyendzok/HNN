@@ -265,10 +265,6 @@ def handle_spam(message):
     bot.reply_to(message, f"Số điện thoại: {sdt}")
     user_id = message.from_user.id
     today_day = datetime.date.today().day
-    today_path = f"./user/{today_day}/{user_id}.txt"
-
-    if not os.path.exists(today_path):
-        bot.reply_to(message, 'Dùng /getkey Để Lấy Key Hoặc /muavip Và Dùng /key Để Nhập Key Hôm Nay!')
         return
       
 
