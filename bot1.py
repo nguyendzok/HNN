@@ -233,6 +233,87 @@ def handle_api_error(message, error_message):
     bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
 ####zalo 0789041631
 ### /like
+
+Lệnh /spam
+@bot.message_handler(commands=['spam'])
+def supersms(message):
+    user_id = message.from_user.id
+    today_day = datetime.date.today().day
+    today_path = f"./user/{today_day}/{user_id}.txt"
+
+    if not os.path.exists(today_path):
+        bot.reply_to(message, 'Dùng /getkey Để Lấy Key Hoặc /muavip Và Dùng /key Để Nhập Key Hôm Nay!')
+        return
+
+    current_time = time.time()
+
+    if user_id in user_last_command_time:
+        elapsed_time = current_time - user_last_command_time[user_id]
+        if elapsed_time < 50:  
+            remaining_time = 50 - elapsed_time
+            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
+            return
+
+    params = message.text.split()[1:]
+    if len(params) != 2:
+        bot.reply_to(message, "/spam sdt số_lần max 50")
+        return
+
+    sdt, count = params
+
+    if not count.isdigit():
+        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        return
+
+    count = int(count)
+
+    if count > 50:
+        bot.reply_to(message, "/spam sdt số_lần tối đa là 50")
+        return
+
+    if sdt in blacklist:
+        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        return
+
+    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
+
+    diggory_chat3 = f'''┌──────⭓ {name_bot}
+│ Spam: Thành Công 
+│ Người dùng: {message.from_user.username}
+│ Số Lần Spam: {count}
+│ Đang Tấn Công: {sdt}
+└─────────────'''
+
+    script_filename = "sms.py"
+
+    try:
+        if not os.path.isfile(script_filename):
+            bot.reply_to(message, "Không tìm thấy file.")
+            return
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+            with open(script_filename, 'r', encoding='utf-8') as file:
+                temp_file.write(file.read().encode('utf-8'))
+            temp_file_path = temp_file.name
+
+        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+
+        bot.send_message(
+            message.chat.id,
+            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
+            parse_mode='HTML'
+        )
+
+        requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
+        user_last_command_time[user_id] = time.time()
+
+    except Exception as e:
+        print(f'Lỗi')
+        
+        
+last_usage = {}
+blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
+
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     try:
