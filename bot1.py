@@ -408,6 +408,7 @@ def uptime(message):
     
     # Gửi video từ API
     video_url = "https://api.ffcommunity.site/randomvideo.php"
+    bot.send_video(message.chat.id, video_url, caption=text_message, parse_mode='HTML')
     video_response = requests.get(video_url)
     
     # Phân tích dữ liệu JSON và lấy đường dẫn video (chú ý đến phần https)
@@ -518,37 +519,6 @@ def tieng_viet(message):
     keyboard.add(url_button)
     bot.send_message(chat_id, '<blockquote>Click vào nút "<b>Tiếng Việt</b>" để đổi ngôn ngữ sang Tiếng Việt 🇻🇳</blockquote>', reply_markup=keyboard, parse_mode='HTML')
 ######
-
-### /name
-@bot.message_handler(commands=['name'])
-def name_handler(message):
-    if not check_user_permission(message):
-        bot.reply_to(message, "<blockquote>⚠️ Bạn chưa nhập key! ⚠️</blockquote>", parse_mode="HTML")
-        return
-
-    args = message.text.split(" ", 1)
-    if len(args) < 2:
-        bot.reply_to(message, "<blockquote>/name VanLong</blockquote>", parse_mode="HTML")
-        return
-
-    name = args[1]
-    data = call_api("search", {"key": VIP_KEY, "name": name})
-
-    if data.get("status") == "Success":
-        account_info = list(data.values())[1]
-        reply_text = (
-            f"🔎 <b>Thông tin tài khoản Free Fire</b>\n"
-            f"👤 <b>Tên:</b> {account_info.get('Name')}\n"
-            f"🆔 <b>UID:</b> {account_info.get('UID')}\n"
-            f"🌍 <b>Khu vực:</b> {account_info.get('Region')}\n"
-            f"📊 <b>Cấp độ:</b> {account_info.get('Level')}\n"
-            f"❤️ <b>Lượt thích:</b> {account_info.get('Likes')}\n"
-            f"🎯 <b>XP:</b> {account_info.get('XP')}\n"
-            f"🏆 <b>Guild:</b> {account_info.get('Guild Name')}\n"
-            f"⏳ <b>Lần đăng nhập cuối:</b> {account_info.get('Last Login')}"
-        )
-    else:
-        reply_text = "<blockquote>❌ Không tìm thấy tài khoản!</blockquote>"
 
 
 if __name__ == "__main__":
