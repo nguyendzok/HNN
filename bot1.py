@@ -29,8 +29,8 @@ name_bot = "HaoEsports"
 zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
-bot = Bot(token=os.environ.get('token'))  # Sử dụng token thựchực
-#phu 8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI
+bot = telebot.TeleBot(os.environ.get('token')) 
+print(os.environ.get('token'))  # Kiểm tra token có tồn tại không
 print("Bot đã được khởi động thành công")
 users_keys = {}
 key = ""
