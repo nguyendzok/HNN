@@ -248,12 +248,17 @@ def supersms(message):
     current_time = time.time()
 
     user_last_command_time = {}  # Dictionary lưu thời gian lệnh cuối cùng của từng user
-    elapsed_time = current_time - user_last_command_time[user_id]
 
-    if elapsed_time < 50:  
-       remaining_time = 50 - elapsed_time
-       bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
-       return
+if user_id not in user_last_command_time:
+    user_last_command_time[user_id] = 0  # Gán mặc định nếu chưa có
+
+elapsed_time = current_time - user_last_command_time[user_id]
+
+if elapsed_time < 50:  
+    remaining_time = 50 - elapsed_time
+    bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
+    return
+
 
 
     params = message.text.split()[1:]
