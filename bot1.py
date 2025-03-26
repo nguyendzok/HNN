@@ -261,6 +261,8 @@ def supersms(message):
 @bot.message_handler(commands=['spam'])
 def handle_spam(message):
     supersms(message)
+    sdt = message.text.split(" ")[1] if len(message.text.split()) > 1 else "0123456789"
+    bot.reply_to(message, f"Số điện thoại: {sdt}")
     user_id = message.from_user.id
     today_day = datetime.date.today().day
     today_path = f"./user/{today_day}/{user_id}.txt"
