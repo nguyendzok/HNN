@@ -267,7 +267,7 @@ def handle_spam(message):
         sdt = "0123456789"  # Giá trị mặc định nếu không có số điện thoại
     
     bot.reply_to(message, f"Số điện thoại của bạn là: {sdt}")
-        return
+    return
       
 
     params = message.text.split()[1:]
