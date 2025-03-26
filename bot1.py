@@ -260,13 +260,15 @@ def supersms(message):
 # Đăng ký lệnh cho bot
 @bot.message_handler(commands=['spam'])
 def handle_spam(message):
+def supersms(message):
+    user_id = message.from_user.id
+    today_day = datetime.date.today().day
     args = message.text.split()
     if len(args) > 1:
         sdt = args[1]  # Lấy số điện thoại từ lệnh
     else:
         sdt = "0123456789"  # Giá trị mặc định nếu không có số điện thoại
     
-    bot.reply_to(message, f"Số điện thoại của bạn là: {sdt}")
     return
       
 
