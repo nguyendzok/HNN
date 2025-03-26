@@ -22,12 +22,14 @@ from time import strftime
 import queue
 import pytz
 from datetime import timedelta
+from keep_alive import keep_alive
+keep_alive()
 admin_diggory = "ad_an_danhso5" 
 name_bot = "HaoEsports"
 zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
-bot = telebot.TeleBot("7920158658:AAGyY9jA2B5Z3_n3vZzzQBDYaJoAddPqZ7s")  # Sử dụng token thựchực
+bot = Bot(token=os.environ.get('token'))  # Sử dụng token thựchực
 #phu 8127007530:AAG1b4w__xXvIrAr7woZjN8BrC_l3g1hBwI
 print("Bot đã được khởi động thành công")
 users_keys = {}
