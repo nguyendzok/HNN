@@ -235,8 +235,32 @@ def handle_api_error(message, error_message):
 ####zalo 0789041631
 ### /like
 
-@bot.message_handler(commands=['spam'])
+user_last_command_time = {}  # Dictionary lưu thời gian lệnh cuối cùng của từng user
+
 def supersms(message):
+    user_id = message.from_user.id
+    current_time = time.time()
+
+    if user_id not in user_last_command_time:
+        user_last_command_time[user_id] = 0  # Gán mặc định nếu chưa có
+
+    elapsed_time = current_time - user_last_command_time[user_id]
+
+    if elapsed_time < 50:  
+        remaining_time = 50 - elapsed_time
+        bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
+        return  # return hợp lệ ở đây vì đang trong hàm
+
+    # Cập nhật thời gian dùng lệnh cuối cùng
+    user_last_command_time[user_id] = current_time
+
+    # Xử lý tiếp tục của lệnh ở đây
+    bot.reply_to(message, "Lệnh đã được thực hiện thành công!")
+
+# Đăng ký lệnh cho bot
+@bot.message_handler(commands=['spam'])
+def handle_spam(message):
+    supersms(message)
     user_id = message.from_user.id
     today_day = datetime.date.today().day
     today_path = f"./user/{today_day}/{user_id}.txt"
@@ -244,22 +268,7 @@ def supersms(message):
     if not os.path.exists(today_path):
         bot.reply_to(message, 'Dùng /getkey Để Lấy Key Hoặc /muavip Và Dùng /key Để Nhập Key Hôm Nay!')
         return
-
-    current_time = time.time()
-
-    user_last_command_time = {}  # Dictionary lưu thời gian lệnh cuối cùng của từng user
-
-if user_id not in user_last_command_time:
-    user_last_command_time[user_id] = 0  # Gán mặc định nếu chưa có
-
-elapsed_time = current_time - user_last_command_time[user_id]
-
-if elapsed_time < 50:  
-    remaining_time = 50 - elapsed_time
-    bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
-    return
-
-
+      
 
     params = message.text.split()[1:]
     if len(params) != 2:
