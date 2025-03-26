@@ -408,8 +408,6 @@ def uptime(message):
     
     # Gửi video từ API
     video_url = "https://api.ffcommunity.site/randomvideo.php"
-    text_message = "🕒 Thời gian hoạt động của bot: 24/7"  # Khai báo biến trước khi sử dụng
-    bot.send_video(message.chat.id, video_url, caption=text_message, parse_mode='HTML')
     video_response = requests.get(video_url)
     
     # Phân tích dữ liệu JSON và lấy đường dẫn video (chú ý đến phần https)
