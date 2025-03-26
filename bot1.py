@@ -259,7 +259,6 @@ def supersms(message):
 
 # Đăng ký lệnh cho bot
 @bot.message_handler(commands=['spam'])
-def handle_spam(message):
 def supersms(message):
     user_id = message.from_user.id
     today_day = datetime.date.today().day
