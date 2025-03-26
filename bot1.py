@@ -260,7 +260,6 @@ def supersms(message):
 # Đăng ký lệnh cho bot
 @bot.message_handler(commands=['spam'])
 def handle_spam(message):
-    def handle_spam(message):
     args = message.text.split()
     if len(args) > 1:
         sdt = args[1]  # Lấy số điện thoại từ lệnh
