@@ -182,6 +182,7 @@ def send_help(message):
 | /getkey : lấy key 
 | /key : nhập key
 | /uptime : xem video gai xinh
+| /spam : spam số điện thoại
 |—————————————————
                      Lệnh Admin
 |____________________________
@@ -234,7 +235,6 @@ def handle_api_error(message, error_message):
 ####zalo 0789041631
 ### /like
 
-Lệnh /spam
 @bot.message_handler(commands=['spam'])
 def supersms(message):
     user_id = message.from_user.id
