@@ -500,7 +500,7 @@ def key(message):
 
     if key == expected_key:
         text_message = f'<blockquote>[ KEY HỢP LỆ ] NGƯỜI DÙNG CÓ ID: [ {user_id} ] ĐƯỢC PHÉP ĐƯỢC SỬ DỤNG CÁC LỆNH TRONG [/start]</blockquote>'
-        video_url = 'https://v16m-default.akamaized.net/b485ad236b167c77c231705d7dc569ff/67e3e598/video/tos/alisg/tos-alisg-pve-0037c001/oIdGeAGv60uDqLjVPJa5PgoIAQQeCOCIC6maIe/?a=0&bti=OTg7QGo5QHM6OjZALTAzYCMvcCMxNDNg&ch=0&cr=0&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C0&cv=1&br=1184&bt=592&cs=0&ds=6&ft=XE5bCqT0majPD12ASQiJ3wUOx5EcMeF~O5&mime_type=video_mp4&qs=0&rc=NzxpZjM4NTo7OTc6OTNmOEBpamdvN3M5cnlneTMzODczNEBgNTAzYzVeX18xYF42MF9fYSNicnBlMmQ0MGNgLS1kMTFzcw%3D%3D&vvpl=1&l=202503261331162939FB2675916222C1EB&btag=e000b8000'  # Đổi URL đến video của bạn
+        video_url = 'https://v16m-default.akamaized.net/8c4208955e22e46d82f245894d6d3e31/67e53e48/video/tos/alisg/tos-alisg-pve-0037c001/okvpfADKBSYBbFRXn1fOjQQEgIDrBxoEIrn0Eq/?a=0&bti=OUBzOTg7QGo6OjZA'  # Đổi URL đến video của bạn
         bot.send_video(message.chat.id, video_url, caption=text_message, parse_mode='HTML')
         
         user_path = f'./user/{today_day}'
