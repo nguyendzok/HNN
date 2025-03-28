@@ -468,7 +468,7 @@ def startkey(message):
     today_day = datetime.date.today().day
     key = "HaoEsport" + str(user_id * today_day - 2007)
 
-    api_token = '64f857ff1b02a144e1073c7e'
+    api_token = '67c1fe72a448b83a9c7e7340'
     key_url = f"https://dichvukey.site/key.html?key={key}"
 
     try:
