@@ -248,7 +248,7 @@ def spam(message):
         except telebot.apihelper.ApiTelegramException as e:
             print(f"Error deleting message: {e}")
         return
-    if admin_mode and user_id not in admins:
+    if admin_mode = True
         msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
     if user_id in last_usage and current_time - last_usage[user_id] < 100:
         bot.reply_to(message, f"Vui lòng đợi {100 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
