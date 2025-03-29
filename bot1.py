@@ -235,35 +235,40 @@ def handle_api_error(message, error_message):
     bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
 ####zalo 0789041631
 ### /like
-
 @bot.message_handler(commands=['spam'])
-def supersms(message):
+def spam(message):
     user_id = message.from_user.id
-    return 
-    
     current_time = time.time()
-    if user_id in last_usage and current_time - last_usage[user_id] < 1:
-        bot.reply_to(message, f"Vui lòng đợi {250 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+    if not bot_active:
+        msg = bot.reply_to(message, 'Bot hiện đang tắt.')
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        except telebot.apihelper.ApiTelegramException as e:
+            print(f"Error deleting message: {e}")
         return
-    
+    if user_id in last_usage and current_time - last_usage[user_id] < 100:
+        bot.reply_to(message, f"Vui lòng đợi {100 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+        return
+
     last_usage[user_id] = current_time
 
+    # Phân tích cú pháp lệnh
     params = message.text.split()[1:]
-
     if len(params) != 2:
-        bot.reply_to(message, "/spam sdt số_lần như này cơ mà ")
+        bot.reply_to(message, "/spam sdt số_lần như này cơ mà - vì lý do server treo bot hơi cùi nên đợi 100giây nữa dùng lại nhé")
         return
 
     sdt, count = params
 
     if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng nhập một số nguyên dương.")
+        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
         return
-    
+
     count = int(count)
-    
-    if count > 30:
-        bot.reply_to(message, "/spam sdt 30 thôi nhé - đợi 250giây sử dụng lại.")
+
+    if count > 20:
+        bot.reply_to(message, "/spam sdt số_lần tối đa là 20 - đợi 100giây sử dụng lại.")
         return
 
     if sdt in blacklist:
@@ -273,82 +278,42 @@ def supersms(message):
     diggory_chat3 = f'''
 ┌──────⭓ {name_bot}
 │ Spam: Thành Công 
-│ Số Lần Spam Vip: {count}
+│ Số Lần Spam Free: {count}
 │ Đang Tấn Công : {sdt}
-│ Spam 30 Lần Tầm 5-10p mới xong 
+│ Spam 5 Lần Tầm 1-2p mới xong 
 │ Hạn Chế Spam Nhé !  
 └─────────────
     '''
 
     script_filename = "dec.py"  # Tên file Python trong cùng thư mục
     try:
-        if os.path.isfile(script_filename):
-            with open(script_filename, 'r', encoding='utf-8') as file:
-                script_content = file.read()
+        # Kiểm tra xem file có tồn tại không
+        if not os.path.isfile(script_filename):
+            bot.reply_to(message, "Không tìm thấy file script. Vui lòng kiểm tra lại.")
+            return
 
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-                temp_file.write(script_content.encode('utf-8'))
-                temp_file_path = temp_file.name
+        # Đọc nội dung file với mã hóa utf-8
+        with open(script_filename, 'r', encoding='utf-8') as file:
+            script_content = file.read()
 
-            process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-            bot.send_message(message.chat.id, diggory_chat3)
-        else:
-            bot.reply_to(message, "Tập tin không tìm thấy.")
+        # Tạo file tạm thời
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+            temp_file.write(script_content.encode('utf-8'))
+            temp_file_path = temp_file.name
+
+        # Chạy file tạm thời
+        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+        bot.send_message(message.chat.id, diggory_chat3)
+    except FileNotFoundError:
+        bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
 
 
-@bot.message_handler(commands=['like'])
-def like_handler(message):
-    try:
-        if not check_user_permission(message):
-            bot.reply_to(message, "<blockquote>Bạn chưa nhập key! hãy /getkey hoặc /muavip ngay</blockquote>", parse_mode="HTML")
-            return
 
-        args = message.text.split()
-        if len(args) != 2:
-            bot.reply_to(message, "<blockquote>Sử dụng: /like ID\nVí dụ: /like 1733997441</blockquote>", parse_mode="HTML")
-            return
+blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
 
-        uid = args[1]
-        if not uid.isdigit():
-            bot.reply_to(message, "<blockquote>ID không hợp lệ. Vui lòng nhập ID số.</blockquote>", parse_mode="HTML")
-            return
-
-        url = f"https://like-free-glff.onrender.com/?uid={uid}"
-        response = requests.get(url, params={"key": VIP_KEY, "uid": uid}, timeout=10)
-        data = response.json()
-
-        if "message" in data:
-            msg_content = data["message"]
-            if isinstance(msg_content, str):
-                reply_text = f"<blockquote>⚠️ {msg_content}</blockquote>"
-            elif isinstance(msg_content, dict):
-                reply_text = (
-                    f"<blockquote>\n"
-                    f"🎯 <b>Kết quả buff like:</b>\n"
-                    f"👤 <b>Tên:</b> {msg_content.get('Name', 'Không xác định')}\n"
-                    f"🆔 <b>UID:</b> {msg_content.get('UID', 'Không xác định')}\n"
-                    f"🌎 <b>Khu vực:</b> {msg_content.get('Region', 'Không xác định')}\n"
-                    f"📊 <b>Level:</b> {msg_content.get('Level', 'Không xác định')}\n"
-                    f"👍 <b>Like trước:</b> {msg_content.get('Likes Before', 'Không xác định')}\n"
-                    f"✅ <b>Like sau:</b> {msg_content.get('Likes After', 'Không xác định')}\n"
-                    f"➕ <b>Tổng cộng:</b> {msg_content.get('Likes Added', 'Không xác định')} like\n"
-                    f"</blockquote>"
-                )
-            else:
-                reply_text = "<blockquote>Không đúng định dạng phản hồi</blockquote>"
-
-            bot.reply_to(message, reply_text, parse_mode="HTML")
-        else:
-            bot.reply_to(message, "<blockquote>❌ Không nhận được phản hồi hợp lệ từ server</blockquote>", parse_mode="HTML")
-            
-    except requests.RequestException as e:
-        bot.reply_to(message, "<blockquote>❌ Lỗi kết nối đến server. Vui lòng thử lại sau.</blockquote>", parse_mode="HTML")
-    except Exception as e:
-        bot.reply_to(message, "<blockquote>❌ Đã xảy ra lỗi. Vui lòng thử lại sau.</blockquote>", parse_mode="HTML")
-
-# Lưu thời gian bắt đầu hoạt động của bot
+ 
 start_time = time.time()
 
 # Biến để tính toán FPS
