@@ -35,6 +35,7 @@ print("Bot đã được khởi động thành công")
 users_keys = {}
 key = ""
 user_cooldown = {}
+last_usage = {} 
 share_log = []
 auto_spam_active = False
 last_sms_time = {}
@@ -238,10 +239,11 @@ def handle_api_error(message, error_message):
 
 @bot.message_handler(commands=['spam'])
 def spam(message):
-    global last_usage  # Cho phép sử dụng biến toàn cục
+    global last_usage  # Để sử dụng biến toàn cục
+
     user_id = message.chat.id
     current_time = time.time()
-    
+
     if user_id in last_usage and current_time - last_usage[user_id] < 100:
         bot.reply_to(message, "Bạn đang spam, vui lòng đợi!")
         return
