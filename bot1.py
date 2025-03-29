@@ -248,7 +248,7 @@ def spam(message):
         except telebot.apihelper.ApiTelegramException as e:
             print(f"Error deleting message: {e}")
         return
-    if admin_mode == True  # Hoặc đơn giản hơn:
+    if admin_mode == True
     if admin_mode  
 
         msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
