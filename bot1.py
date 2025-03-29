@@ -236,6 +236,68 @@ def handle_api_error(message, error_message):
 ####zalo 0789041631
 ### /like
 
+@bot.message_handler(commands=['spam'])
+def supersms(message):
+    user_id = message.from_user.id
+        return 
+    
+    current_time = time.time()
+    if user_id in last_usage and current_time - last_usage[user_id] < 1:
+        bot.reply_to(message, f"Vui lòng đợi {250 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+        return
+    
+    last_usage[user_id] = current_time
+
+    params = message.text.split()[1:]
+
+    if len(params) != 2:
+        bot.reply_to(message, "/spam sdt số_lần như này cơ mà ")
+        return
+
+    sdt, count = params
+
+    if not count.isdigit():
+        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng nhập một số nguyên dương.")
+        return
+    
+    count = int(count)
+    
+    if count > 30:
+        bot.reply_to(message, "/spam sdt 30 thôi nhé - đợi 250giây sử dụng lại.")
+        return
+
+    if sdt in blacklist:
+        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        return
+
+    diggory_chat3 = f'''
+┌──────⭓ {name_bot}
+│ Spam: Thành Công 
+│ Số Lần Spam Vip: {count}
+│ Đang Tấn Công : {sdt}
+│ Spam 30 Lần Tầm 5-10p mới xong 
+│ Hạn Chế Spam Nhé !  
+└─────────────
+    '''
+
+    script_filename = "dec.py"  # Tên file Python trong cùng thư mục
+    try:
+        if os.path.isfile(script_filename):
+            with open(script_filename, 'r', encoding='utf-8') as file:
+                script_content = file.read()
+
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+                temp_file.write(script_content.encode('utf-8'))
+                temp_file_path = temp_file.name
+
+            process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+            bot.send_message(message.chat.id, diggory_chat3)
+        else:
+            bot.reply_to(message, "Tập tin không tìm thấy.")
+    except Exception as e:
+        bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+
+
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     try:
