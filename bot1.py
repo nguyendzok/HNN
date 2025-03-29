@@ -238,22 +238,16 @@ def handle_api_error(message, error_message):
 
 @bot.message_handler(commands=['spam'])
 def spam(message):
-    user_id = message.from_user.id
+    global last_usage  # Cho phép sử dụng biến toàn cục
+    user_id = message.chat.id
     current_time = time.time()
-    if not bot_active:
-        msg = bot.reply_to(message, 'Bot hiện đang tắt.')
-        time.sleep(10)
-        try:
-            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        except telebot.apihelper.ApiTelegramException as e:
-            print(f"Error deleting message: {e}")
-        return
-        msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
+    
     if user_id in last_usage and current_time - last_usage[user_id] < 100:
-        bot.reply_to(message, f"Vui lòng đợi {100 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+        bot.reply_to(message, "Bạn đang spam, vui lòng đợi!")
         return
 
-    last_usage[user_id] = current_time
+    last_usage[user_id] = current_time  # Cập nhật thời gian sử dụng lệnh
+    bot.reply_to(message, "Lệnh đã được thực thi!")
 
     # Phân tích cú pháp lệnh
     params = message.text.split()[1:]
