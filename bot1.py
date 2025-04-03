@@ -363,14 +363,7 @@ def handle_fl(message):
         return
 
      
-        user_id = str(message.from_user.id)
-    
-    
-    if user_id not in data or data[user_id]['token'] < 100:
-        bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
-        return
-
-   
+      
     args = message.text.split()
     if len(args) < 2:
         bot.reply_to(message, "<b>⚠️ Vui Lòng Nhập Username TikTok</b> \n\nVí dụ: \n<code>/tt bacgau</code>", parse_mode="HTML")
