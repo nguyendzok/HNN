@@ -394,6 +394,86 @@ def search_google_image(message):
 
 def TimeStamp():
     return datetime.datetime.now().strftime("%Y-%m-%d")
+
+API_BASE_URL = "https://freefire-virusteam.vercel.app"
+
+def get_vip_key():
+    try:
+        response = requests.get("https://dichvukey.site/likeff.php", timeout=5)
+        response.raise_for_status()
+        return response.text.strip()
+    except requests.exceptions.RequestException:
+        return "default-key"  
+
+VIP_KEY = get_vip_key()
+
+region_translation = {
+    "VN": "Việt Nam", "ID": "Indonesia", "TH": "Thái Lan",
+    "SG": "Singapore", "TW": "Đài Loan", "EU": "Châu Âu",
+    "US": "Hoa Kỳ", "BR": "Brazil", "MX": "Mexico",
+    "IN": "Ấn Độ", "KR": "Hàn Quốc", "PK": "Pakistan",
+    "BD": "Bangladesh", "RU": "Nga", "MENA": "Trung Đông & Bắc Phi",
+    "LA": "Châu Mỹ Latinh"
+}
+
+def call_api(endpoint, params=None):
+    url = f"{API_BASE_URL}/{endpoint}"
+    try:
+        response = requests.get(url, params=params, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException:
+        return {"status": "error", "message": "Sever quá tải hoặc lỗi kết nối"}
+
+def check_user_permission(message):
+    user_id = message.from_user.id
+    today_day = datetime.date.today().day
+    key_path = f"./user/{today_day}/{user_id}.txt"
+
+    return user_id in allowed_users or os.path.exists(key_path)
+
+def handle_api_error(message, error_message):
+    bot.reply_to(message, f"<blockquote>❌</blockquote>", parse_mode="HTML")
+####zalo 0789041631
+### /like
+@bot.message_handler(commands=['like'])
+def like_handler(message):
+    if not check_user_permission(message):
+        bot.reply_to(message, "<blockquote>Bạn chưa nhập key! hãy /getkey hoặc /muavip ngay</blockquote>", parse_mode="HTML")
+        return
+
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "<blockquote>/like 1733997441</blockquote>", parse_mode="HTML")
+        return
+
+    uid = args[1]
+    data = call_api("likes1", {"key": VIP_KEY, "uid": uid})
+
+    if "message" in data:
+        msg_content = data["message"]
+        if isinstance(msg_content, str):
+            reply_text = f"<blockquote>⚠️ {msg_content}</blockquote>"
+        elif isinstance(msg_content, dict):
+            reply_text = (
+                f"<blockquote>\n"
+                f"🎯 <b>Kết quả buff like:</b>\n"
+                f"👤 <b>Tên:</b> {msg_content.get('username', 'Không xác định')}\n"
+                f"🆔 <b>UID:</b> {msg_content.get('uid', 'Không xác định')}\n"
+                f"🌎 <b>Khu vực:</b> {msg_content.get('Region', 'Không xác định')}\n"
+                f"📊 <b>Level:</b> {msg_content.get('level', 'Không xác định')}\n"
+                f"👍 <b>Like trước:</b> {msg_content.get('likes_before', 'Không xác định')}\n"
+                f"✅ <b>Like sau:</b> {msg_content.get('likes_after', 'Không xác định')}\n"
+                f"➕ <b>Tổng cộng:</b> {msg_content.get('likes_given', 'Không xác định')} like\n"
+                f"</blockquote>"
+            )
+        else:
+            reply_text = "<blockquote>Không đúng định dạng</blockquote>"
+
+        bot.reply_to(message, reply_text, parse_mode="HTML")
+    else:
+        handle_api_error(message, "Đang lỗi hãy báo admin.")
+    
 @bot.message_handler(commands=['getkey'])
 def startkey(message):
     user_id = message.from_user.id
