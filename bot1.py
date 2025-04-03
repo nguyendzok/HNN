@@ -177,7 +177,6 @@ def send_help(message):
 ╚══════════════════╝  
  _____________________________________
 | /ff : check acc xem thông tin 
-| /gg : tìm ảnh 
 | /tv : chuyển đổi ngôn ngữ 
 | /like : buff like
 | /getkey : lấy key 
@@ -325,11 +324,11 @@ fps = 0
 @bot.message_handler(commands=['uptime'])
 def uptime(message):
     global last_time, frame_count, fps
-
+    
     # Tính toán thời gian hoạt động
     uptime_seconds = int(time.time() - start_time)
     uptime_formatted = str(timedelta(seconds=uptime_seconds))
-
+    
     # Cập nhật FPS mỗi khi lệnh được xử lý
     current_time = time.time()
     frame_count += 1
@@ -337,41 +336,34 @@ def uptime(message):
         fps = frame_count
         frame_count = 0
         last_time = current_time
-
+    
     # Gửi video từ API
     video_url = "https://api.ffcommunity.site/randomvideo.php"
-
+    video_response = requests.get(video_url)
+    
+    # Phân tích dữ liệu JSON và lấy đường dẫn video (chú ý đến phần https)
     try:
-        video_response = requests.get(video_url)
-        video_response.raise_for_status()  # Kiểm tra mã trạng thái
-
         video_data = video_response.json()  # Phân tích JSON
-        video_link = video_data.get('url', '')  # Lấy đường dẫn video
-
+        video_link = video_data.get('url', '')  # Lấy đường dẫn video từ trường 'url'
+        
         # Kiểm tra nếu có https
-        if video_link and (video_link.startswith('http://') or video_link.startswith('https://')):
-            video_link = video_link.strip()  # Loại bỏ khoảng trắng
+        if video_link and (video_link.startswith('http://')or video_link.startswith('https://')):
+            video_link = video_link.strip()  # Loại bỏ khoảng trắng thừa ở đầu và cuối
         else:
-            video_link = None  # Không gán gì
+            video_link = 'Không thể lấy video'
 
-        # Nếu có đường dẫn video hợp lệ, tải video về
-        if video_link:
-            video_content = requests.get(video_link)  # Tải video về
-            video_content.raise_for_status()  
+    except ValueError:
+        video_link = 'Không thể lấy video'
+
     # Tạo và gửi tin nhắn
-            bot.send_message(message.chat.id, 
+    bot.send_message(message.chat.id, 
                      f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
                      f"🎮 FPS trung bình: {fps} FPS\n"
                      "Không thể lấy thông tin cấu hình.\n"
                      f"🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_link}")
 
 
-
-
-try:
     API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
-except Exception as e:
-    print(f"An error occurred: {e}")
 
 def add_like(uid):
     url = API_LIKE_URL.format(uid)
