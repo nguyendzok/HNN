@@ -392,17 +392,17 @@ def search_google_image(message):
 ### tiep theo codeby HàoEsports
 
 
-def TimeStamp():
-    return datetime.datetime.now().strftime("%Y-%m-%d")
-
-API_BASE_URL = "https://dichvukey.site/likeff.php?uid={uid}"
-
-def get_vip_key():
-    try:
-        response = requests.get("https://dichvukey.site/likeff.php", timeout=5)
-        response.raise_for_status()
-        return response.text.strip()
-    except requests.exceptions.RequestException:
+def send_like_request(idgame):
+    urllike = f"https://dichvukey.site/likeff.php?uid={idgame}"
+    max_retries = 5
+    
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(urllike, timeout=15)
+            response.raise_for_status()
+            data = response.json()
+            break  
+        except requests.exceptions.RequestException:
         return "default-key"  
 
 VIP_KEY = get_vip_key()
