@@ -365,33 +365,7 @@ def uptime(message):
                      "Không thể lấy thông tin cấu hình.\n"
                      f"🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_link}")
 
-#gg
-API_URL = "https://dichvukey.site/apivl/gg.php?gg="
-@bot.message_handler(commands=['gg'])
-def search_google_image(message):
-    command_parts = message.text.split(maxsplit=1)
-    
-    if len(command_parts) == 2:
-        query = command_parts[1].strip()
-        api_request_url = API_URL + requests.utils.quote(query)
-        
-        try:
-            response = requests.get(api_request_url)
-            response_data = response.json()
-            
-            if "image_url" in response_data and "caption" in response_data:
-                image_url = response_data["image_url"]
-                caption = response_data["caption"]
-                
-                bot.send_photo(message.chat.id, photo=image_url, caption=caption, parse_mode="Markdown")
-            else:
-                bot.reply_to(message, "không tìm thấy hình ảnh nào.")
-        except Exception as e:
-            bot.reply_to(message, "Lỗi khi tìm kiếm hình ảnh.")
-            print(f"Lỗi")
-    else:
-        bot.reply_to(message, "/gg siêu nhân")
-### tiep theo codeby HàoEsports
+
 
 API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
 
