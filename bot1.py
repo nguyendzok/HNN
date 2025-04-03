@@ -348,7 +348,7 @@ def uptime(message):
         video_link = video_data.get('url', '')  # Lấy đường dẫn video từ trường 'url'
         
         # Kiểm tra nếu có https
-        if video_link and video_link.startswith('https://'):
+        if video_link and (video_link.startswith('http://')or video_link.startswith('https://')):
             video_link = video_link.strip()  # Loại bỏ khoảng trắng thừa ở đầu và cuối
         else:
             video_link = 'Không thể lấy video'
