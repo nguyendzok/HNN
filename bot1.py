@@ -397,13 +397,13 @@ def send_like_request(idgame):
     
     for attempt in range(max_retries):
         try:
-            response = requests.get(urllike, timeout=15)
+            response = requests.get(urllike, timeout=5)
             response.raise_for_status()
             data = response.json()
             break  
         except requests.exceptions.RequestException:
             if attempt == max_retries - 1:
-                return "Sever đang quá tải, vui lòng thử lại sau."
+                return "Sever đang bị admin tắt."
             time.sleep(5)
         except ValueError:
             return "Phản hồi từ server không hợp lệ."
