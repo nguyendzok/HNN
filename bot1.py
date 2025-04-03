@@ -362,9 +362,8 @@ def handle_fl(message):
         bot.reply_to(message, "Tham Gia Nhóm Của Chúng Tôi Để Bot Có Thể Trò Chuyện Với Bạn Dễ Dàng Hơn.\nLink Đây: [ https://t.me/+AhM8n6X-63JmNTQ1 ]\n\nLưu Ý, Bot Chỉ Hoạt Động Trong Những Nhóm Cụ Thể Thôi Nha!")
         return
 
-   
-    data = load_data()
-    user_id = str(message.from_user.id)
+     
+        user_id = str(message.from_user.id)
     
     
     if user_id not in data or data[user_id]['token'] < 100:
