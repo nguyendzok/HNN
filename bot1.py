@@ -403,7 +403,7 @@ def send_like_request(idgame):
             data = response.json()
             break  
         except requests.exceptions.RequestException:
-        return "default-key"  
+            return "default-key"  
 
 VIP_KEY = get_vip_key()
 
