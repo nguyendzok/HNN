@@ -186,10 +186,7 @@ def send_help(message):
 |—————————————————
                      Lệnh Admin
 |____________________________
-| /off : tắt bot
-| /on : bật bot
 | /themvip
-| /rs : khởi động lại bot
 |____________________________
 </blockquote>""", parse_mode="HTML")
 
@@ -246,8 +243,8 @@ def spam(message):
         except telebot.apihelper.ApiTelegramException as e:
             print(f"Error deleting message: {e}")
         return
-    if user_id in last_usage and current_time - last_usage[user_id] < 100:
-        bot.reply_to(message, f"Vui lòng đợi {100 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+    if user_id in last_usage and current_time - last_usage[user_id] < 50:
+        bot.reply_to(message, f"Vui lòng đợi {50 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
         return
 
     last_usage[user_id] = current_time
@@ -274,16 +271,12 @@ def spam(message):
         bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
-    diggory_chat3 = f'''
-┌──────⭓ {name_bot}
+    diggory_chat3 = f'''┌──────⭓ {name_bot}
 │ Spam: Thành Công 
-│ Số Lần Spam Free: {count}
-│ Đang Tấn Công : {sdt}
-│ Spam 5 Lần Tầm 1-2p mới xong 
-│ Hạn Chế Spam Nhé !  
-└─────────────
-    '''
-
+│ Người dùng: {message.from_user.username}
+│ Số Lần Spam: {count}
+│ Đang Tấn Công: {sdt}
+└─────────────'''
     script_filename = "dec.py"  # Tên file Python trong cùng thư mục
     try:
         # Kiểm tra xem file có tồn tại không
