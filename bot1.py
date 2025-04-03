@@ -367,7 +367,11 @@ def uptime(message):
 
 
 
-API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
+
+try:
+    API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
+except Exception as e:
+    print(f"An error occurred: {e}")
 
 def add_like(uid):
     url = API_LIKE_URL.format(uid)
