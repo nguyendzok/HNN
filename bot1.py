@@ -25,7 +25,7 @@ from datetime import timedelta
 from keep_alive import keep_alive
 keep_alive()
 admin_diggory = "ad_an_danhso5" 
-name_bot = "HaoEsports"
+name_bot = "TranHao"
 zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
