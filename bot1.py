@@ -391,27 +391,24 @@ def search_google_image(message):
         bot.reply_to(message, "/gg siêu nhân")
 ### tiep theo codeby HàoEsports
 
-def send_like_request(idgame):
-    urllike = f"https://dichvukey.site/likeff.php?uid={idgame}"
-    max_retries = 5
-    
-    for attempt in range(max_retries):
-        try:
-            response = requests.get(urllike, timeout=5)
-            response.raise_for_status()
-            data = response.json()
-            break  
-        except requests.exceptions.RequestException:
-            if attempt == max_retries - 1:
-                return "Sever đang bị admin tắt."
-            time.sleep(5)
-        except ValueError:
-            return "Phản hồi từ server không hợp lệ."
-    
-    if isinstance(data, dict) and "status" in data:
-        if data["status"] == 2:
-            return "⚠️ Bạn đã đạt giới hạn lượt like hôm nay, vui lòng thử lại sau."
+API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
+
+def add_like(uid):
+    url = API_LIKE_URL.format(uid)
+    try:
+        response = requests.get(url, timeout=5)
+        response.raise_for_status()
+        data = response.json()
         
+        if data.get("status") == 400:
+            return f"❌ Lỗi từ API: {data.get('message', 'Không thể tăng like')}"
+        
+        return f"✅ Đã gửi yêu cầu tăng like cho UID {uid}!"
+    except requests.exceptions.RequestException as e:
+        return f"❌ Lỗi kết nối API: {str(e)}"
+    except Exception as e:
+        return f"❌ Lỗi không xác định: {str(e)}"
+
         reply_text = (
             f"\n👤 Tên: {data.get('username', 'Không xác định')}\n"
             f"🆔 UID: {data.get('uid', 'Không xác định')}\n"
@@ -423,17 +420,19 @@ def send_like_request(idgame):
     return "Lỗi không xác định."
 
 @bot.message_handler(commands=['like'])
-def handle_like(message):
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "❌ Vui lòng nhập đúng lệnh: /like <UID>")
-        return
-    
-    uid = args[1]
-    bot.reply_to(message, "⏳ Đang xử lý yêu cầu...")
-    result = send_like_request(uid)
-    bot.reply_to(message, result)
-
+def like_command(message):
+    try:
+        uid = message.text.split()[1]
+        if not uid.isdigit():
+            bot.reply_to(message, "⚠ UID phải là số!")
+            return
+        bot.reply_to(message, "👍 Đang tăng like cho UID...")
+        result = add_like(uid)
+        bot.reply_to(message, result)
+    except IndexError:
+        bot.reply_to(message, "⚠ Vui lòng nhập UID sau lệnh /like")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Lỗi: {str(e)}")
 
 @bot.message_handler(commands=['getkey'])
 def startkey(message):
