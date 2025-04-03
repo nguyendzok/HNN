@@ -395,7 +395,7 @@ def search_google_image(message):
 def TimeStamp():
     return datetime.datetime.now().strftime("%Y-%m-%d")
 
-API_BASE_URL = "https://freefire-virusteam.vercel.app"
+API_BASE_URL = "https://dichvukey.site/likeff.php?uid={uid}"
 
 def get_vip_key():
     try:
