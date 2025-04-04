@@ -332,7 +332,7 @@ def visit_handler(message):
             f"⏱️ Time: <code>{info['total_time_takes']}</code>\n"
             f"⚡ Speed: <code>{info['total_views_sent']}</code>\n"
             f"</blockquote>"
-        )
+        
     else:
         reply_text = f"<blockquote>❌ API báo lỗi: {data.get('message', 'Không rõ nguyên nhân')}</blockquote>"
 
