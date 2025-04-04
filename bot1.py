@@ -276,6 +276,71 @@ def add_like(uid):
         return reply_text
     return "Lỗi không xác định."
 
+@bot.message_handler(commands=['code'])
+def handle_code_command(message):
+    command_args = message.text.split(maxsplit=1)
+    if len(command_args) < 2:
+        bot.reply_to(message, "Ví dụ: /code https://vlongzZ.com")
+        return
+
+    url = command_args[1]
+    domain = urlparse(url).netloc
+    file_name = f"{domain}.txt"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  
+
+        with open(file_name, 'w', encoding='utf-8') as file:
+            file.write(response.text)
+        with open(file_name, 'rb') as file:
+            bot.send_document(message.chat.id, file, caption=f"HTML của trang web {url}")
+        bot.reply_to(message, "Đã gửi mã nguồn HTML của trang web cho bạn.")
+
+    except requests.RequestException as e:
+        bot.reply_to(message, f"Đã xảy ra lỗi khi tải trang web: {e}")
+
+    finally:
+        if os.path.exists(file_name):
+            try:
+                os.remove(file_name)
+            except Exception as e:
+                bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
+
+
+API_BASE_URL = "https://free-fire-visit.vercel.app/send_visit?uid={uid}"
+@bot.message_handler(commands=['visit'])
+def visit_handler(message):
+
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "<blockquote>/visit 1733997441</blockquote>", parse_mode="HTML")
+        return
+
+    uid = args[1]
+    data = call_api("visit", {"key": VIP_KEY, "uid": uid, "sl": 50})
+
+    if data.get("status") == "Success":
+        info = data["message"]
+        reply_text = (
+            f"<blockquote>\n"
+            f"✅ <b>Thành công</b>\n"
+            f"🎮 Name: <code>{info[name']}</code>\n"
+            f"🆔 Level: <b>{info['level']}</b>\n"
+            f"📊 Successful: <code>{info['success']}</code>\n"
+            f"❌ Failed: <code>{info['tokens_used']}</code>\n"
+            f"⏱️ Time: <code>{info['total_time_takes']}</code>\n"
+            f"⚡ Speed: <code>{info['total_views_sent']}</code>\n"
+            f"</blockquote>"
+        )
+    else:
+        reply_text = f"<blockquote>❌ API báo lỗi: {data.get('message', 'Không rõ nguyên nhân')}</blockquote>"
+
+    bot.reply_to(message, reply_text, parse_mode="HTML")
+
+
+
+
 @bot.message_handler(commands=['like'])
 def like_command(message):
     try:
