@@ -252,34 +252,21 @@ def uptime(message):
 
 API_BASE_URL = "https://dichvukey.site/likeff.php"
 
-def get_vip_key():
-    try:
-        response = requests.get("https://dichvukey.site/keyvip.txt", timeout=5)
-        response.raise_for_status()
-        return response.text.strip()
-    except requests.exceptions.RequestException:
-        return "default-key"  
-
-VIP_KEY = get_vip_key()
-
 def call_api(uid):
-    url = f"{API_BASE_URL}?uid={uid}&key={VIP_KEY}"
+    url = f"{API_BASE_URL}?uid={uid}"
     try:
         response = requests.get(url, timeout=10)
+        print("API Response:", response.text)  # Debug phản hồi từ API
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException:
+    except requests.exceptions.RequestException as e:
+        print("API Error:", str(e))  # In lỗi ra console
         return {"status": "error", "message": "Server quá tải hoặc lỗi kết nối"}
 
 def check_user_permission(message):
     user_id = message.from_user.id
     today_day = datetime.date.today().day
-    key_path = f"./user/{today_day}/{user_id}.txt"
-
-    return os.path.exists(key_path)
-
-def handle_api_error(message, error_message):
-    bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
+    
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
@@ -294,7 +281,7 @@ def like_handler(message):
 
     uid = args[1]
     data = call_api(uid)
-
+    
     if "message" in data:
         msg_content = data["message"]
         if isinstance(msg_content, str):
