@@ -308,12 +308,6 @@ def spam(message):
             parse_mode='HTML'
         )
 
-
-     requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
-        user_last_command_time[user_id] = time.time()
-
-    except Exception as e:
-        print(f'Lỗi')
         
         
 last_usage = {}
