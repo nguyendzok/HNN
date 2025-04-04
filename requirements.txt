@@ -3,3 +3,4 @@ psutil
 gtts
 pytz
 flask
+touch requirements.txt
