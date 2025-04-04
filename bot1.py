@@ -322,7 +322,6 @@ def visit_handler(message):
 
     if data.get("status") == "Success":
         info = data["message"]
-        reply_text = 
             f"<blockquote>\n"
             f"✅ <b>Thành công</b>\n"
             f"🎮 Name: <code>{info[name']}</code>\n"
