@@ -186,6 +186,7 @@ def send_help(message):
 | /key : nhập key
 | /uptime : xem video gai xinh
 | /vist : buff view 
+| /like : buff like ff
 | /code : lấy code wed
 | /flo : buff flo tiktok
 | /spam : spam số điện thoại
@@ -249,66 +250,77 @@ def uptime(message):
                      
 
 
-    API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
+API_BASE_URL = "https://dichvukey.site/likeff.php"
 
-def add_like(uid):
-    url = API_LIKE_URL.format(uid)
+def get_vip_key():
     try:
-        response = requests.get(url, timeout=5)
+        response = requests.get("https://dichvukey.site/keyvip.txt", timeout=5)
         response.raise_for_status()
-        data = response.json()
-        
-        if data.get("status") == 400:
-            return f"❌ Lỗi từ API: {data.get('message', 'Không thể tăng like')}"
-        
-        return f"✅ Đã gửi yêu cầu tăng like cho UID {uid}!"
-    except requests.exceptions.RequestException as e:
-        return f"❌ Lỗi kết nối API: {str(e)}"
-    except Exception as e:
-        return f"❌ Lỗi không xác định: {str(e)}"
+        return response.text.strip()
+    except requests.exceptions.RequestException:
+        return "default-key"  
 
-        reply_text = (
-            f"\n👤 Tên: {data.get('username', 'Không xác định')}\n"
-            f"🆔 UID: {data.get('uid', 'Không xác định')}\n"
-            f"❤️ Like hiện tại: {data.get('current_likes', 'N/A')}\n"
-            f"👍 Like đã thêm: {data.get('added_likes', 'N/A')}\n"
-            f"📅 Ngày hết hạn: {data.get('expiry_date', 'N/A')}"
-        )
-        return reply_text
-    return "Lỗi không xác định."
+VIP_KEY = get_vip_key()
 
-@bot.message_handler(commands=['code'])
-def handle_code_command(message):
-    command_args = message.text.split(maxsplit=1)
-    if len(command_args) < 2:
-        bot.reply_to(message, "Ví dụ: /code https://vlongzZ.com")
+def call_api(uid):
+    url = f"{API_BASE_URL}?uid={uid}&key={VIP_KEY}"
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.RequestException:
+        return {"status": "error", "message": "Server quá tải hoặc lỗi kết nối"}
+
+def check_user_permission(message):
+    user_id = message.from_user.id
+    today_day = datetime.date.today().day
+    key_path = f"./user/{today_day}/{user_id}.txt"
+
+    return os.path.exists(key_path)
+
+def handle_api_error(message, error_message):
+    bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
+
+@bot.message_handler(commands=['like'])
+def like_handler(message):
+    if not check_user_permission(message):
+        bot.reply_to(message, "<blockquote>Bạn chưa nhập key! hãy /getkey hoặc /muavip ngay</blockquote>", parse_mode="HTML")
         return
 
-    url = command_args[1]
-    domain = urlparse(url).netloc
-    file_name = f"{domain}.txt"
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "<blockquote>/like 1733997441</blockquote>", parse_mode="HTML")
+        return
+
+    uid = args[1]
+    data = call_api(uid)
+
+    if "message" in data:
+        msg_content = data["message"]
+        if isinstance(msg_content, str):
+            reply_text = f"<blockquote>⚠️ {msg_content}</blockquote>"
+        elif isinstance(msg_content, dict):
+            reply_text = (
+                f"<blockquote>\n"
+                f"🎯 <b>Kết quả buff like:</b>\n"
+                f"👤 <b>Tên:</b> {msg_content.get('username', 'Không xác định')}\n"
+                f"🆔 <b>UID:</b> {msg_content.get('uid', 'Không xác định')}\n"
+                f"🌎 <b>Khu vực:</b> {msg_content.get('Region', 'Không xác định')}\n"
+                f"📊 <b>Level:</b> {msg_content.get('level', 'Không xác định')}\n"
+                f"👍 <b>Like trước:</b> {msg_content.get('likes_before', 'Không xác định')}\n"
+                f"✅ <b>Like sau:</b> {msg_content.get('likes_after', 'Không xác định')}\n"
+                f"➕ <b>Tổng cộng:</b> {msg_content.get('likes_given', 'Không xác định')} like\n"
+                f"</blockquote>"
+            )
+        else:
+            reply_text = "<blockquote>Không đúng định dạng</blockquote>"
+
+        bot.reply_to(message, reply_text, parse_mode="HTML")
+    else:
+        handle_api_error(message, "Đang lỗi hãy báo admin.")
+
+
     
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  
-
-        with open(file_name, 'w', encoding='utf-8') as file:
-            file.write(response.text)
-        with open(file_name, 'rb') as file:
-            bot.send_document(message.chat.id, file, caption=f"HTML của trang web {url}")
-        bot.reply_to(message, "Đã gửi mã nguồn HTML của trang web cho bạn.")
-
-    except requests.RequestException as e:
-        bot.reply_to(message, f"Đã xảy ra lỗi khi tải trang web: {e}")
-
-    finally:
-        if os.path.exists(file_name):
-            try:
-                os.remove(file_name)
-            except Exception as e:
-                bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
-
-                
 @bot.message_handler(commands=['spam'])
 def spam(message):
     user_id = message.from_user.id
