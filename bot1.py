@@ -184,7 +184,7 @@ def send_help(message):
 | /getkey : lấy key 
 | /key : nhập key
 | /uptime : xem video gai xinh
-| /spamvip : spam số điện thoại
+| /spam : spam số điện thoại
 |—————————————————
                      Lệnh Admin
 |____________________________
