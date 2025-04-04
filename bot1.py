@@ -240,7 +240,7 @@ def spam_vip_handler(message):
     
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "❌ *Sai cú pháp!*\n\n✅ Đúng: `/spamvip số_điện_thoại số_lần`", parse_mode='Markdown')
+        bot.reply_to(message, "❌ *Sai cú pháp!*\n\n✅ Đúng: `/spam số_điện_thoại số_lần`", parse_mode='Markdown')
         return
 
     sdt, count = params
