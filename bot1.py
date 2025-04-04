@@ -188,6 +188,7 @@ def send_help(message):
 | /vist : buff view 
 | /code : lấy code wed
 | /flo : buff flo tiktok
+| /spam : spam số điện thoại
 |—————————————————-----------
                      Lệnh Admin
 |____________________________
@@ -195,7 +196,7 @@ def send_help(message):
 | /on
 |____________________________
 </blockquote>""", parse_mode="HTML")
-
+dù
 ### /like
 
 start_time = time.time()
@@ -309,22 +310,86 @@ def handle_code_command(message):
                 bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
 
                 
-@bot.message_handler(commands=['off'])
-def bot_off(message):
-    global bot_active
-    if message.from_user.id in admins:
-        bot_active = False
-        bot.reply_to(message, 'Bot đã được tắt.')
-    else:
-        bot.reply_to(message, 'Bạn không có quyền thực hiện thao tác này.')
-@bot.message_handler(commands=['on'])
-def bot_on(message):
-    global bot_active
-    if message.from_user.id in admins:
-        bot_active = True
-        bot.reply_to(message, 'Bot đã được bật.')
-    else:
-        bot.reply_to(message, 'Bạn không có quyền thực hiện thao tác này.')
+@bot.message_handler(commands=['spam'])
+def spam(message):
+    user_id = message.from_user.id
+    current_time = time.time()
+    if not bot_active:
+        msg = bot.reply_to(message, 'Bot hiện đang tắt.')
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        except telebot.apihelper.ApiTelegramException as e:
+            print(f"Error deleting message: {e}")
+        return
+    if admin_mode and user_id not in admins:
+        msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
+    if user_id in last_usage and current_time - last_usage[user_id] < 10:
+        bot.reply_to(message, f"Vui lòng đợi {10 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+        return
+
+    last_usage[user_id] = current_time
+
+    # Phân tích cú pháp lệnh
+    params = message.text.split()[1:]
+    if len(params) != 2:
+        bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
+        return
+
+    sdt, count = params
+
+    if not count.isdigit():
+        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        return
+
+    count = int(count)
+
+    if count > 25:
+        bot.reply_to(message, "/spam sdt số_lần tối đa là 25 - đợi 10giây sử dụng lại.")
+        return
+
+    if sdt in blacklist:
+        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        return
+
+    diggory_chat3 = f'''
+┌──────⭓ {name_bot}
+│ Spam: Thành Công ✅
+│ Số Lần Spam Free: {count}
+│ Đang Tấn Công : {sdt}
+│ Spam 5 Lần Tầm 1-2p mới xong 
+│ Hạn Chế Spam Nhé !  
+└─────────────
+    '''
+
+    script_filename = "dec.py"  # Tên file Python trong cùng thư mục
+    try:
+        # Kiểm tra xem file có tồn tại không
+        if not os.path.isfile(script_filename):
+            bot.reply_to(message, "Không tìm thấy file script. Vui lòng kiểm tra lại.")
+            return
+
+        # Đọc nội dung file với mã hóa utf-8
+        with open(script_filename, 'r', encoding='utf-8') as file:
+            script_content = file.read()
+
+        # Tạo file tạm thời
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+            temp_file.write(script_content.encode('utf-8'))
+            temp_file_path = temp_file.name
+
+        # Chạy file tạm thời
+        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+        bot.send_message(message.chat.id, diggory_chat3)
+    except FileNotFoundError:
+        bot.reply_to(message, "Không tìm thấy file.")
+    except Exception as e:
+        bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+
+
+
+blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
+
 
 
 @bot.message_handler(commands=['like'])
