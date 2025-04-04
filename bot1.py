@@ -270,9 +270,7 @@ def check_user_permission(message):
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
-    if not check_user_permission(message):
-        bot.reply_to(message, "<blockquote>Bạn chưa nhập key! hãy /getkey hoặc /muavip ngay</blockquote>", parse_mode="HTML")
-        return
+    
 
     args = message.text.split()
     if len(args) != 2:
