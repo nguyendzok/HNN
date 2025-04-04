@@ -24,8 +24,8 @@ import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
 keep_alive()
-admin_diggory = "ad_an_danhso5" 
-name_bot = "TranHao"
+admin_diggory = "HaoEsport" 
+name_bot = "Trần Hào"
 ADMIN_ID = '7658079324'
 zalo = "0585019743"
 web = "https://dichvukey.site/"
@@ -41,6 +41,7 @@ share_log = []
 auto_spam_active = False
 last_sms_time = {}
 global_lock = Lock()
+admin_mode = False
 allowed_users = []
 processes = []
 ADMIN_ID =  7845889525 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
@@ -308,6 +309,22 @@ def handle_code_command(message):
                 bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
 
                 
+@bot.message_handler(commands=['off'])
+def bot_off(message):
+    global bot_active
+    if message.from_user.id in admins:
+        bot_active = False
+        bot.reply_to(message, 'Bot đã được tắt.')
+    else:
+        bot.reply_to(message, 'Bạn không có quyền thực hiện thao tác này.')
+@bot.message_handler(commands=['on'])
+def bot_on(message):
+    global bot_active
+    if message.from_user.id in admins:
+        bot_active = True
+        bot.reply_to(message, 'Bot đã được bật.')
+    else:
+        bot.reply_to(message, 'Bạn không có quyền thực hiện thao tác này.')
 
 
 @bot.message_handler(commands=['like'])
