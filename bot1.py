@@ -236,7 +236,6 @@ def handle_api_error(message, error_message):
 def supersms(message):
     user_id = message.from_user.id
     today_day = datetime.date.today().day
-        return
 
     params = message.text.split()[1:]
     if len(params) != 2:
