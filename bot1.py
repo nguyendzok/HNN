@@ -196,7 +196,6 @@ def send_help(message):
 | /on
 |____________________________
 </blockquote>""", parse_mode="HTML")
-dù
 ### /like
 
 start_time = time.time()
