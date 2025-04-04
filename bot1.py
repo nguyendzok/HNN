@@ -266,11 +266,18 @@ def call_api(uid):
 def check_user_permission(message):
     user_id = message.from_user.id
     today_day = datetime.date.today().day
-    
+    key_path = f"./user/{today_day}/{user_id}.txt"
+
+    return os.path.exists(key_path)
+
+def handle_api_error(message, error_message):
+    bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
-    
+    if not check_user_permission(message):
+        bot.reply_to(message, "<blockquote>Bạn chưa nhập key! hãy /getkey hoặc /muavip ngay</blockquote>", parse_mode="HTML")
+        return
 
     args = message.text.split()
     if len(args) != 2:
