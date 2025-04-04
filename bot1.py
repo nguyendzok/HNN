@@ -103,95 +103,6 @@ vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 ####
 start_time = time.time()
 
-@bot.message_handler(commands=['muavip'])
-def muavip(message):
-    user = message.from_user
-
-    if message.chat.type != "private":
-        bot.send_message(message.chat.id, "Vui lòng nhắn riêng với bot để thực hiện lệnh này.\nBảng giá: 1 ngày VIP = 1,000 VND, tối đa 100 ngày = 100,000 VND.")
-        return
-
-    cooldown = check_command_cooldown(user.id, '/muavip', 5)  
-    if cooldown:
-        bot.send_message(message.chat.id, f"Vui lòng chờ {cooldown} giây trước khi thực hiện lại lệnh này.")
-        return
-
-    try:
-        so_tien = int(message.text.split()[1])
-
-        if so_tien < 5000 or so_tien > 100000 or so_tien % 1000 != 0:
-            bot.send_message(message.chat.id, "Số tiền không hợp lệ. Mỗi 1,000 VND tương ứng với 1 ngày VIP. Vui lòng nhập số tiền từ 5,000 đến 100,000 VND.")
-            return
-
-        full_name = user.first_name if user.first_name else "user"
-        letters = ''.join(random.choices(string.ascii_uppercase, k=5))
-        digits = ''.join(random.choices(string.digits, k=7))
-        random_str = letters + digits
-        noidung = f"{full_name} {random_str}"
-
-        message_text = (f"STK: `0123456890`\n"
-                        f"Ngân hàng: `MBBANK`\n"
-                        f"Chủ tài khoản: `TRAN NHAT HAO`\n\n"
-                        f"Vui lòng nạp {so_tien} VNĐ theo đúng nội dung\n"
-                        f"Nội Dung: `{noidung}`\n"
-                        f"Sau khi nạp hãy nhấn Xác Nhận\n")
-
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("Xác Nhận ✅", callback_data=f"vip:confirm_{so_tien}_{noidung}_{user.id}"))
-        markup.add(types.InlineKeyboardButton("Huỷ Bỏ ❌", callback_data=f"vip:cancel_{user.id}"))
-
-        bot.send_message(message.chat.id, message_text, reply_markup=markup, parse_mode='Markdown')
-
-    except (IndexError, ValueError):
-        bot.send_message(message.chat.id, "Vui lòng nhập số tiền cần nạp | Ví dụ: /muavip 100000")
-####zalo 0789041631..
-@bot.callback_query_handler(func=lambda call: True)
-def callback_query(call):
-    data = call.data
-    args = data.split("_")
-
-    if args[0] == "vip:confirm":
-        so_tien, noidung, user_id = args[1:]
-        admin_message = (f"Người mua VIP: {call.from_user.first_name} (ID: {user_id})\n"
-                         f"Số tiền: {so_tien} VNĐ\n"
-                         f"Nội dung: {noidung}\n"
-                         f"Thời gian nạp: {datetime.datetime.now(vietnam_tz).strftime('%H:%M:%S %d-%m-%Y')}")
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("Duyệt ✅", callback_data=f"vip:approve_{user_id}_{so_tien}"))
-        markup.add(types.InlineKeyboardButton("Từ Chối ❌", callback_data=f"vip:deny_{user_id}_{so_tien}"))
-
-        bot.send_message(chat_id=8167596347, text=admin_message, reply_markup=markup)
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id,
-                              text=f"Yêu cầu mua VIP đã được gửi đến quản trị viên 📤\nSố tiền: {so_tien} VNĐ\nNội dung: {noidung}\nNgày tạo đơn: {datetime.datetime.now(vietnam_tz).strftime('%H:%M:%S %d-%m-%Y')}")
-
-    elif args[0] == "vip:cancel":
-        user_id = args[1]
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text="Bạn đã huỷ bỏ yêu cầu mua VIP.")
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    elif args[0] == "vip:approve":
-        user_id, so_tien = args[1:]
-        so_ngay_vip = int(so_tien) // 1000
-        so_ngay_vip = min(so_ngay_vip, 100)  
-        expiration_time = datetime.datetime.now() + datetime.timedelta(days=so_ngay_vip)
-
-        connection = sqlite3.connect('user_data.db')
-        save_user_to_database(connection, int(user_id), expiration_time)
-        connection.close()
-
-        allowed_users.append(int(user_id))
-
-        bot.send_message(chat_id=user_id, text=f"Chúc mừng! Bạn đã trở thành VIP trong {so_ngay_vip} ngày đến {expiration_time.strftime('%Y-%m-%d %H:%M:%S')}.")
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"Đã duyệt yêu cầu VIP của ID {user_id}.")
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-    elif args[0] == "vip:deny":
-        user_id, so_tien = args[1:]
-        bot.send_message(chat_id=user_id, text="Yêu cầu VIP của bạn đã bị từ chối.")
-        bot.edit_message_text(chat_id=call.message.chat.id, message_id=call.message.message_id, text=f"Đã từ chối yêu cầu VIP của ID {user_id}.")
-        bot.delete_message(chat_id=call.message.chat.id, message_id=call.message.message_id)
-
-load_users_from_database()
 
 
 def fetch_data(user_id):
@@ -273,7 +184,7 @@ def send_help(message):
 | /getkey : lấy key 
 | /key : nhập key
 | /uptime : xem video gai xinh
-| /spam : spam số điện thoại
+| /spamvip : spam số điện thoại
 |—————————————————
                      Lệnh Admin
 |____________________________
@@ -327,9 +238,6 @@ def handle_api_error(message, error_message):
 def spam_vip_handler(message):
     user_id = message.from_user.id
     
-    if user_id not in allowed_users:
-        bot.reply_to(message, '⚠️ *Bạn chưa có quyền sử dụng lệnh này!* ⚠️\n💰 Hãy mua VIP để sử dụng\nNhắn /muavip riêng với bot @spamsmsvlong_bot.', parse_mode='Markdown')
-        return
     params = message.text.split()[1:]
     if len(params) != 2:
         bot.reply_to(message, "❌ *Sai cú pháp!*\n\n✅ Đúng: `/spamvip số_điện_thoại số_lần`", parse_mode='Markdown')
