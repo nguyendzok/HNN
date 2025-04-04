@@ -236,20 +236,7 @@ def handle_api_error(message, error_message):
 def supersms(message):
     user_id = message.from_user.id
     today_day = datetime.date.today().day
-    today_path = f"./user/{today_day}/{user_id}.txt"
-
-    if not os.path.exists(today_path):
-        bot.reply_to(message, 'Dùng /getkey Để Lấy Key Hoặc /muavip Và Dùng /key Để Nhập Key Hôm Nay!')
         return
-
-    current_time = time.time()
-
-    if user_id in user_last_command_time:
-        elapsed_time = current_time - user_last_command_time[user_id]
-        if elapsed_time < 50:  
-            remaining_time = 50 - elapsed_time
-            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
-            return
 
     params = message.text.split()[1:]
     if len(params) != 2:
