@@ -250,67 +250,49 @@ def uptime(message):
                      
 
 
+
 API_BASE_URL = "https://dichvukey.site/likeff.php"
 
 def call_api(uid):
     url = f"{API_BASE_URL}?uid={uid}"
     try:
-        response = requests.get(url, timeout=10)
-        print("API Response:", response.text)  # Debug phản hồi từ API
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
+        }
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException as e:
-        print("API Error:", str(e))  # In lỗi ra console
+    except requests.exceptions.RequestException:
         return {"status": "error", "message": "Server quá tải hoặc lỗi kết nối"}
-
-def check_user_permission(message):
-    user_id = message.from_user.id
-    today_day = datetime.date.today().day
-    key_path = f"./user/{today_day}/{user_id}.txt"
-
-    return os.path.exists(key_path)
-
-def handle_api_error(message, error_message):
-    bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
-    if not check_user_permission(message):
-        bot.reply_to(message, "<blockquote>Bạn chưa nhập key! hãy /getkey hoặc /muavip ngay</blockquote>", parse_mode="HTML")
-        return
-
     args = message.text.split()
     if len(args) != 2:
-        bot.reply_to(message, "<blockquote>/like 1733997441</blockquote>", parse_mode="HTML")
+        bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
         return
 
     uid = args[1]
     data = call_api(uid)
-    
-    if "message" in data:
-        msg_content = data["message"]
-        if isinstance(msg_content, str):
-            reply_text = f"<blockquote>⚠️ {msg_content}</blockquote>"
-        elif isinstance(msg_content, dict):
-            reply_text = (
-                f"<blockquote>\n"
-                f"🎯 <b>Kết quả buff like:</b>\n"
-                f"👤 <b>Tên:</b> {msg_content.get('username', 'Không xác định')}\n"
-                f"🆔 <b>UID:</b> {msg_content.get('uid', 'Không xác định')}\n"
-                f"🌎 <b>Khu vực:</b> {msg_content.get('Region', 'Không xác định')}\n"
-                f"📊 <b>Level:</b> {msg_content.get('level', 'Không xác định')}\n"
-                f"👍 <b>Like trước:</b> {msg_content.get('likes_before', 'Không xác định')}\n"
-                f"✅ <b>Like sau:</b> {msg_content.get('likes_after', 'Không xác định')}\n"
-                f"➕ <b>Tổng cộng:</b> {msg_content.get('likes_given', 'Không xác định')} like\n"
-                f"</blockquote>"
-            )
-        else:
-            reply_text = "<blockquote>Không đúng định dạng</blockquote>"
 
-        bot.reply_to(message, reply_text, parse_mode="HTML")
-    else:
-        handle_api_error(message, "Đang lỗi hãy báo admin.")
+    # Kiểm tra API có trả về lỗi không
+    if "error" in data:
+        bot.reply_to(message, f"<blockquote>❌ {data['error']}</blockquote>", parse_mode="HTML")
+        return
 
+    # Nếu API trả về thông tin hợp lệ
+    reply_text = (
+        f"<blockquote>\n"
+        f"🎯 <b>Kết quả buff like:</b>\n"
+        f"👤 <b>Tên:</b> {data.get('username', 'Không xác định')}\n"
+        f"🆔 <b>UID:</b> {data.get('uid', 'Không xác định')}\n"
+        f"👍 <b>Like trước:</b> {data.get('likes_before', 'Không xác định')}\n"
+        f"✅ <b>Like sau:</b> {data.get('likes_after', 'Không xác định')}\n"
+        f"➕ <b>Tổng cộng:</b> {data.get('likes_given', 'Không xác định')} like\n"
+        f"</blockquote>"
+    )
+
+    bot.reply_to(message, reply_text, parse_mode="HTML")
 
     
 @bot.message_handler(commands=['spam'])
