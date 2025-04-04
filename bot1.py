@@ -232,48 +232,61 @@ def handle_api_error(message, error_message):
     bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
 ####zalo 0789041631
 ### /like
-@bot.message_handler(commands=['spam'])
-def supersms(message):
-    user_id = message.from_user.id
-    today_day = datetime.date.today().day
 
+@bot.message_handler(commands=['spam'])
+def spam_vip_handler(message):
+    user_id = message.from_user.id
+    
+    if user_id not in allowed_users:
+        bot.reply_to(message, '⚠️ *Bạn chưa có quyền sử dụng lệnh này!* ⚠️\n💰 Hãy mua VIP để sử dụng\nNhắn /muavip riêng với bot @spamsmsvlong_bot.', parse_mode='Markdown')
+        return
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "/spam sdt số_lần max 10")
+        bot.reply_to(message, "❌ *Sai cú pháp!*\n\n✅ Đúng: `/spamvip số_điện_thoại số_lần`", parse_mode='Markdown')
         return
 
     sdt, count = params
 
-    if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+    if not count.isdigit() or int(count) <= 0:
+        bot.reply_to(message, "⚠️ *Số lần spam không hợp lệ!*\n🔢 Vui lòng nhập một số dương.", parse_mode='Markdown')
         return
 
     count = int(count)
 
-    if count > 15:
-        bot.reply_to(message, "/spam sdt số_lần tối đa là 15")
+    if count > 50:
+        bot.reply_to(message, "⚠️ *Giới hạn spam!*\n⏳ Tối đa là 50 lần mỗi lệnh.", parse_mode='Markdown')
         return
 
     if sdt in blacklist:
-        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        bot.reply_to(message, f"🚫 *Số điện thoại {sdt} đã bị cấm spam!* 🚫", parse_mode='Markdown')
         return
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
+    current_time = time.time()
+    if user_id in last_usage:
+        elapsed_time = current_time - last_usage[user_id]
+        if elapsed_time < 100:
+            remaining_time = 100 - elapsed_time
+            bot.reply_to(message, f"⏳ *Hãy chờ {remaining_time:.1f} giây trước khi dùng lại!*", parse_mode='Markdown')
+            return
 
-    diggory_chat3 = f'''┌──────⭓ {name_bot}
-│ Spam: Thành Công 
-│ Người dùng: {message.from_user.username}
-│ Số Lần Spam: {count}
-│ Đang Tấn Công: {sdt}
-└─────────────'''
+    last_usage[user_id] = current_time
+
+    message_content = f"""
+🎯 *Spam Thành Công!* 🎯
+📌 Người dùng: @{message.from_user.username}
+📲 Số điện thoại: `{sdt}`
+🔢 Số lần spam: `{count}`
+⚠️ Lưu ý: Spam 50 lần mất khoảng 15 phút để hoàn tất.
+💎 Gói VIP giúp bạn spam hiệu quả hơn!
+    """
 
     script_filename = "dec.py"
 
     try:
         if not os.path.isfile(script_filename):
-            bot.reply_to(message, "Không tìm thấy file.")
+            bot.reply_to(message, "Lỗi!", parse_mode='Markdown')
             return
-
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
             with open(script_filename, 'r', encoding='utf-8') as file:
                 temp_file.write(file.read().encode('utf-8'))
@@ -281,21 +294,13 @@ def supersms(message):
 
         subprocess.Popen(["python", temp_file_path, sdt, str(count)])
 
-        bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
-            parse_mode='HTML'
-        )
+        bot.send_message(message.chat.id, message_content, parse_mode='Markdown')
 
         requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
-        user_last_command_time[user_id] = time.time()
 
     except Exception as e:
         print(f'Lỗi')
-        
-        
-last_usage = {}
-blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
+
 
 start_time = time.time()
 
