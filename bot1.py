@@ -14,6 +14,8 @@ import re
 import string
 import os
 from flask import Flask, request
+from telegram import Update, Sticker
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 from threading import Lock
 import requests
 import sqlite3
@@ -96,6 +98,16 @@ def save_user_to_database(connection, user_id, expiration_time):
 ###
 
 vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+
+STICKERS = [
+    "CAACAgIAAxkBAAEBXYZkX1...",  # Sticker",  # Sticker Cười 😂
+    "CAACAgIAAxkBAAEBXYZkX3...",  # Sticker Love ❤️
+]
+
+def send_random_sticker(update: Update, context: CallbackContext):
+    """Bot sẽ gửi sticker ngẫu nhiên khi nhận tin nhắn từ người dùng"""
+    sticker_id = random.choice(STICKERS)  # Chọn sticker ngẫu nhiên
+    update.message.reply_sticker(sticker_id)
 
 
 ###
