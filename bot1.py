@@ -255,10 +255,6 @@ def spam_vip_handler(message):
         bot.reply_to(message, "⚠️ *Giới hạn spam!*\n⏳ Tối đa là 50 lần mỗi lệnh.", parse_mode='Markdown')
         return
 
-    if sdt in blacklist:
-        bot.reply_to(message, f"🚫 *Số điện thoại {sdt} đã bị cấm spam!* 🚫", parse_mode='Markdown')
-        return
-
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
     current_time = time.time()
     if user_id in last_usage:
