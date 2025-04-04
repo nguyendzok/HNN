@@ -301,6 +301,12 @@ def spam(message):
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+        
+        bot.send_message(
+            message.chat.id,
+            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
+            parse_mode='HTML'
+        )
 
 
 
