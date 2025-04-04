@@ -309,8 +309,15 @@ def spam(message):
         )
 
 
+     requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
+        user_last_command_time[user_id] = time.time()
 
-blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
+    except Exception as e:
+        print(f'Lỗi')
+        
+        
+last_usage = {}
+blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
 
  
 start_time = time.time()
