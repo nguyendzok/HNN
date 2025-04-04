@@ -233,27 +233,27 @@ def handle_api_error(message, error_message):
 ####zalo 0789041631
 ### /like
 @bot.message_handler(commands=['spam'])
-def spam(message):
+def supersms(message):
     user_id = message.from_user.id
+    today_day = datetime.date.today().day
+    today_path = f"./user/{today_day}/{user_id}.txt"
+
+    if not os.path.exists(today_path):
+        bot.reply_to(message, 'Dùng /getkey Để Lấy Key Hoặc /muavip Và Dùng /key Để Nhập Key Hôm Nay!')
+        return
+
     current_time = time.time()
-    if not bot_active:
-        msg = bot.reply_to(message, 'Bot hiện đang tắt.')
-        time.sleep(10)
-        try:
-            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        except telebot.apihelper.ApiTelegramException as e:
-            print(f"Error deleting message: {e}")
-        return
-    if user_id in last_usage and current_time - last_usage[user_id] < 50:
-        bot.reply_to(message, f"Vui lòng đợi {50 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
-        return
 
-    last_usage[user_id] = current_time
+    if user_id in user_last_command_time:
+        elapsed_time = current_time - user_last_command_time[user_id]
+        if elapsed_time < 50:  
+            remaining_time = 50 - elapsed_time
+            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
+            return
 
-    # Phân tích cú pháp lệnh
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "/spam sdt số_lần như này cơ mà - vì lý do server treo bot hơi cùi nên đợi 100giây nữa dùng lại nhé")
+        bot.reply_to(message, "/spam sdt số_lần max 10")
         return
 
     sdt, count = params
@@ -264,13 +264,15 @@ def spam(message):
 
     count = int(count)
 
-    if count > 20:
-        bot.reply_to(message, "/spam sdt số_lần tối đa là 20 - đợi 100giây sử dụng lại.")
+    if count > 15:
+        bot.reply_to(message, "/spam sdt số_lần tối đa là 15")
         return
 
     if sdt in blacklist:
         bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
+
+    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 │ Spam: Thành Công 
@@ -278,42 +280,37 @@ def spam(message):
 │ Số Lần Spam: {count}
 │ Đang Tấn Công: {sdt}
 └─────────────'''
-    script_filename = "dec.py"  # Tên file Python trong cùng thư mục
+
+    script_filename = "dec.py"
+
     try:
-        # Kiểm tra xem file có tồn tại không
         if not os.path.isfile(script_filename):
-            bot.reply_to(message, "Không tìm thấy file script. Vui lòng kiểm tra lại.")
+            bot.reply_to(message, "Không tìm thấy file.")
             return
 
-        # Đọc nội dung file với mã hóa utf-8
-        with open(script_filename, 'r', encoding='utf-8') as file:
-            script_content = file.read()
-
-        # Tạo file tạm thời
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            temp_file.write(script_content.encode('utf-8'))
+            with open(script_filename, 'r', encoding='utf-8') as file:
+                temp_file.write(file.read().encode('utf-8'))
             temp_file_path = temp_file.name
 
-        # Chạy file tạm thời
-        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        bot.send_message(message.chat.id, diggory_chat3)
-    except FileNotFoundError:
-        bot.reply_to(message, "Không tìm thấy file.")
-    except Exception as e:
-        bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
-        
+        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+
         bot.send_message(
             message.chat.id,
             f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
             parse_mode='HTML'
         )
 
+        requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
+        user_last_command_time[user_id] = time.time()
+
+    except Exception as e:
+        print(f'Lỗi')
         
         
 last_usage = {}
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
 
- 
 start_time = time.time()
 
 # Biến để tính toán FPS
