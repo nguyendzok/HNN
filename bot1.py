@@ -307,36 +307,7 @@ def handle_code_command(message):
             except Exception as e:
                 bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
 
-
-API_BASE_URL = "https://free-fire-visit.vercel.app/send_visit?uid={uid}"
-@bot.message_handler(commands=['visit'])
-def visit_handler(message):
-
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "<blockquote>/visit 1733997441</blockquote>", parse_mode="HTML")
-        return
-
-    uid = args[1]
-    data = call_api("visit", {"key": VIP_KEY, "uid": uid, "sl": 50})
-
-    if data.get("status") == "Success":
-        info = data["message"]
-            f"✅ <b>Thành công</b>\n"
-            f"🎮 Name: <code>{info[name']}</code>\n"
-            f"🆔 Level: <b>{info['level']}</b>\n"
-            f"📊 Successful: <code>{info['success']}</code>\n"
-            f"❌ Failed: <code>{info['tokens_used']}</code>\n"
-            f"⏱️ Time: <code>{info['total_time_takes']}</code>\n"
-            f"⚡ Speed: <code>{info['total_views_sent']}</code>\n"
-            f"</blockquote>"
-        
-    else:
-        reply_text = f"<blockquote>❌ API báo lỗi: {data.get('message', 'Không rõ nguyên nhân')}</blockquote>"
-
-    bot.reply_to(message, reply_text, parse_mode="HTML")
-
-
+                
 
 
 @bot.message_handler(commands=['like'])
