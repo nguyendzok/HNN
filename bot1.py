@@ -358,23 +358,6 @@ def uptime(message):
                      
 
 
-@bot.message_handler(commands=['themvip'])
-def them(message):
-    user_id = message.from_user.id
-    if str(user_id) != ADMIN_ID:
-        bot.reply_to(message, 'Làm Cái Trò Gì Zậy😀')
-        return
-    try:
-        idvip = message.text.split()[1]
-        ngay = message.text.split()[2]
-        hethan = message.text.split()[3]
-        with open(f"./vip/{idvip}.txt", "w") as fii:
-            fii.write(f"{ngay}|{hethan}")
-        bot.reply_to(message, f'Thêm Thành Công {idvip} Làm Vip')
-    except IndexError:
-        bot.reply_to(message, 'Vui lòng cung cấp đủ thông tin: /themvip <idvip> <ngay> <hethan>')
-
-
     API_LIKE_URL = "https://dichvukey.site/addlike.php?uid={}"  # API tăng like UID FF
 
 def add_like(uid):
