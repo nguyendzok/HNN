@@ -184,117 +184,18 @@ def send_help(message):
 | /getkey : lấy key 
 | /key : nhập key
 | /uptime : xem video gai xinh
-| /spam : spam số điện thoại
-|—————————————————
+| /vist : buff view 
+| /code : lấy code wed
+| /flo : buff flo tiktok
+|—————————————————-----------
                      Lệnh Admin
 |____________________________
-| /muavip
+| /off
+| /on
 |____________________________
 </blockquote>""", parse_mode="HTML")
 
-API_BASE_URL = "https://freefire-virusteam.vercel.app"
-
-def get_vip_key():
-    try:
-        response = requests.get("https://dichvukey.site/keyvip.txt", timeout=5)
-        response.raise_for_status()
-        return response.text.strip()
-    except requests.exceptions.RequestException:
-        return "default-key"  
-
-VIP_KEY = get_vip_key()
-
-region_translation = {
-    "VN": "Việt Nam", "ID": "Indonesia", "TH": "Thái Lan",
-    "SG": "Singapore", "TW": "Đài Loan", "EU": "Châu Âu",
-    "US": "Hoa Kỳ", "BR": "Brazil", "MX": "Mexico",
-    "IN": "Ấn Độ", "KR": "Hàn Quốc", "PK": "Pakistan",
-    "BD": "Bangladesh", "RU": "Nga", "MENA": "Trung Đông & Bắc Phi",
-    "LA": "Châu Mỹ Latinh"
-}
-
-def call_api(endpoint, params=None):
-    url = f"{API_BASE_URL}/{endpoint}"
-    try:
-        response = requests.get(url, params=params, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.RequestException:
-        return {"status": "error", "message": "Sever quá tải hoặc lỗi kết nối"}
-
-def check_user_permission(message):
-    user_id = message.from_user.id
-    today_day = datetime.date.today().day
-    key_path = f"./user/{today_day}/{user_id}.txt"
-
-    return user_id in allowed_users or os.path.exists(key_path)
-
-def handle_api_error(message, error_message):
-    bot.reply_to(message, f"<blockquote>❌ {error_message}</blockquote>", parse_mode="HTML")
-####zalo 0789041631
 ### /like
-
-@bot.message_handler(commands=['spam'])
-def spam_vip_handler(message):
-    user_id = message.from_user.id
-    
-    params = message.text.split()[1:]
-    if len(params) != 2:
-        bot.reply_to(message, "❌ *Sai cú pháp!*\n\n✅ Đúng: `/spam số_điện_thoại số_lần`", parse_mode='Markdown')
-        return
-
-    sdt, count = params
-
-    if not count.isdigit() or int(count) <= 0:
-        bot.reply_to(message, "⚠️ *Số lần spam không hợp lệ!*\n🔢 Vui lòng nhập một số dương.", parse_mode='Markdown')
-        return
-
-    count = int(count)
-
-    if count > 50:
-        bot.reply_to(message, "⚠️ *Giới hạn spam!*\n⏳ Tối đa là 50 lần mỗi lệnh.", parse_mode='Markdown')
-        return
-
-    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
-    current_time = time.time()
-    if user_id in last_usage:
-        elapsed_time = current_time - last_usage[user_id]
-        if elapsed_time < 100:
-            remaining_time = 100 - elapsed_time
-            bot.reply_to(message, f"⏳ *Hãy chờ {remaining_time:.1f} giây trước khi dùng lại!*", parse_mode='Markdown')
-            return
-
-    last_usage[user_id] = current_time
-
-    message_content = f"""
-🎯 *Spam Thành Công!* 🎯
-📌 Người dùng: @{message.from_user.username}
-📲 Số điện thoại: `{sdt}`
-🔢 Số lần spam: `{count}`
-⚠️ Lưu ý: Spam 50 lần mất khoảng 15 phút để hoàn tất.
-💎 Gói VIP giúp bạn spam hiệu quả hơn!
-    """
-
-    script_filename = "dec.py"
-
-    try:
-        if not os.path.isfile(script_filename):
-            bot.reply_to(message, "Lỗi!", parse_mode='Markdown')
-            return
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            with open(script_filename, 'r', encoding='utf-8') as file:
-                temp_file.write(file.read().encode('utf-8'))
-            temp_file_path = temp_file.name
-
-        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-
-        bot.send_message(message.chat.id, message_content, parse_mode='Markdown')
-
-        requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
-
-    except Exception as e:
-        print(f'Lỗi')
-
 
 start_time = time.time()
 
