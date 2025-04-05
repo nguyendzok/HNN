@@ -175,8 +175,8 @@ Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
 @bot.message_handler(commands=['help'])
 def send_help(message):
     bot.reply_to(message, """<blockquote>
-┌───────────⭓ Trần Hào
-| Xin Chào {message.from_user.username}
+┌─────⭓ Trần Hào
+| Xin Chào @None
 | /help : lệnh trợ giúp
 | /voice : chuyển đổi văn bản thành giọng nói
 | /time : kiểm tra thời gian bot hoạt động
@@ -187,7 +187,7 @@ def send_help(message):
 | /code : lấy code wed
 | /fl : buff flo tiktok
 | /spam : spam số điện thoại
-| /chat : lấy id nhóm
+| /id : lấy id nhóm
 | /ask : hỏi gamini
 | /spamvip : spam vip max 100
 |____________________________
@@ -236,7 +236,49 @@ def like_handler(message):
 
     bot.reply_to(message, reply_text, parse_mode="HTML")
 
+
+@bot.message_handler(commands=['voice'])
+def text_to_voice(message):
+    text = message.text[7:].strip()  
+    if not text:
+        bot.reply_to(message, 'Nhập nội dung đi VD : /voice em đẹp trai')
+        return
+
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
+            tts = gTTS(text, lang='vi')
+            tts.save(temp_file.name)
+            temp_file_path = temp_file.name  
+       
+        with open(temp_file_path, 'rb') as f:
+            bot.send_voice(message.chat.id, f, reply_to_message_id=message.message_id)
     
+    except Exception as e:
+        bot.reply_to(message, f'Đã xảy ra lỗi: {e}')
+    
+    finally:
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
+
+@bot.message_handler(commands=['id', 'ID'])
+def handle_id_command(message):
+    if message.reply_to_message:  
+        user_id = message.reply_to_message.from_user.id
+        first_name = message.reply_to_message.from_user.first_name
+        bot.reply_to(message, f"ID của {first_name} là: `{user_id}`", parse_mode='Markdown')
+    elif len(message.text.split()) == 1:
+        if message.chat.type in ["group", "supergroup"]:
+            chat_id = message.chat.id
+            chat_title = message.chat.title
+            bot.reply_to(message, f"ID của nhóm này là: `{chat_id}`\nTên nhóm: {chat_title}", parse_mode='Markdown')
+        else:
+            user_id = message.from_user.id
+            first_name = message.from_user.first_name
+            bot.reply_to(message, f"ID của bạn là: `{user_id}`\nTên: {first_name}", parse_mode='Markdown')
+   
+
+
 @bot.message_handler(commands=['spam'])
 def spam(message):
     user_id = message.from_user.id
