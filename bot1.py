@@ -395,6 +395,32 @@ def spam(message):
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
 
 
+API_BASE_URL = "https://api.ffcommunity.site/isbanned.php?uid={uid}"
+@bot.message_handler(commands=['band'])
+def check_ban_status(message):
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "<blockquote>/band 10251125</blockquote>", parse_mode="HTML")
+        return
+
+    uid = args[1]
+    data = call_api("isbanned", {"uid": uid})
+
+    if data.get("status") == "Success":
+        info = data["Check Is Banned Account"]
+        reply_text = (
+            f"<blockquote>\n"
+            f"🔍 <b>Kết quả kiểm tra:</b>\n"
+            f"🆔 UID: {info['Account UID']}\n"
+            f"👤 Tên: {info['Account Name']}\n"
+            f"🌍 Khu vực: {info['Account Region']}\n"
+            f"🚫 Trạng thái: {'Không bị khóa' if info['Status'] == 'Account is not banned.' else 'Đã bị khóa!'}\n"
+            f"</blockquote>"
+        )
+    else:
+        reply_text = "<blockquote>sever đang quá tải báo admin ngay</blockquote>"
+
+    bot.reply_to(message, reply_text, parse_mode="HTML")
 
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
