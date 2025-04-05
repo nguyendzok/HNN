@@ -337,8 +337,8 @@ def spam(message):
         bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
-    diggory_chat3 = f'''
-┌──────⭓ {name_bot}
+    
+    diggory_chat3 = f'''┌──────⭓ {name_bot}
 │✅ Spam: Thành Công 
 │🔢 Số Lần Spam Free: {count}
 │📞 Đã Tấn Công : {sdt}
