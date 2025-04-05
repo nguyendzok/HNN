@@ -172,17 +172,17 @@ def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌─────⭓ Trần Hào
 | Xin Chào @None
-| /help : lệnh trợ giúp
-| /voice : chuyển đổi văn bản thành giọng nói
-| /time : kiểm tra thời gian bot hoạt động
-| /ff : check acc xem thông tin 
-| /tv : chuyển đổi ngôn ngữ 
-| /vist : buff view 
-| /like : buff like ff
-| /fl : buff flo tiktok
-| /spam : spam số điện thoại
-| /id : lấy id bản thân
-| /hoi : hỏi gamini
+|»/help : lệnh trợ giúp
+|»/voice : chuyển đổi văn bản thành giọng nói
+|»/time : kiểm tra thời gian bot hoạt động
+|»/ff : check acc xem thông tin 
+|»/tv : chuyển đổi ngôn ngữ 
+|»/vist : buff view 
+|»/like : buff like ff
+|»/fl : buff flo tiktok
+|»/spam : spam số điện thoại
+|»/id : lấy id bản thân
+|»/hoi : hỏi gamini
 |____________________________
 </blockquote>""", parse_mode="HTML")
 ### /like
