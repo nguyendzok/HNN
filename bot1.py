@@ -337,11 +337,7 @@ def spam(message):
         bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
-    bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
-            parse_mode='HTML'
-        )
+
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 │✅ Spam: Thành Công 
 │🔢 Số Lần Spam Free: {count}
@@ -352,6 +348,11 @@ def spam(message):
 └─────────────
     '''
 
+         bot.send_message(
+            message.chat.id,
+            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
+            parse_mode='HTML'
+        )
     script_filename = "dec.py"  # Tên file Python trong cùng thư mục
     try:
         # Kiểm tra xem file có tồn tại không
