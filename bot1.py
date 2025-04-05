@@ -190,6 +190,7 @@ def send_help(message):
 »/tiktokinfo : xem thông tin tiktok
 └───Contact
 » /admin : Liên Hệ ADMIN
+»/status
 └───⧕
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -302,6 +303,14 @@ def handle_id_command(message):
             first_name = message.from_user.first_name
             bot.reply_to(message, f"ID của bạn là: `{user_id}`\nTên: {first_name}", parse_mode='Markdown')
    
+@bot.message_handler(commands=['status'])
+def status(message):
+    user_id = message.from_user.id
+    if str(user_id) != ADMIN_ID:
+        bot.reply_to(message, 'Làm Cái Trò Gì Zậy😀')
+        return
+    process_count = len(processes)
+    bot.reply_to(message, f'Số quy trình đang chạy: {process_count}.')
 
 
 @bot.message_handler(commands=['spam'])
