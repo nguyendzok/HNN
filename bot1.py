@@ -171,27 +171,26 @@ Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
 def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌───⭓ Trần Hào
-» /spam : Spam + Call FREE
-» /status : SĐT Đang Spam
-» /stop : Dừng Spam SĐT
-» /key : Nhập Key Đã Mua
-» /muavip : Mua VIP           
-» /checkme : Check VIP
-» /warning : Lưu Ý Khi Spam
-»/tv : Tiếng việt cho telegram
+➤ /spam : Spam + Call FREE
+➤ /status : SĐT Đang Spam
+➤ /stop : Dừng Spam SĐT
+➤ /key : Nhập Key Đã Mua
+➤ /muavip : Mua VIP           
+➤ /checkme : Check VIP
+➤ /warning : Lưu Ý Khi Spam
+➤ /tv : Tiếng việt cho telegram
 └───Tiện Ích Khác
-»/like : Buff Like FF
-»/ff : xem thông tin
-»/visit : Buff View FF
-»/fltik : Buff Follow Tiktok
-»/voice : Chuyển văn bản thành giọng nói 
-»/hoi : hỏi gamini 
-»/band : Kiểm tra tài khoản có khóa không
-»/tiktokinfo : xem thông tin tiktok
+➤ /like : Buff Like FF
+➤ /ff : xem thông tin
+➤ /visit : Buff View FF
+➤ /fltik : Buff Follow Tiktok
+➤ /voice : Chuyển văn bản thành giọng nói 
+➤ /hoi : hỏi gamini 
+➤ /band : Kiểm tra tài khoản có khóa không
+➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
-» /admin : Liên Hệ ADMIN
-»/status
-└───⧕
+➤ /admin : Liên Hệ admin
+└───
 </blockquote>""", parse_mode="HTML")
 ### /like
 API_BASE_URL = "https://dichvukey.site/likeff.php"
@@ -358,13 +357,14 @@ def spam(message):
 
 
     diggory_chat3 = f'''┌──────⭓ {name_bot}
-│✅ Spam: Thành Công 
-│🔢 Số Lần Spam Free: {count}
-│📞 Đã Tấn Công : {sdt}
-│🌍 Vùng : Việt Nam
-|🎭 Người Dùng : @None
-|🆔 ID Người Dùng : {user_id}
-│⚠️ Hạn Chế Spam Nhé!
+✅ Sᴘᴀᴍ : Thành Công 
+🔢 Số Lần Sᴘᴀᴍ : {count}
+📞 Đã Tấn Công : {sdt}
+📵 Dừng Sᴘᴀᴍ [/stop {sdt}]
+🌍 Vùng : Việt Nam
+🎭 Người Dùng : @{message.from_user.username}
+🆔 ⵊD Người Dùng : {user_id}
+⚠️ Hạn Chế Spam Nhé!
 └─────────────
     '''
 
