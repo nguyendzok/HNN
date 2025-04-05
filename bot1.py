@@ -172,11 +172,11 @@ Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
         bot.reply_to(message, "<blockquote>Đã xảy ra lỗi</blockquote>", parse_mode="HTML")
 
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help','start'])
 def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌─────⭓ Trần Hào
-| Xin Chào @None
+| Xin Chào @{username}
 | /help : lệnh trợ giúp
 | /voice : chuyển đổi văn bản thành giọng nói
 | /time : kiểm tra thời gian bot hoạt động
@@ -353,7 +353,7 @@ def spam(message):
 │🔢 Số Lần Spam Free: {count}
 │📞 Đã Tấn Công : {sdt}
 │🌍 Vùng : Việt Nam
-|🎭 Người Dùng : {message.from_user.username}
+|🎭 Người Dùng : @{username}
 │⚠️ Hạn Chế Spam Nhé!
 └─────────────
     '''
