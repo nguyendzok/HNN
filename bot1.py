@@ -337,13 +337,14 @@ def spam(message):
         bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
-    
+    bot.reply_to(message, reply_text, parse_mode="HTML")
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 │✅ Spam: Thành Công 
 │🔢 Số Lần Spam Free: {count}
 │📞 Đã Tấn Công : {sdt}
 │🌍 Vùng : Việt Nam
 |🎭 Người Dùng : {message.from_user.username}
+|💸 Gói Dùng : Free
 │⚠️ Hạn Chế Spam Nhé!
 └─────────────
     '''
@@ -372,13 +373,7 @@ def spam(message):
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
       
-        bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
-            parse_mode='HTML'
-        )
-
-
+        
 
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
 
