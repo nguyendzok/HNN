@@ -36,6 +36,7 @@ print("Bot đã được khởi động thành công")
 users_keys = {}
 key = ""
 user_cooldown = {}
+active_processes = {}
 last_usage = {} 
 share_log = []
 auto_spam_active = False
@@ -413,7 +414,7 @@ def spam(message):
 
         # Chạy script spam
         process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-
+        active_processes[sdt] = process
         # Gửi kết quả spam
         sent_msg = bot.send_message(
             message.chat.id,
@@ -423,7 +424,7 @@ def spam(message):
 
         threading.Thread(
         target=lambda: (
-        time.sleep(3),
+        time.sleep(0),
         bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     )
 ).start()
@@ -437,6 +438,24 @@ def spam(message):
 
 
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
+
+
+@bot.message_handler(commands=['stop'])
+def stop_spam(message):
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "Dùng đúng cú pháp: /stop 098xxxxxxx")
+        return
+
+    sdt = args[1]
+    process = active_processes.get(sdt)
+
+    if process:
+        process.terminate()  # Dừng tiến trình
+        del active_processes[sdt]  # Xóa khỏi danh sách
+        bot.reply_to(message, f"⛔️ Đã dừng spam số {sdt}")
+    else:
+        bot.reply_to(message, f"Không tìm thấy tiến trình spam với số {sdt}. Có thể đã hoàn thành hoặc sai số.")
 
 
 API_BASE_URL = "https://api.ffcommunity.site/isbanned.php?uid={uid}"
