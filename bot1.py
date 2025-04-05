@@ -240,11 +240,11 @@ def uptime(message):
         video_link = 'Không thể lấy video'
 
     # Tạo và gửi tin nhắn
-    bot.send_message(message.chat.id, "<blockquote>/
+    bot.send_message(message.chat.id, """<blockquote>\
                      📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
                      🎮 FPS trung bình: {fps} FPS\n"
                      Không thể lấy thông tin cấu hình.\n"
-                     🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_link}</blockquote>", parse_mode="HTML")
+                     🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_link}</blockquote>""", parse_mode="HTML")
                      
 
 
