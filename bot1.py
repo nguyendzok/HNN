@@ -191,6 +191,8 @@ def send_help(message):
 ➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
+➤ /nhapkey : nhập để sử dụng lệnh
+➤ /taokey : tạo key 
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -208,9 +210,103 @@ def call_api(uid):
     except requests.exceptions.RequestException:
         return {"status": "error", "message": "Server quá tải hoặc lỗi kết nối"}
 
+
+VALID_USERS_FILE = "valid_users.txt"
+KEYS_FILE = "keys.txt"
+
+# Tạo key ngẫu nhiên
+def generate_key(length=10):
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+
+# Lưu key mới vào file
+def save_key(key, days):
+    expiry_date = datetime.now() + timedelta(days=days)
+    with open(KEYS_FILE, "a") as f:
+        f.write(f"{key}|{expiry_date.strftime('%Y-%m-%d')}\n")
+
+# Load key từ file: {key: expiry_date}
+def load_keys():
+    if not os.path.exists(KEYS_FILE):
+        return {}
+    keys = {}
+    with open(KEYS_FILE, "r") as f:
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) == 2:
+                key, expiry = parts
+                keys[key] = datetime.strptime(expiry, "%Y-%m-%d")
+    return keys
+
+# Load user đã nhập key
+def load_valid_users():
+    if not os.path.exists(VALID_USERS_FILE):
+        return {}
+    users = {}
+    with open(VALID_USERS_FILE, "r") as f:
+        for line in f:
+            parts = line.strip().split("|")
+            if len(parts) == 2:
+                uid = int(parts[0])
+                expiry = datetime.strptime(parts[1], "%Y-%m-%d")
+                users[uid] = expiry
+    return users
+
+# Lưu user đã dùng key
+def save_valid_user(user_id, expiry_date):
+    users = load_valid_users()
+    users[user_id] = expiry_date
+    with open(VALID_USERS_FILE, "w") as f:
+        for uid, exp in users.items():
+            f.write(f"{uid}|{exp.strftime('%Y-%m-%d')}\n")
+
+# /taokey <số ngày>
+@app.on_message(filters.command("taokey"))
+def taokey(client, message):
+    if message.from_user.id != ADMIN_ID:
+        return message.reply("🚫 Bạn không có quyền dùng lệnh này.")
+
+    args = message.text.split()
+    if len(args) != 2 or not args[1].isdigit():
+        return message.reply("❗ Dùng đúng: /taokey <số ngày>")
+
+    days = int(args[1])
+    new_key = generate_key()
+    save_key(new_key, days)
+
+    message.reply(f"✅ Đã tạo key: `{new_key}`\n📅 Hạn dùng: {days} ngày")
+
+# /nhapkey <key>
+@app.on_message(filters.command("nhapkey"))
+def nhap_key(client, message):
+    args = message.text.split(" ", 1)
+    if len(args) < 2:
+        return message.reply("❗ Dùng đúng: /nhapkey <key>")
+
+    key_input = args[1].strip()
+    keys = load_keys()
+    if key_input not in keys:
+        return message.reply("❌ Key không tồn tại hoặc đã hết hạn.")
+
+    expiry_date = keys[key_input]
+    if datetime.now() > expiry_date:
+        return message.reply("⌛ Key này đã hết hạn.")
+
+    save_valid_user(message.from_user.id, expiry_date)
+    message.reply("✅ Key hợp lệ! Bạn đã được cấp quyền sử dụng.")
+
 @bot.message_handler(commands=['like'])
 def like_handler(message):
+    users = load_valid_users()
+    user_id = message.from_user.id
     args = message.text.split()
+    if user_id not in users:
+        return message.reply("🚫 Bạn chưa nhập key. Dùng /nhapkey <key của bạn>.")
+
+    if datetime.now() > users[user_id]:
+        return message.reply("⌛ Key của bạn đã hết hạn. Vui lòng dùng key mới.")
+
+    message.reply("💥 Bạn đã dùng lệnh VIP thành công!")
+    
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
         return
@@ -324,8 +420,18 @@ def detect_carrier(phone_number: str) -> str:
 @bot.message_handler(commands=['spam'])
 def spam(message):
     user_id = message.from_user.id
+    users = load_valid_users()
     current_time = time.time()
 
+    if user_id not in users:
+        return message.reply("🚫 Bạn chưa nhập key. Dùng /nhapkey <key của bạn>.")
+
+    if datetime.now() > users[user_id]:
+        return message.reply("⌛ Key của bạn đã hết hạn. Vui lòng dùng key mới.")
+
+    message.reply("💥 Bạn đã dùng lệnh VIP thành công!")
+
+    
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
         time.sleep(10)
