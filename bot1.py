@@ -188,7 +188,7 @@ def send_help(message):
 »/fltik : Buff Follow Tiktok
 »/voice : Chuyển văn bản thành giọng nói 
 »/hoi : hỏi gamini 
-»/checkban : Kiểm tra tài khoản có khóa không
+»/band : Kiểm tra tài khoản có khóa không
 └───⧕
 
 ┌───⭓ Contact
