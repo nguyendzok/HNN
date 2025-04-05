@@ -170,20 +170,30 @@ Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
 @bot.message_handler(commands=['help','start'])
 def send_help(message):
     bot.reply_to(message, """<blockquote>
-┌─────⭓ Trần Hào
-| Xin Chào @None
-|»/help : lệnh trợ giúp
-|»/voice : chuyển đổi văn bản thành giọng nói
-|»/time : kiểm tra thời gian bot hoạt động
-|»/ff : check acc xem thông tin 
-|»/tv : chuyển đổi ngôn ngữ 
-|»/vist : buff view 
-|»/like : buff like ff
-|»/fl : buff flo tiktok
-|»/spam : spam số điện thoại
-|»/id : lấy id bản thân
-|»/hoi : hỏi gamini
-|____________________________
+┌───⭓ Trần Hào
+» /spam : Spam + Call FREE
+» /status : SĐT Đang Spam
+» /stop : Dừng Spam SĐT
+» /key : Nhập Key Đã Mua
+» /muavip : Mua VIP           
+» /checkme : Check VIP
+» /warning : Lưu Ý Khi Spam
+»/tv : Tiếng việt cho telegram
+└───⧕
+
+┌───⭓ Tiện Ích Khác
+»/like : Buff Like FF
+»/ff : xem thông tin
+»/visit : Buff View FF
+»/fltik : Buff Follow Tiktok
+»/voice : Chuyển văn bản thành giọng nói 
+»/hoi : hỏi gamini 
+»/checkban : Kiểm tra tài khoản có khóa không
+└───⧕
+
+┌───⭓ Contact
+» /admin : Liên Hệ ADMIN
+└───⧕
 </blockquote>""", parse_mode="HTML")
 ### /like
 API_BASE_URL = "https://dichvukey.site/likeff.php"
