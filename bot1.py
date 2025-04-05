@@ -387,6 +387,7 @@ def spam(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
+    username = message.from_user.username if message.from_user.username else "Không có username"
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 ✅ Sᴘᴀᴍ : Thành Công 
 🔢 Số Lần Sᴘᴀᴍ : {count}
@@ -394,7 +395,7 @@ def spam(message):
 📵 Dừng Sᴘᴀᴍ [/stop {sdt}]
 📱 Nhà Mạng : {carrier}
 🌍 Vùng : Việt Nam
-🎭 Người Dùng : @{message.from_user.username}
+🎭 Người Dùng : @{username}
 🆔 ⵊD Người Dùng : {user_id}
 ⚠️ Hạn Chế Spam Nhé!
 └─────────────
