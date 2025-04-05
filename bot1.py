@@ -396,6 +396,13 @@ blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "
 
 
 API_BASE_URL = "https://api.ffcommunity.site/isbanned.php?uid={uid}"
+
+
+def call_api(uid):
+    url = API_BASE_URL.format(uid=uid)
+    response = requests.get(url)
+    return response.json()
+
 @bot.message_handler(commands=['band'])
 def check_ban_status(message):
     args = message.text.split()
@@ -404,7 +411,7 @@ def check_ban_status(message):
         return
 
     uid = args[1]
-    data = call_api("isbanned", {"uid": uid})
+    data = call_api(uid)
 
     if data.get("status") == "Success":
         info = data["Check Is Banned Account"]
@@ -418,9 +425,11 @@ def check_ban_status(message):
             f"</blockquote>"
         )
     else:
-        reply_text = "<blockquote>sever đang quá tải báo admin ngay</blockquote>"
+        reply_text = "<blockquote>server đang quá tải, báo admin ngay</blockquote>"
 
     bot.reply_to(message, reply_text, parse_mode="HTML")
+
+
 
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
