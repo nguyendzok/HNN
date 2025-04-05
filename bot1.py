@@ -22,7 +22,6 @@ from time import strftime
 import queue
 import pytz
 from datetime import timedelta
-from pyrogram import Client, filters
 from keep_alive import keep_alive
 keep_alive()
 admin_diggory = "HaoEsport" 
