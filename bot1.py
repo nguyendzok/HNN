@@ -26,7 +26,7 @@ from keep_alive import keep_alive
 keep_alive()
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
-ADMIN_ID = '7658079324'
+ADMIN_ID = '7912024917'
 zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
