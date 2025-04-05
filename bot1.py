@@ -100,72 +100,48 @@ vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 ####
 start_time = time.time()
 
-
-
-def fetch_data(user_id):
-    try:
-        url = f'https://api.ffcommunity.site/info.php?uid={user_id}'
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        return response.json()
-    except Exception as e:
-        print(f"Error fetching data: {e}")
-        return None
-
-@bot.message_handler(commands=['ff'])
-def handle_command(message):
-    parts = message.text.split()
-    if len(parts) != 2:
-        bot.reply_to(message, "<blockquote>Sử dụng: /ff ID\nVí dụ: /ff 1733997441</blockquote>", parse_mode="HTML")
-        return
-    
-    command, user_id = parts
-    if not user_id.isdigit():
-        bot.reply_to(message, "<blockquote>ID không hợp lệ. Vui lòng nhập ID số.</blockquote>", parse_mode="HTML")
+@bot.message_handler(commands=['add', 'adduser'])
+def add_user(message):
+    admin_id = message.from_user.id
+    if admin_id != ADMIN_ID:
+        bot.reply_to(message, 'Bạn Không Phải admin')
         return
 
-    try:
-        data = fetch_data(user_id)
-        if data is None:
-            bot.reply_to(message, "<blockquote>❌ Server API đang bảo trì hoặc quá tải. Vui lòng thử lại sau.</blockquote>", parse_mode="HTML")
-            return
-            
-        basic_info = data
-        clan_info = data.get('Guild Information', {})
-        leader_info = data.get('Guild Leader Information', {})
-        avatar_url = basic_info.get('AccountAvatarId', 'Không có')
+    if len(message.text.split()) == 1:
+        bot.reply_to(message, 'VUI LÒNG NHẬP ID NGƯỜI DÙNG VÀ SỐ NGÀY')
+        return
+    if len(message.text.split()) == 2:
+        bot.reply_to(message, 'HÃY NHẬP SỐ NGÀY')
+        return
+    user_id = int(message.text.split()[1])
+    allowed_users.append(user_id)
+    days = int(message.text.split()[2])
+    expiration_time = datetime.datetime.now() + datetime.timedelta(days)
+    connection = sqlite3.connect('user_data.db')
+    save_user_to_database(connection, user_id, expiration_time)
+    connection.close()
 
-        def get_value(key, data_dict):
-            return data_dict.get(key, "Không có thông tin")
+    caption_text = (f'<blockquote>NGƯỜI DÙNG CÓ ID {user_id}\nĐÃ ĐƯỢC THÊM VÀO DANH SÁCH VIP\nTHỜI GIAN: {days} DAY\nLỆNH CÓ THỂ SỬ DỤNG CÁC LỆNH TRONG [/start]</blockquote>')
+    bot.send_video(
+        message.chat.id,
+        video_url,
+        caption=caption_text, parse_mode='HTML')
 
-        info_text = f"""
-<blockquote>
-<b>Thông tin cơ bản:</b>
-Avatar: <a href="{avatar_url}">Nhấn để xem</a>
-Nickname: {get_value('AccountName', basic_info)}
-Cấp độ: {get_value('AccountLevel', basic_info)}
-Khu vực: {get_value('AccountRegion', basic_info)}
-Xếp hạng Sinh Tồn: {get_value('BrRank', basic_info)}
-Tổng Sao Tử Chiến: {get_value('CsRank', basic_info)}
-Số lượt thích: {get_value('AccountLikes', basic_info)}
-Lần đăng nhập gần nhất: {get_value('AccountLastLogin (GMT 0530)', basic_info)}
-Ngôn ngữ: {get_value('AccountLanguage', basic_info)}
-Tiểu sử game: {get_value('AccountSignature', basic_info)}
+load_users_from_database()
 
-<b>Thông tin quân đoàn:</b>
-Tên quân đoàn: {get_value('GuildName', clan_info)}
-Cấp độ quân đoàn: {get_value('GuildLevel', clan_info)}
-Sức chứa: {get_value('GuildCapacity', clan_info)}
-Số thành viên hiện tại: {get_value('GuildMember', clan_info)}
-Chủ quân đoàn: {get_value('LeaderName', leader_info)}
-Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
-</blockquote>
-"""
+def is_key_approved(chat_id, key):
+    if chat_id in users_keys:
+        user_key, timestamp = users_keys[chat_id]
+        if user_key == key:
+            current_time = datetime.datetime.now()
+            if current_time - timestamp <= datetime.timedelta(hours=2):
+                return True
+            else:
+                del users_keys[chat_id]
+    return False
 
-        bot.reply_to(message, info_text, parse_mode='HTML')
 
-    except Exception as e:
-        bot.reply_to(message, "<blockquote>Đã xảy ra lỗi</blockquote>", parse_mode="HTML")
+
 
 
 @bot.message_handler(commands=['help','start'])
@@ -389,15 +365,14 @@ def spam(message):
 
     username = message.from_user.username if message.from_user.username else "Không có username"
     diggory_chat3 = f'''┌──────⭓ {name_bot}
-✅ Sᴘᴀᴍ : Thành Công 
-🔢 Số Lần Sᴘᴀᴍ : {count}
-📞 Đã Tấn Công : {sdt}
-📵 Dừng Sᴘᴀᴍ [/stop {sdt}]
-📱 Nhà Mạng : {carrier}
-🌍 Vùng : Việt Nam
-🎭 Người Dùng : @{username}
-🆔 ⵊD Người Dùng : {user_id}
-⚠️ Hạn Chế Spam Nhé!
+➤ Sᴘᴀᴍ : Thành Công 
+➤ Số Lần Sᴘᴀᴍ : {count}
+➤ Đang Tấn Công : {sdt}
+➤ Dừng Sᴘᴀᴍ [/stop {sdt}]
+➤ Nhà Mạng : {carrier}
+➤ Vùng : Việt Nam
+➤ Người Dùng : @{username}
+➤ ⵊD Người Dùng : {user_id}
 └─────────────
 '''
 
@@ -460,39 +435,6 @@ def stop_spam(message):
         bot.reply_to(message, f"Không tìm thấy tiến trình spam với số {sdt}. Có thể đã hoàn thành hoặc sai số.")
 
 
-API_BASE_URL = "https://api.ffcommunity.site/isbanned.php?uid={uid}"
-
-
-def call_api(uid):
-    url = API_BASE_URL.format(uid=uid)
-    response = requests.get(url)
-    return response.json()
-
-@bot.message_handler(commands=['band'])
-def check_ban_status(message):
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "<blockquote>/band 10251125</blockquote>", parse_mode="HTML")
-        return
-
-    uid = args[1]
-    data = call_api(uid)
-
-    if data.get("status") == "Success":
-        info = data["Check Is Banned Account"]
-        reply_text = (
-            f"<blockquote>\n"
-            f"🔍 <b>Kết quả kiểm tra:</b>\n"
-            f"🆔 UID: {info['Account UID']}\n"
-            f"👤 Tên: {info['Account Name']}\n"
-            f"🌍 Khu vực: {info['Account Region']}\n"
-            f"🚫 Trạng thái: {'Không bị khóa' if info['Status'] == 'Account is not banned.' else 'Đã bị khóa!'}\n"
-            f"</blockquote>"
-        )
-    else:
-        reply_text = "<blockquote>server đang quá tải, báo admin ngay</blockquote>"
-
-    bot.reply_to(message, reply_text, parse_mode="HTML")
 
 
 @bot.message_handler(commands=['tiktokinfo'])
