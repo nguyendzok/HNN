@@ -183,7 +183,6 @@ def send_help(message):
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
 ➤ /ff : xem thông tin
-➤ /visit : Buff View FF
 ➤ /fltik : Buff Follow Tiktok
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
