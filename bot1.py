@@ -211,6 +211,8 @@ def call_api(uid):
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
+    args = message.text.split()
+
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
         return
