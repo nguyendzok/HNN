@@ -353,7 +353,7 @@ def spam(message):
 │🔢 Số Lần Spam Free: {count}
 │📞 Đã Tấn Công : {sdt}
 │🌍 Vùng : Việt Nam
-|🎭 Người Dùng : @{username}
+|🎭 Người Dùng : @None
 │⚠️ Hạn Chế Spam Nhé!
 └─────────────
     '''
@@ -432,7 +432,7 @@ def supersms(message):
 │🔢 Số Lần Spam Free: {count}
 │📞 Đã Tấn Công : {sdt}
 │🌍 Vùng : Việt Nam
-|🎭 Người Dùng : @{username}
+|🎭 Người Dùng : @None
 |🆔 ID Người Dùng : {user_id}
 │⚠️ Hạn Chế Spam Nhé!
 └─────────────
