@@ -182,8 +182,6 @@ def send_help(message):
 | /ff : check acc xem thông tin 
 | /tv : chuyển đổi ngôn ngữ 
 | /like : buff like
-| /getkey : lấy key 
-| /key : nhập key
 | /uptime : xem video gai xinh
 | /vist : buff view 
 | /like : buff like ff
