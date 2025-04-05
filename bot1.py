@@ -176,7 +176,7 @@ Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
 def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌─────⭓ Trần Hào
-| Xin Chào @{username}
+| Xin Chào @None
 | /help : lệnh trợ giúp
 | /voice : chuyển đổi văn bản thành giọng nói
 | /time : kiểm tra thời gian bot hoạt động
@@ -394,10 +394,6 @@ blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "
 
 @bot.message_handler(commands=['spamvip'])
 def supersms(message):
-    user_id = message.from_user.id
-    if user_id not in allowed_users:
-        bot.reply_to(message, 'Hãy Mua Vip Để Sử Dụng.')
-        return
     
     current_time = time.time()
     if user_id in last_usage and current_time - last_usage[user_id] < 1:
@@ -461,44 +457,6 @@ def supersms(message):
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
 
 
-@bot.message_handler(commands=['add', 'adduser'])
-def add_user(message):
-    user_id = message.from_user.id
-    if user_id != ADMIN_ID:
-        bot.reply_to(message, 'BẠN KHÔNG CÓ QUYỀN SỬ DỤNG LỆNH NÀY')
-        return
-
-    if len(message.text.split()) == 1:
-        bot.reply_to(message, 'VUI LÒNG NHẬP ID NGƯỜI DÙNG')
-        return
-
-    user_id = int(message.text.split()[1])
-    allowed_users.append(user_id)
-    expiration_time = datetime.now() + timedelta(days=30)
-    connection = sqlite3.connect('user_data.db')
-    save_user_to_database(connection, user_id, expiration_time)
-    connection.close()
-
-    # Gửi video với tiêu đề
-    caption_text = (f'NGƯỜI DÙNG CÓ ID {user_id}                                ĐÃ ĐƯỢC THÊM VÀO DANH SÁCH ĐƯỢC PHÉP SỬ DỤNG LỆNH /spamvip')
-    bot.send_video(
-        message.chat.id,
-        video_url,
-        caption=caption_text
-    )
-
-load_users_from_database()
-
-def is_key_approved(chat_id, key):
-    if chat_id in users_keys:
-        user_key, timestamp = users_keys[chat_id]
-        if user_key == key:
-            current_time = datetime.datetime.now()
-            if current_time - timestamp <= datetime.timedelta(hours=2):
-                return True
-            else:
-                del users_keys[chat_id]
-    return False
 
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
