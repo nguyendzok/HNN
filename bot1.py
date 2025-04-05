@@ -190,6 +190,7 @@ def send_help(message):
 | /id : lấy id bản thân
 | /hoi : hỏi gamini
 | /spamvip : spam vip max 100
+| /adduser : thêm vip
 |____________________________
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -459,6 +460,45 @@ def supersms(message):
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
 
+
+@bot.message_handler(commands=['add', 'adduser'])
+def add_user(message):
+    admin_id = message.from_user.id
+    if admin_id != ADMIN_ID:
+        bot.reply_to(message, 'BẠN KHÔNG CÓ QUYỀN SỬ DỤNG LỆNH NÀY')
+        return
+
+    if len(message.text.split()) == 1:
+        bot.reply_to(message, 'VUI LÒNG NHẬP ID NGƯỜI DÙNG')
+        return
+
+    user_id = int(message.text.split()[1])
+    allowed_users.append(user_id)
+    expiration_time = datetime.now() + timedelta(days=30)
+    connection = sqlite3.connect('user_data.db')
+    save_user_to_database(connection, user_id, expiration_time)
+    connection.close()
+
+    # Gửi video với tiêu đề
+    caption_text = (f'NGƯỜI DÙNG CÓ ID {user_id}                                ĐÃ ĐƯỢC THÊM VÀO DANH SÁCH ĐƯỢC PHÉP SỬ DỤNG LỆNH /spamvip')
+    bot.send_video(
+        message.chat.id,
+        video_url,
+        caption=caption_text
+    )
+
+load_users_from_database()
+
+def is_key_approved(chat_id, key):
+    if chat_id in users_keys:
+        user_key, timestamp = users_keys[chat_id]
+        if user_key == key:
+            current_time = datetime.datetime.now()
+            if current_time - timestamp <= datetime.timedelta(hours=2):
+                return True
+            else:
+                del users_keys[chat_id]
+    return False
 
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
