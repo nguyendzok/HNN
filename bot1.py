@@ -464,7 +464,7 @@ def supersms(message):
 @bot.message_handler(commands=['add', 'adduser'])
 def add_user(message):
     admin_id = message.from_user.id
-    if admin_id != ADMIN_ID:
+    if admin_id != '7658079324':
         bot.reply_to(message, 'BẠN KHÔNG CÓ QUYỀN SỬ DỤNG LỆNH NÀY')
         return
 
