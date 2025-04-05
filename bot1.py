@@ -179,13 +179,10 @@ def send_help(message):
 | /tv : chuyển đổi ngôn ngữ 
 | /vist : buff view 
 | /like : buff like ff
-| /code : lấy code wed
 | /fl : buff flo tiktok
 | /spam : spam số điện thoại
 | /id : lấy id bản thân
 | /hoi : hỏi gamini
-| /spamvip : spam vip max 100
-| /adduser : thêm vip
 |____________________________
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -350,6 +347,7 @@ def spam(message):
 │📞 Đã Tấn Công : {sdt}
 │🌍 Vùng : Việt Nam
 |🎭 Người Dùng : @None
+|🆔 ID Người Dùng : {user_id}
 │⚠️ Hạn Chế Spam Nhé!
 └─────────────
     '''
@@ -385,71 +383,6 @@ def spam(message):
         
 
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
-
-
-@bot.message_handler(commands=['spamvip'])
-def supersms(message):
-    
-    current_time = time.time()
-    if user_id in last_usage and current_time - last_usage[user_id] < 1:
-        bot.reply_to(message, f"Vui lòng đợi {250 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
-        return
-    
-    last_usage[user_id] = current_time
-
-    params = message.text.split()[1:]
-
-    if len(params) != 2:
-        bot.reply_to(message, "/spamvip sdt số_lần như này cơ mà ")
-        return
-
-    sdt, count = params
-
-    if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng nhập một số nguyên dương.")
-        return
-    
-    count = int(count)
-    
-    if count > 100:
-        bot.reply_to(message, "/spamvip sdt 100 thôi nhé - đợi 250giây sử dụng lại.")
-        return
-
-    if sdt in blacklist:
-        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
-        return
-
-    diggory_chat3 = f'''┌──────⭓ {name_bot}
-│✅ Spam: Thành Công 
-│🔢 Số Lần Spam Free: {count}
-│📞 Đã Tấn Công : {sdt}
-│🌍 Vùng : Việt Nam
-|🎭 Người Dùng : @None
-|🆔 ID Người Dùng : {user_id}
-│⚠️ Hạn Chế Spam Nhé!
-└─────────────
-    '''
-
-    script_filename = "dec.py"  # Tên file Python trong cùng thư mục
-    try:
-        if os.path.isfile(script_filename):
-            with open(script_filename, 'r', encoding='utf-8') as file:
-                script_content = file.read()
-
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-                temp_file.write(script_content.encode('utf-8'))
-                temp_file_path = temp_file.name
-
-            process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-            bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: VIP</blockquote>',
-            parse_mode='HTML'
-        )
-        else:
-            bot.reply_to(message, "Tập tin không tìm thấy.")
-    except Exception as e:
-        bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
 
 
 
