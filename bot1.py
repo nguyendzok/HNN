@@ -172,83 +172,27 @@ Cấp độ chủ quân đoàn: {get_value('LeaderLevel', leader_info)}
         bot.reply_to(message, "<blockquote>Đã xảy ra lỗi</blockquote>", parse_mode="HTML")
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['help'])
 def send_help(message):
     bot.reply_to(message, """<blockquote>
-╔══════════════════╗  
-     📌         *DANH SÁCH LỆNH*  
-╚══════════════════╝  
- _____________________________________
+┌───────────⭓ Trần Hào
+| Xin Chào {message.from_user.username}
+| /help : lệnh trợ giúp
+| /voice : chuyển đổi văn bản thành giọng nói
+| /time : kiểm tra thời gian bot hoạt động
 | /ff : check acc xem thông tin 
 | /tv : chuyển đổi ngôn ngữ 
-| /like : buff like
-| /uptime : xem video gai xinh
 | /vist : buff view 
 | /like : buff like ff
 | /code : lấy code wed
-| /flo : buff flo tiktok
+| /fl : buff flo tiktok
 | /spam : spam số điện thoại
-|—————————————————-----------
-                     Lệnh Admin
-|____________________________
-| /off
-| /on
+| /chat : lấy id nhóm
+| /ask : hỏi gamini
+| /spamvip : spam vip max 100
 |____________________________
 </blockquote>""", parse_mode="HTML")
 ### /like
-
-start_time = time.time()
-
-# Biến để tính toán FPS
-last_time = time.time()
-frame_count = 0
-fps = 0
-
-# Lệnh /uptime
-@bot.message_handler(commands=['uptime'])
-def uptime(message):
-    global last_time, frame_count, fps
-    
-    # Tính toán thời gian hoạt động
-    uptime_seconds = int(time.time() - start_time)
-    uptime_formatted = str(timedelta(seconds=uptime_seconds))
-    
-    # Cập nhật FPS mỗi khi lệnh được xử lý
-    current_time = time.time()
-    frame_count += 1
-    if current_time - last_time >= 1:  # Tính FPS mỗi giây
-        fps = frame_count
-        frame_count = 0
-        last_time = current_time
-    
-    # Gửi video từ API
-    video_url = "https://api.ffcommunity.site/randomvideo.php"
-    video_response = requests.get(video_url)
-    
-    # Phân tích dữ liệu JSON và lấy đường dẫn video (chú ý đến phần https)
-    try:
-        video_data = video_response.json()  # Phân tích JSON
-        video_link = video_data.get('url', '')  # Lấy đường dẫn video từ trường 'url'
-        
-        # Kiểm tra nếu có https
-        if video_link and (video_link.startswith('http://')or video_link.startswith('https://')):
-            video_link = video_link.strip()  # Loại bỏ khoảng trắng thừa ở đầu và cuối
-        else:
-            video_link = 'Không thể lấy video'
-
-    except ValueError:
-        video_link = 'Không thể lấy video'
-
-    # Tạo và gửi tin nhắn
-    bot.send_message(message.chat.id, "<blockquote>\
-                     📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
-                     🎮 FPS trung bình: {fps} FPS\n"
-                     Không thể lấy thông tin cấu hình.\n"
-                     🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_link}</blockquote>", parse_mode="HTML")
-                     
-
-
-
 API_BASE_URL = "https://dichvukey.site/likeff.php"
 
 def call_api(uid):
@@ -379,70 +323,6 @@ def spam(message):
 
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
 
-
-
-@bot.message_handler(commands=['like'])
-def like_command(message):
-    try:
-        uid = message.text.split()[1]
-        if not uid.isdigit():
-            bot.reply_to(message, "⚠ UID phải là số!")
-            return
-        bot.reply_to(message, "👍 Đang tăng like cho UID...")
-        result = add_like(uid)
-        bot.reply_to(message, result)
-    except IndexError:
-        bot.reply_to(message, "⚠ Vui lòng nhập UID sau lệnh /like")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Lỗi: {str(e)}")
-
-@bot.message_handler(commands=['getkey'])
-def startkey(message):
-    user_id = message.from_user.id
-    today_day = datetime.date.today().day
-    key = "HaoEsport" + str(user_id * today_day - 2007)
-
-    api_token = '67c1fe72a448b83a9c7e7340'
-    key_url = f"https://dichvukey.site/key.html?key={key}"
-
-    try:
-        response = requests.get(f'https://link4m.co/api-shorten/v2?api={api_token}&url={key_url}')
-        response.raise_for_status()
-        url_data = response.json()
-        print(key)
-
-        if 'shortenedUrl' in url_data:
-            url_key = url_data['shortenedUrl']
-            text = (f'Link Lấy Key Ngày {TimeStamp()} LÀ: {url_key}\n'
-                    'KHI LẤY KEY XONG, DÙNG LỆNH /key HaoEsport ĐỂ TIẾP TỤC Hoặc /muavip đỡ vượt tốn thời gian nhé')
-            bot.reply_to(message, text)
-        else:
-            bot.reply_to(message, 'Lỗi.')
-    except requests.RequestException:
-        bot.reply_to(message, 'Lỗi.')
-
-@bot.message_handler(commands=['key'])
-def key(message):
-    if len(message.text.split()) != 2:
-        bot.reply_to(message, 'Key Đã Vượt Là? đã vượt thì nhập /key chưa vượt thì /muavip nhé')
-        return
-
-    user_id = message.from_user.id
-    key = message.text.split()[1]
-    today_day = datetime.date.today().day
-    expected_key = "HaoEsport" + str(user_id * today_day - 2007)  # Đảm bảo công thức khớp với công thức tạo key
-
-    if key == expected_key:
-        text_message = f'<blockquote>[ KEY HỢP LỆ ] NGƯỜI DÙNG CÓ ID: [ {user_id} ] ĐƯỢC PHÉP ĐƯỢC SỬ DỤNG CÁC LỆNH TRONG [/start]</blockquote>'
-        video_url = 'https://v16m-default.tiktokcdn.com/725b722c82145b35bb573f08d08f77ba/67f0233a/video/tos/alisg/tos-alisg-pve-0037c001/oUsChf93hwqIB41EMv2iATAquAuiIX33zb1x51/?a=0&bti=OUBzOTg7QGo6OjZAL3AjLTAzYCMxNDNg&ch=0&cr=0&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C0&cv=1&br=484&bt=242&cs=0&ds=6&ft=EeF4ntZWD03Q12NvAknFeIxRSfYFpq_45SY&mime_type=video_mp4&qs=0&rc=aTk2PDVkaTZkNGc8Njs5OkBpanV4d3A5cjx1dzMzODczNEAyY2IxYzMxXzYxLzNgNF9eYSNkL3FsMmRzaW9gLS1kMTFzcw%3D%3D&vvpl=1&l=202504042021196372DBE41FAF8F8852E0&btag=e000b8000'  # Đổi URL đến video của bạn
-        bot.send_video(message.chat.id, video_url, caption=text_message, parse_mode='HTML')
-        
-        user_path = f'./user/{today_day}'
-        os.makedirs(user_path, exist_ok=True)
-        with open(f'{user_path}/{user_id}.txt', "w") as fi:
-            fi.write("")
-    else:
-        bot.reply_to(message, 'KEY KHÔNG HỢP LỆ.')
 
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
