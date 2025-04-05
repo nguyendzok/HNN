@@ -348,7 +348,7 @@ def spam(message):
 └─────────────
     '''
 
-         bot.send_message(
+    bot.send_message(
             message.chat.id,
             f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
             parse_mode='HTML'
