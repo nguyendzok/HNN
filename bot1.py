@@ -179,9 +179,7 @@ def send_help(message):
 » /checkme : Check VIP
 » /warning : Lưu Ý Khi Spam
 »/tv : Tiếng việt cho telegram
-└───⧕
-
-┌───⭓ Tiện Ích Khác
+└───Tiện Ích Khác
 »/like : Buff Like FF
 »/ff : xem thông tin
 »/visit : Buff View FF
@@ -189,9 +187,8 @@ def send_help(message):
 »/voice : Chuyển văn bản thành giọng nói 
 »/hoi : hỏi gamini 
 »/band : Kiểm tra tài khoản có khóa không
-└───⧕
-
-┌───⭓ Contact
+»/tiktokinfo : xem thông tin tiktok
+└───Contact
 » /admin : Liên Hệ ADMIN
 └───⧕
 </blockquote>""", parse_mode="HTML")
@@ -430,6 +427,52 @@ def check_ban_status(message):
     bot.reply_to(message, reply_text, parse_mode="HTML")
 
 
+@bot.message_handler(commands=['tiktokinfo'])
+def get_tiktok_info(message):
+    chat_id = message.chat.id
+    args = message.text.split()
+
+    if len(args) < 2:
+        bot.send_message(chat_id, "⚠️ Vui lòng nhập tên người dùng TikTok!\nVí dụ: /tiktokinfo ho.esports", parse_mode="Markdown")
+        return
+
+    username = args[1]
+    api_url = f"https://api.sumiproject.net/tiktok?info={username}"
+
+    try:
+        response = requests.get(api_url)
+        data = response.json()
+
+        if data['code'] != 0 or 'data' not in data:
+            bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="Markdown")
+            return
+
+        user = data['data']['user']
+        stats = data['data']['stats']
+
+        profile_message = f"""
+======[ 𝙏𝙄𝙆𝙏𝙊𝙆 𝙄𝙉𝙁𝙊 ]======  
+
+👤 Tên hiển thị: {user['nickname']}  
+🆔 Username: @{user['uniqueId']}  
+🔗 Profile: [Xem trên TikTok](https://www.tiktok.com/@{user['uniqueId']})  
+
+📊 Thống kê:  
+├ 👥 Người theo dõi: {stats['followerCount']}  
+├ 👤 Đang theo dõi: {stats['followingCount']}  
+├ ❤️ Tổng lượt thích: {stats['heartCount']}  
+├ 🎥 Số video: {stats['videoCount']}  
+
+🔗 Mạng xã hội khác:  
+{f"▶️ [YouTube](https://www.youtube.com/channel/{user['youtube_channel_id']})" if user.get('youtube_channel_id') else "🚫 Không có YouTube"}  
+{f"📌 Bio: {user['signature']}" if user.get('signature') else "🚫 Không có mô tả"}  
+        """
+
+        bot.send_photo(chat_id, user['avatarLarger'], caption=profile_message, parse_mode="Markdown")
+
+    except Exception as error:
+        bot.send_message(chat_id, "⚠️ Lỗi khi lấy thông tin tài khoản TikTok!", parse_mode="Markdown")
+        print(error)
 
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
