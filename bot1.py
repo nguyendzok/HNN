@@ -62,12 +62,7 @@ def check_command_cooldown(user_id, command, cooldown):
         last_command_time.setdefault(user_id, {})[command] = current_time
         return None
 
-cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        user_id INTEGER PRIMARY KEY,
-        expiration_time TEXT
-    )
-''')
+
 connection.commit()
 
 def TimeStamp():
