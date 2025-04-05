@@ -336,6 +336,7 @@ def spam(message):
     if sdt in blacklist:
         bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
+    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
 
     diggory_chat3 = f'''┌──────⭓ {name_bot}
@@ -348,11 +349,6 @@ def spam(message):
 └─────────────
     '''
 
-    bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
-            parse_mode='HTML'
-        )
     script_filename = "dec.py"  # Tên file Python trong cùng thư mục
     try:
         # Kiểm tra xem file có tồn tại không
@@ -371,7 +367,11 @@ def spam(message):
 
         # Chạy file tạm thời
         process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        bot.send_message(message.chat.id, diggory_chat3)
+        bot.send_message(
+            message.chat.id,
+            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
+            parse_mode='HTML'
+        )
     except FileNotFoundError:
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
