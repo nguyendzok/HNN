@@ -302,15 +302,31 @@ def handle_id_command(message):
             first_name = message.from_user.first_name
             bot.reply_to(message, f"ID của bạn là: `{user_id}`\nTên: {first_name}", parse_mode='Markdown')
    
-@bot.message_handler(commands=['status'])
-def status(message):
-    user_id = message.from_user.id
-    if str(user_id) != ADMIN_ID:
-        bot.reply_to(message, 'Làm Cái Trò Gì Zậy😀')
+@bot.message_handler(commands=['mngkhc'])
+def check_carrier(message):
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "⚠️ Dùng đúng cú pháp: /mang 0987654321")
         return
-    process_count = len(processes)
-    bot.reply_to(message, f'Số quy trình đang chạy: {process_count}.')
+    sdt = args[1]
+    carrier = detect_carrier(sdt)
+    bot.reply_to(message, f"📱 Số {sdt} thuộc nhà mạng: <b>{carrier}</b>", parse_mode="HTML")
 
+
+def detect_carrier(phone_number: str) -> str:
+    phone_number = phone_number.strip().replace("+84", "0")
+    prefixes = {
+        "Viettel": ["086", "096", "097", "098", "032", "033", "034", "035", "036", "037", "038", "039"],
+        "Mobifone": ["089", "090", "093", "070", "076", "077", "078", "079"],
+        "Vinaphone": ["088", "091", "094", "081", "082", "083", "084", "085"],
+        "Vietnamobile": ["092", "056", "058"],
+        "Gmobile": ["099", "059"],
+    }
+
+    for carrier, pre_list in prefixes.items():
+        if any(phone_number.startswith(p) for p in pre_list):
+            return carrier
+    return "Không xác định"
 
 @bot.message_handler(commands=['spam'])
 def spam(message):
@@ -361,6 +377,7 @@ def spam(message):
 🔢 Số Lần Sᴘᴀᴍ : {count}
 📞 Đã Tấn Công : {sdt}
 📵 Dừng Sᴘᴀᴍ [/stop {sdt}]
+📱 Nhà Mạng : {carrier}
 🌍 Vùng : Việt Nam
 🎭 Người Dùng : @{message.from_user.username}
 🆔 ⵊD Người Dùng : {user_id}
