@@ -187,8 +187,8 @@ def send_help(message):
 | /code : lấy code wed
 | /fl : buff flo tiktok
 | /spam : spam số điện thoại
-| /id : lấy id nhóm
-| /ask : hỏi gamini
+| /id : lấy id bản thân
+| /hoi : hỏi gamini
 | /spamvip : spam vip max 100
 |____________________________
 </blockquote>""", parse_mode="HTML")
@@ -259,6 +259,31 @@ def text_to_voice(message):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+
+@bot.message_handler(commands=['hoi'])
+def handle_hoi(message):
+    text = message.text[len('/hoi '):].strip()
+    
+    if text:
+        url = f"https://dichvukey.site/apishare/hoi.php?text={text}"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            reply = data.get("message", "Không có phản hồi.")
+        else:
+            reply = "Lỗi."
+    else:
+        reply = "Lệnh Ví Dụ : /hoi xin chào."
+    bot.reply_to(message, reply)
+
+@bot.message_handler(commands=['time'])
+def handle_time(message):
+    uptime_seconds = int(time.time() - start_time)
+    
+    uptime_minutes, uptime_seconds = divmod(uptime_seconds, 60)
+    bot.reply_to(message, f'Bot đã hoạt động được: {uptime_minutes} phút, {uptime_seconds} giây')
+
 
 
 @bot.message_handler(commands=['id', 'ID'])
