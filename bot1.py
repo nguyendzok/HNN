@@ -423,7 +423,7 @@ def spam(message):
 
         threading.Thread(
         target=lambda: (
-        time.sleep(10),
+        time.sleep(3),
         bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
     )
 ).start()
