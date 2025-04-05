@@ -324,6 +324,7 @@ def detect_carrier(phone_number: str) -> str:
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
+
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
         time.sleep(10)
@@ -332,37 +333,57 @@ def spam(message):
         except telebot.apihelper.ApiTelegramException as e:
             print(f"Error deleting message: {e}")
         return
+
     if admin_mode and user_id not in admins:
         msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
-    if user_id in last_usage and current_time - last_usage[user_id] < 10:
-        bot.reply_to(message, f"Vui lòng đợi {10 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        except telebot.apihelper.ApiTelegramException as e:
+            print(f"Error deleting message: {e}")
         return
-    carrier = detect_carrier(sdt)
-    last_usage[user_id] = current_time
 
-    # Phân tích cú pháp lệnh
+    if user_id in last_usage and current_time - last_usage[user_id] < 10:
+        warn_msg = bot.reply_to(message, f"⏳ Vui lòng đợi {10 - (current_time - last_usage[user_id]):.1f} giây trước khi dùng lại.")
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=warn_msg.message_id)
+        except:
+            pass
+        return
+
+    # Phân tích cú pháp
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
+        msg = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
         return
 
     sdt, count = params
+    carrier = detect_carrier(sdt)
 
     if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        msg = bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
         return
 
     count = int(count)
 
     if count > 25:
-        bot.reply_to(message, "/spam sdt số_lần tối đa là 25 - đợi 10giây sử dụng lại.")
+        msg = bot.reply_to(message, "/spam sdt số_lần tối đa là 25 - đợi 10 giây sử dụng lại.")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
         return
 
     if sdt in blacklist:
-        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        msg = bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
         return
-    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
+    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 ✅ Sᴘᴀᴍ : Thành Công 
@@ -375,37 +396,45 @@ def spam(message):
 🆔 ⵊD Người Dùng : {user_id}
 ⚠️ Hạn Chế Spam Nhé!
 └─────────────
-    '''
+'''
 
-    script_filename = "dec.py"  # Tên file Python trong cùng thư mục
+    script_filename = "dec.py"
     try:
-        # Kiểm tra xem file có tồn tại không
         if not os.path.isfile(script_filename):
-            bot.reply_to(message, "Không tìm thấy file script. Vui lòng kiểm tra lại.")
+            bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        # Đọc nội dung file với mã hóa utf-8
         with open(script_filename, 'r', encoding='utf-8') as file:
             script_content = file.read()
 
-        # Tạo file tạm thời
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
             temp_file.write(script_content.encode('utf-8'))
             temp_file_path = temp_file.name
 
-        # Chạy file tạm thời
+        # Chạy script spam
         process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        bot.send_message(
+
+        # Gửi kết quả spam
+        sent_msg = bot.send_message(
             message.chat.id,
             f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: FREE</blockquote>',
             parse_mode='HTML'
         )
+
+        threading.Thread(
+        target=lambda: (
+        time.sleep(10),
+        bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    )
+).start()
+
+        last_usage[user_id] = current_time
+
     except FileNotFoundError:
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
-      
-        
+
 
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
 
