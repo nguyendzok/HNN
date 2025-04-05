@@ -301,18 +301,9 @@ def handle_id_command(message):
             user_id = message.from_user.id
             first_name = message.from_user.first_name
             bot.reply_to(message, f"ID của bạn là: `{user_id}`\nTên: {first_name}", parse_mode='Markdown')
+
+
    
-@bot.message_handler(commands=['mngkhc'])
-def check_carrier(message):
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "⚠️ Dùng đúng cú pháp: /mang 0987654321")
-        return
-    sdt = args[1]
-    carrier = detect_carrier(sdt)
-    bot.reply_to(message, f"📱 Số {sdt} thuộc nhà mạng: <b>{carrier}</b>", parse_mode="HTML")
-
-
 def detect_carrier(phone_number: str) -> str:
     phone_number = phone_number.strip().replace("+84", "0")
     prefixes = {
@@ -323,10 +314,11 @@ def detect_carrier(phone_number: str) -> str:
         "Gmobile": ["099", "059"],
     }
 
-    for carrier, pre_list in prefixes.items():
-        if any(phone_number.startswith(p) for p in pre_list):
-            return carrier
+    for name, prefix_list in prefixes.items():
+        if any(phone_number.startswith(p) for p in prefix_list):
+            return name
     return "Không xác định"
+
 
 @bot.message_handler(commands=['spam'])
 def spam(message):
@@ -345,7 +337,7 @@ def spam(message):
     if user_id in last_usage and current_time - last_usage[user_id] < 10:
         bot.reply_to(message, f"Vui lòng đợi {10 - (current_time - last_usage[user_id]):.1f} giây trước khi sử dụng lệnh lại.")
         return
-
+    carrier = detect_carrier(sdt)
     last_usage[user_id] = current_time
 
     # Phân tích cú pháp lệnh
