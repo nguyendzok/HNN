@@ -278,7 +278,7 @@ def handle_fl(message):
         return
 
    
-    data = load_data()
+        data = load_data()
     user_id = str(message.from_user.id)
     
     
