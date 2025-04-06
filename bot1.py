@@ -248,53 +248,28 @@ def text_to_voice(message):
 
 
 # Hàm bypass link4m
-def bypass_link4m(url):
+def bypass_link(url):
     try:
-        session = requests.Session()
-        headers = {
-            'User-Agent': 'Mozilla/5.0',
-            'Referer': url,
-        }
-
-        # Bước 1: Truy cập trang đầu
-        res = session.get(url, headers=headers)
-        
-        # Bước 2: Tìm link "/go/<ID>" trong HTML
-        match = re.search(r'href="(/go/[^"]+)"', res.text)
-        if not match:
-            return "❌ Không tìm thấy link go/"
-
-        go_path = match.group(1)
-        go_url = "https://link4m.com" + go_path
-
-        # Bước 3: Truy cập link đó để lấy redirect
-        time.sleep(5)  # mô phỏng thời gian đếm ngược
-        final = session.get(go_url, headers=headers, allow_redirects=False)
-
-        if 'Location' in final.headers:
-            return final.headers['Location']
-        else:
-            return "❌ Không tìm thấy redirect."
-
+        r = requests.head(url, allow_redirects=True, timeout=10)
+        return r.url
     except Exception as e:
-        return f"❌ Lỗi: {e}"
+        return f"❌ Không thể bypass link: {e}"
+
 # ===== Lệnh /bypass =====
+# /bypass command
 @bot.message_handler(commands=['bypass'])
 def handle_bypass(message):
-    args = message.text.split()
-    if len(args) < 2:
-        bot.reply_to(message, "⚠️ Bạn chưa nhập link.\nVí dụ: /bypass https://link4m.com/abcxyz")
-        return
-
-    url = args[1]
-    bot.reply_to(message, "⏳ Đang xử lý...")
-
-    if "link4m.com" in url:
-        result = bypass_link4m(url)
-    else:
-        result = "❌ Hiện chỉ hỗ trợ link4m.com."
-
-    bot.reply_to(message, f"✅ Kết quả:\n{result}")
+    try:
+        args = message.text.split()
+        if len(args) < 2:
+            bot.reply_to(message, "⚠️ Bạn chưa nhập link. Ví dụ: `/bypass https://example.com`", parse_mode="Markdown")
+            return
+        url = args[1]
+        bot.reply_to(message, "⏳ Đang xử lý...")
+        result = bypass_link(url)
+        bot.reply_to(message, f"✅ Kết quả:\n{result}")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Lỗi: {e}")
     
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
