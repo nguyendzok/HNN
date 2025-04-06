@@ -126,10 +126,6 @@ def add_user(message):
     connection.close()
 
     caption_text = (f'<blockquote>NGƯỜI DÙNG CÓ ID {user_id}\nĐÃ ĐƯỢC THÊM VÀO DANH SÁCH VIP\nTHỜI GIAN: {days} DAY\nLỆNH CÓ THỂ SỬ DỤNG CÁC LỆNH TRONG [/start]</blockquote>')
-    bot.send_video(
-        message.chat.id,
-        video_url,
-        caption=caption_text, parse_mode='HTML')
     load_users_from_database()
     
 def is_key_approved(chat_id, key):
