@@ -246,12 +246,23 @@ def text_to_voice(message):
             os.remove(temp_file_path)
 
 
-def bypass_link(url):
+def bypass_link4m(url):
     try:
-        r = requests.head(url, allow_redirects=True, timeout=10)
-        return r.url
+        options = uc.ChromeOptions()
+        options.headless = True  # chạy ẩn, không mở cửa sổ
+        driver = uc.Chrome(options=options)
+
+        driver.get(url)
+        time.sleep(10)  # đợi trang tải + đếm ngược JS
+
+        # Tìm nút "GET LINK" hoặc tương tự
+        get_link_btn = driver.find_element(By.XPATH, "//a[contains(@class, 'btn') and contains(text(), 'Get Link')]")
+        get_link = get_link_btn.get_attribute('href')
+
+        driver.quit()
+        return get_link
     except Exception as e:
-        return f"❌ Không thể bypass link: {e}"
+        return f"❌ Không thể bypass: {e}"
 
 # Lệnh /bypass
 @bot.message_handler(commands=['bypass'])
@@ -259,15 +270,21 @@ def handle_bypass(message):
     try:
         args = message.text.split()
         if len(args) < 2:
-            bot.reply_to(message, "⚠️ Vui lòng gửi kèm link. Ví dụ: `/bypass https://example.com`", parse_mode="Markdown")
+            bot.reply_to(message, "⚠️ Bạn chưa nhập link.\nVí dụ: /bypass https://link4m.com/xxxx")
             return
+
         url = args[1]
         bot.reply_to(message, "⏳ Đang xử lý link...")
-        result = bypass_link(url)
-        bot.reply_to(message, f"✅ Link sau khi bypass:\n{result}")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Lỗi: {e}")
 
+        if "link4m.com" in url:
+            result = bypass_link4m(url)
+        else:
+            result = "❌ Chưa hỗ trợ trang này."
+
+        bot.reply_to(message, f"✅ Kết quả:\n{result}")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Lỗi xử lý: {e}")
+        
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
