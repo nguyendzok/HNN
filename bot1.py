@@ -46,7 +46,7 @@ allowed_users = []
 processes = []
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
-allowed_group_id = -1002639856138
+ALLOWED_GROUP_ID = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
@@ -269,7 +269,93 @@ def handle_bypass(message):
         bot.reply_to(message, f"✅ Kết quả:\n{result}")
     except Exception as e:
         bot.reply_to(message, f"❌ Lỗi: {e}")
+
+
+@bot.message_handler(commands=['fltik'])
+def handle_fl(message):
+    if message.chat.id not in ALLOWED_GROUP_ID:
+        bot.reply_to(message, "Tham Gia Nhóm Của Chúng Tôi Để Bot Có Thể Trò Chuyện Với Bạn Dễ Dàng Hơn.\nLink Đây: [ https://t.me/+AhM8n6X-63JmNTQ1 ]\n\nLưu Ý, Bot Chỉ Hoạt Động Trong Những Nhóm Cụ Thể Thôi Nha!")
+        return
+
+   
+    data = load_data()
+    user_id = str(message.from_user.id)
     
+    
+    if user_id not in data or data[user_id]['token'] < 100:
+        bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
+        return
+
+   
+    args = message.text.split()
+    if len(args) < 2:
+        bot.reply_to(message, "<b>⚠️ Vui Lòng Nhập Username TikTok</b> \n\nVí dụ: \n<code>/tt bacgau</code>", parse_mode="HTML")
+        return
+    
+    username = args[1]
+
+
+    api2 = f"http://haigiaitrixin.great-site.net/follow.php?{username}&key=giaitrixin"
+    try:
+        response2 = requests.get(api2, timeout=60, verify=False)
+        data_api = response2.json()
+    except (requests.RequestException, ValueError):
+        bot.reply_to(message, "Lỗi Khi Lấy Thông Tin Tài Khoản")
+        return
+    
+    if "data" not in data_api or "user_id" not in data_api["data"]:
+        bot.reply_to(message, "Không Tìm Thấy Tài Khoản Người Dùng")
+        return
+    
+   
+    info = data_api["data"]
+
+   
+    api1 = f"http://haigiaitrixin.great-site.net/follow.php?username={username}&key=giaitrixin"
+    try:
+        response1 = requests.get(api1, timeout=60, verify=False)
+        if response1.status_code != 200:
+            print("Lỗi khi tăng follow! API không phản hồi.")
+            return
+        
+        response1_data = response1.json()
+        if response1_data.get("success") is False:
+            message_text = response1_data.get("message", "")
+            wait_time_match = re.search(r'(\d+)\s*giây', message_text)
+            if wait_time_match:
+                wait_time = wait_time_match.group(1)
+                bot.reply_to(message, f"<b>⚠️ Vui Lòng Chờ {wait_time} Giây Trước Khi Thử Lại!</b>\n\nhttps://www.tiktok.com/@{username}", parse_mode="HTML")
+                return
+
+    except requests.RequestException:
+        print("Lỗi Kết Nối Api")
+        return
+    except ValueError:
+        print("Lỗi Định Dạng Api")
+        return
+    
+    
+    data[user_id]['token'] -= 100
+    save_data(data)
+    remaining_token = data[user_id]['token']
+
+    
+    result = f"""
+╭─────────────⭓
+│ Tăng Follow Thành Công: @{html.escape(username)}
+│ 
+│ Nick Name: <code>{html.escape(info.get('nickname', 'N/A'))}</code>
+│ UID: <code>{info.get('user_id', 'N/A')}</code>
+│ Follower Ban Đầu: <code>{info.get('followers', 'N/A')}</code> Followers
+├─────────────⭔
+│ TK <a href="tg://user?id={user_id}">{user_id}</a> | GD: <code>-100</code> TOKEN
+│ SD: <code>{remaining_token}</code> TOKEN
+╰─────────────⭓
+"""
+    
+    bot.reply_to(message, result, parse_mode="HTML")
+
+
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
