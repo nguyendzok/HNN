@@ -252,28 +252,41 @@ def bypass_link4m(url):
     try:
         session = requests.Session()
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            'User-Agent': 'Mozilla/5.0',
+            'Referer': url,
         }
 
-        # Bước 1: Truy cập link chính
+        # Bước 1: Lấy slug từ URL
+        slug = url.strip('/').split("/")[-1]
+
+        # Bước 2: Truy cập trang để lấy token hidden trong HTML
         res = session.get(url, headers=headers)
-        
-        # Bước 2: Đợi nếu có redirect delay
-        time.sleep(3)
+        token_match = re.search(r'name="token"\s+value="([^"]+)"', res.text)
+        if not token_match:
+            return "❌ Không tìm thấy token."
 
-        # Bước 3: Lấy link chuyển hướng từ trang HTML
-        matches = re.findall(r'href="([^"]+)"', res.text)
-        for link in matches:
-            if "redirect" in link or "getlink" in link:
-                full_link = "https://link4m.com" + link if link.startswith("/") else link
-                final = session.get(full_link, headers=headers, allow_redirects=True)
-                return final.url
+        token = token_match.group(1)
 
-        return "❌ Không thể lấy được link gốc."
-    
+        # Bước 3: Gửi POST request tới API
+        api_url = f'https://link4m.com/links/go'
+        data = {
+            'token': token
+        }
+
+        headers['X-Requested-With'] = 'XMLHttpRequest'
+
+        time.sleep(5)  # mô phỏng chờ đếm ngược
+
+        r = session.post(api_url, headers=headers, data=data)
+        json_data = r.json()
+
+        if 'url' in json_data:
+            return json_data['url']
+        else:
+            return f"❌ Không thể lấy link gốc (res: {json_data})"
+
     except Exception as e:
         return f"❌ Lỗi: {e}"
-
 # ===== Lệnh /bypass =====
 @bot.message_handler(commands=['bypass'])
 def handle_bypass(message):
