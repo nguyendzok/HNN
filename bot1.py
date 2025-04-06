@@ -42,10 +42,9 @@ share_log = []
 auto_spam_active = False
 last_sms_time = {}
 global_lock = Lock()
-admin_mode = False
 allowed_users = []
 processes = []
-ADMIN_ID =  7845889525 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
+ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
 allowed_group_id = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
@@ -63,7 +62,12 @@ def check_command_cooldown(user_id, command, cooldown):
         last_command_time.setdefault(user_id, {})[command] = current_time
         return None
 
-
+cursor.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        user_id INTEGER PRIMARY KEY,
+        expiration_time TEXT
+    )
+''')
 connection.commit()
 
 def TimeStamp():
@@ -126,9 +130,8 @@ def add_user(message):
         message.chat.id,
         video_url,
         caption=caption_text, parse_mode='HTML')
-
-load_users_from_database()
-
+    load_users_from_database()
+    
 def is_key_approved(chat_id, key):
     if chat_id in users_keys:
         user_key, timestamp = users_keys[chat_id]
