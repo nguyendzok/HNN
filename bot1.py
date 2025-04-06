@@ -245,6 +245,14 @@ def text_to_voice(message):
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
 
+
+def bypass_link(url):
+    try:
+        r = requests.head(url, allow_redirects=True, timeout=10)
+        return r.url
+    except Exception as e:
+        return f"❌ Không thể bypass link: {e}"
+
 # Lệnh /bypass
 @bot.message_handler(commands=['bypass'])
 def handle_bypass(message):
