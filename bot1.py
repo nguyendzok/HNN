@@ -270,37 +270,57 @@ def handle_bypass(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Lỗi: {e}")
 
+
+
+
+DATA_FILE = 'data.json'
+
+# Hàm load dữ liệu
+def load_data():
+    if not os.path.exists(DATA_FILE):
+        return {}
+    try:
+        with open(DATA_FILE, 'r') as f:
+            return json.load(f)
+    except json.JSONDecodeError:
+        return {}
+
+# Hàm lưu dữ liệu
+def save_data(data):
+    with open(DATA_FILE, 'w') as f:
+        json.dump(data, f, indent=4)
+
+# Danh sách các nhóm cho phép (có thể thêm nhiều nhóm vào đây)
+ALLOWED_GROUP_ID = [-1002639856138]  # Chỉnh ID nhóm ở đây
+
+# Xử lý lệnh /fltik
 @bot.message_handler(commands=['fltik'])
 def handle_fl(message):
-    allowed_groups = [-1002639856138]  # Có thể là list nếu bạn có nhiều group
-    user_id = str(message.from_user.id)
     chat_id = message.chat.id
 
-    # Kiểm tra nếu không phải nhóm được phép
-    if chat_id not in allowed_groups:
-        bot.reply_to(message, "Tham Gia Nhóm Của Chúng Tôi Để Bot Có Thể Trò Chuyện Với Bạn Dễ Dàng Hơn.\nLink Đây: [ https://t.me/+AhM8n6X-63JmNTQ1 ]\n\nLưu Ý, Bot Chỉ Hoạt Động Trong Những Nhóm Cụ Thể Thôi Nha!")
+    # Kiểm tra nhóm có trong danh sách cho phép không
+    if chat_id not in ALLOWED_GROUP_ID:
+        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
         return
 
+    # Load dữ liệu người dùng
     data = load_data()
     user_id = str(message.from_user.id)
 
+    # Kiểm tra token của người dùng
     if user_id not in data or data[user_id]['token'] < 100:
         bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
-        return  # ✅ đúng, vì nằm trong function
-# Nếu đủ token thì trừ token và lưu lại
+        return
 
-if user_id not in data:
-    data[user_id] = {"token": 0}
-
-    # Kiểm tra cú pháp
+    # Tách username TikTok từ lệnh
     args = message.text.split()
     if len(args) < 2:
         bot.reply_to(message, "<b>⚠️ Vui Lòng Nhập Username TikTok</b> \n\nVí dụ: \n<code>/tt bacgau</code>", parse_mode="HTML")
         return
-
+    
     username = args[1]
 
-    # Lấy thông tin tài khoản
+    # Gọi API TikTok để lấy thông tin người dùng
     api2 = f"http://haigiaitrixin.great-site.net/follow.php?{username}&key=giaitrixin"
     try:
         response2 = requests.get(api2, timeout=60, verify=False)
@@ -315,14 +335,14 @@ if user_id not in data:
 
     info = data_api["data"]
 
-    # Gọi API tăng follow
+    # Gọi API TikTok để tăng follow
     api1 = f"http://haigiaitrixin.great-site.net/follow.php?username={username}&key=giaitrixin"
     try:
         response1 = requests.get(api1, timeout=60, verify=False)
         if response1.status_code != 200:
             print("Lỗi khi tăng follow! API không phản hồi.")
             return
-
+        
         response1_data = response1.json()
         if response1_data.get("success") is False:
             message_text = response1_data.get("message", "")
@@ -339,12 +359,12 @@ if user_id not in data:
         print("Lỗi Định Dạng Api")
         return
 
-    # Trừ token và lưu
+    # Trừ token của người dùng và lưu lại
     data[user_id]['token'] -= 100
     save_data(data)
     remaining_token = data[user_id]['token']
 
-    # Trả kết quả cho user
+    # Phản hồi kết quả
     result = f"""
 ╭─────────────⭓
 │ Tăng Follow Thành Công: @{html.escape(username)}
@@ -357,9 +377,7 @@ if user_id not in data:
 │ SD: <code>{remaining_token}</code> TOKEN
 ╰─────────────⭓
 """
-
     bot.reply_to(message, result, parse_mode="HTML")
-
 
 
 @bot.message_handler(commands=['hoi'])
