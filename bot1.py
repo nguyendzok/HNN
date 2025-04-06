@@ -270,31 +270,32 @@ def handle_bypass(message):
     except Exception as e:
         bot.reply_to(message, f"❌ Lỗi: {e}")
 
-
 @bot.message_handler(commands=['fltik'])
 def handle_fl(message):
-    
+    allowed_groups = [ALLOWED_GROUP_ID]  # Có thể là list nếu bạn có nhiều group
+    user_id = str(message.from_user.id)
+    chat_id = message.chat.id
+
+    # Kiểm tra nếu không phải nhóm được phép
+    if chat_id not in allowed_groups:
         bot.reply_to(message, "Tham Gia Nhóm Của Chúng Tôi Để Bot Có Thể Trò Chuyện Với Bạn Dễ Dàng Hơn.\nLink Đây: [ https://t.me/+AhM8n6X-63JmNTQ1 ]\n\nLưu Ý, Bot Chỉ Hoạt Động Trong Những Nhóm Cụ Thể Thôi Nha!")
         return
 
-   
-        data = load_data()
-        user_id = str(message.from_user.id)
-    
-    
-        if user_id not in data or data[user_id]['token'] < 100:
+    # Load data và kiểm tra token
+    data = load_data()
+    if user_id not in data or data[user_id]['token'] < 100:
         bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
         return
 
-   
+    # Kiểm tra cú pháp
     args = message.text.split()
     if len(args) < 2:
         bot.reply_to(message, "<b>⚠️ Vui Lòng Nhập Username TikTok</b> \n\nVí dụ: \n<code>/tt bacgau</code>", parse_mode="HTML")
         return
-    
+
     username = args[1]
 
-
+    # Lấy thông tin tài khoản
     api2 = f"http://haigiaitrixin.great-site.net/follow.php?{username}&key=giaitrixin"
     try:
         response2 = requests.get(api2, timeout=60, verify=False)
@@ -302,22 +303,21 @@ def handle_fl(message):
     except (requests.RequestException, ValueError):
         bot.reply_to(message, "Lỗi Khi Lấy Thông Tin Tài Khoản")
         return
-    
+
     if "data" not in data_api or "user_id" not in data_api["data"]:
         bot.reply_to(message, "Không Tìm Thấy Tài Khoản Người Dùng")
         return
-    
-   
+
     info = data_api["data"]
 
-   
+    # Gọi API tăng follow
     api1 = f"http://haigiaitrixin.great-site.net/follow.php?username={username}&key=giaitrixin"
     try:
         response1 = requests.get(api1, timeout=60, verify=False)
         if response1.status_code != 200:
             print("Lỗi khi tăng follow! API không phản hồi.")
             return
-        
+
         response1_data = response1.json()
         if response1_data.get("success") is False:
             message_text = response1_data.get("message", "")
@@ -333,13 +333,13 @@ def handle_fl(message):
     except ValueError:
         print("Lỗi Định Dạng Api")
         return
-    
-    
+
+    # Trừ token và lưu
     data[user_id]['token'] -= 100
     save_data(data)
     remaining_token = data[user_id]['token']
 
-    
+    # Trả kết quả cho user
     result = f"""
 ╭─────────────⭓
 │ Tăng Follow Thành Công: @{html.escape(username)}
@@ -352,8 +352,9 @@ def handle_fl(message):
 │ SD: <code>{remaining_token}</code> TOKEN
 ╰─────────────⭓
 """
-    
+
     bot.reply_to(message, result, parse_mode="HTML")
+
 
 
 @bot.message_handler(commands=['hoi'])
