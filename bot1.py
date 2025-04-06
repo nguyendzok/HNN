@@ -174,6 +174,7 @@ def send_help(message):
 ➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
+➤ /addtoken : tăng token
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -379,6 +380,27 @@ def handle_fl(message):
 ╰─────────────⭓
 """
     bot.reply_to(message, result, parse_mode="HTML")
+
+ADMIN_IDS = [7658079324]  # Thay bằng Telegram ID của bạn
+
+@bot.message_handler(commands=['addtoken'])
+def add_token(message):
+    if message.from_user.id not in ADMIN_IDS:
+        bot.reply_to(message, "❌ Bạn không có quyền sử dụng lệnh này.")
+        return
+
+    user_id = str(message.from_user.id)
+    data = load_data()
+    token_amount = 100
+
+    if user_id not in data:
+        data[user_id] = {"token": token_amount}
+    else:
+        data[user_id]["token"] += token_amount
+
+    save_data(data)
+    bot.reply_to(message, f"✅ Đã cộng {token_amount} token!\n🎯 Bạn hiện có {data[user_id]['token']} token.")
+
 
 
 @bot.message_handler(commands=['hoi'])
