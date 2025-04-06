@@ -128,7 +128,7 @@ def add_user(message):
     save_user_to_database(connection, user_id, expiration_time)
     connection.close()
 
-    caption_text = (f'<blockquote>NGƯỜI DÙNG CÓ ID {user_id}\nĐÃ ĐƯỢC THÊM VÀO DANH SÁCH VIP\nTHỜI GIAN: {days} DAY\nLỆNH CÓ THỂ SỬ DỤNG CÁC LỆNH TRONG [/vlong]</blockquote>')
+    caption_text = (f'<blockquote>NGƯỜI DÙNG CÓ ID {user_id}\nĐÃ ĐƯỢC THÊM VÀO DANH SÁCH VIP\nTHỜI GIAN: {days} DAY\nLỆNH CÓ THỂ SỬ DỤNG CÁC LỆNH TRONG [/start]</blockquote>')
     bot.send_video(
         message.chat.id,
         video_url,
@@ -245,32 +245,6 @@ def text_to_voice(message):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
-
-
-# Hàm bypass link4m
-def bypass_link(url):
-    try:
-        r = requests.head(url, allow_redirects=True, timeout=10)
-        return r.url
-    except Exception as e:
-        return f"❌ Không thể bypass link: {e}"
-
-# ===== Lệnh /bypass =====
-# /bypass command
-@bot.message_handler(commands=['bypass'])
-def handle_bypass(message):
-    try:
-        args = message.text.split()
-        if len(args) < 2:
-            bot.reply_to(message, "⚠️ Bạn chưa nhập link. Ví dụ: `/bypass https://example.com`", parse_mode="Markdown")
-            return
-        url = args[1]
-        bot.reply_to(message, "⏳ Đang xử lý...")
-        result = bypass_link(url)
-        bot.reply_to(message, f"✅ Kết quả:\n{result}")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Lỗi: {e}")
 
 
 
