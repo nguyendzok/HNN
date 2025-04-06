@@ -23,8 +23,6 @@ import queue
 import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
-import undetected_chromedriver.v2 as uc  # Lưu ý phiên bản v2
-from selenium.webdriver.common.by import By
 keep_alive()
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
@@ -252,31 +250,36 @@ def text_to_voice(message):
 # Hàm bypass link4m
 def bypass_link4m(url):
     try:
-        options = uc.ChromeOptions()
-        options.headless = True  # không hiện cửa sổ trình duyệt
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-dev-shm-usage")
+        session = requests.Session()
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+        }
 
-        # Khởi tạo WebDriver mà không cần executable_path
-        driver = uc.Chrome(options=options)
+        # Bước 1: Truy cập link chính
+        res = session.get(url, headers=headers)
+        
+        # Bước 2: Đợi nếu có redirect delay
+        time.sleep(3)
 
-        driver.get(url)
-        time.sleep(10)  # đợi trang load + đếm ngược
+        # Bước 3: Lấy link chuyển hướng từ trang HTML
+        matches = re.findall(r'href="([^"]+)"', res.text)
+        for link in matches:
+            if "redirect" in link or "getlink" in link:
+                full_link = "https://link4m.com" + link if link.startswith("/") else link
+                final = session.get(full_link, headers=headers, allow_redirects=True)
+                return final.url
 
-        # Tìm nút GET LINK
-        button = driver.find_element(By.XPATH, "//a[contains(text(),'Get Link')]")
-        result = button.get_attribute('href')
-
-        driver.quit()
-        return result
+        return "❌ Không thể lấy được link gốc."
+    
     except Exception as e:
-        return f"❌ Không thể bypass: {e}"
+        return f"❌ Lỗi: {e}"
 
+# ===== Lệnh /bypass =====
 @bot.message_handler(commands=['bypass'])
 def handle_bypass(message):
     args = message.text.split()
     if len(args) < 2:
-        bot.reply_to(message, "⚠️ Bạn chưa nhập link.\nVí dụ: /bypass https://link4m.com/xxx")
+        bot.reply_to(message, "⚠️ Bạn chưa gửi link.\nVí dụ: /bypass https://link4m.com/abc")
         return
 
     url = args[1]
