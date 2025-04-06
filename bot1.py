@@ -279,7 +279,7 @@ def handle_fl(message):
 
    
         data = load_data()
-    user_id = str(message.from_user.id)
+        user_id = str(message.from_user.id)
     
     
     if user_id not in data or data[user_id]['token'] < 100:
