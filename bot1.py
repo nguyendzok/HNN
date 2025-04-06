@@ -169,7 +169,7 @@ def send_help(message):
 ➤ /fltik : Buff Follow Tiktok
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
-➤ /band : Kiểm tra tài khoản có khóa không
+➤ /bypass : bypass linkm4
 ➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
@@ -244,6 +244,21 @@ def text_to_voice(message):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+
+# Lệnh /bypass
+@bot.message_handler(commands=['bypass'])
+def handle_bypass(message):
+    try:
+        args = message.text.split()
+        if len(args) < 2:
+            bot.reply_to(message, "⚠️ Vui lòng gửi kèm link. Ví dụ: `/bypass https://example.com`", parse_mode="Markdown")
+            return
+        url = args[1]
+        bot.reply_to(message, "⏳ Đang xử lý link...")
+        result = bypass_link(url)
+        bot.reply_to(message, f"✅ Link sau khi bypass:\n{result}")
+    except Exception as e:
+        bot.reply_to(message, f"❌ Lỗi: {e}")
 
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
