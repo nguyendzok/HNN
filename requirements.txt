@@ -3,3 +3,4 @@ psutil
 gtts
 pytz
 flask
+undetected-chromedriver==3.0.0
