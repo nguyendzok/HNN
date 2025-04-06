@@ -44,12 +44,13 @@ last_sms_time = {}
 global_lock = Lock()
 allowed_users = []
 processes = []
+admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
 allowed_group_id = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
-admin_mode = True
+
 last_command_timegg = 0
 
 def check_command_cooldown(user_id, command, cooldown):
