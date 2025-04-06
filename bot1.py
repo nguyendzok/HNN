@@ -282,15 +282,12 @@ def handle_fl(message):
         return
 
     data = load_data()
-user_id = str(message.from_user.id)
+    user_id = str(message.from_user.id)
 
-if user_id not in data or data[user_id]['token'] < 100:
-    bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
-    return
-
+    if user_id not in data or data[user_id]['token'] < 100:
+        bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
+        return  # ✅ đúng, vì nằm trong function
 # Nếu đủ token thì trừ token và lưu lại
-data[user_id]['token'] -= 100
-save_data(data)
 
 if user_id not in data:
     data[user_id] = {"token": 0}
