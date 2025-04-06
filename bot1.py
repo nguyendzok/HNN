@@ -49,7 +49,7 @@ allowed_group_id = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
-
+admin_mode = True
 last_command_timegg = 0
 
 def check_command_cooldown(user_id, command, cooldown):
@@ -187,7 +187,8 @@ def call_api(uid):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException:
-        return {"status": "error", "message": "Server quá tải hoặc lỗi kết nối"}
+        return {"status": "error", "message": "Server  đang bị adm
+        in"}
 
 
 @bot.message_handler(commands=['like'])
