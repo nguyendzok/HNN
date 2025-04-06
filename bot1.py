@@ -251,42 +251,39 @@ def text_to_voice(message):
 def bypass_link4m(url):
     try:
         options = uc.ChromeOptions()
-        options.headless = True  # chạy ẩn, không mở cửa sổ
+        options.headless = True  # không hiện cửa sổ trình duyệt
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-dev-shm-usage")
         driver = uc.Chrome(options=options)
 
         driver.get(url)
-        time.sleep(10)  # đợi trang tải + đếm ngược JS
+        time.sleep(10)  # đợi trang load + đếm ngược
 
-        # Tìm nút "GET LINK" hoặc tương tự
-        get_link_btn = driver.find_element(By.XPATH, "//a[contains(@class, 'btn') and contains(text(), 'Get Link')]")
-        get_link = get_link_btn.get_attribute('href')
+        # Tìm nút GET LINK
+        button = driver.find_element(By.XPATH, "//a[contains(text(),'Get Link')]")
+        result = button.get_attribute('href')
 
         driver.quit()
-        return get_link
+        return result
     except Exception as e:
         return f"❌ Không thể bypass: {e}"
 
-# Lệnh /bypass
 @bot.message_handler(commands=['bypass'])
 def handle_bypass(message):
-    try:
-        args = message.text.split()
-        if len(args) < 2:
-            bot.reply_to(message, "⚠️ Bạn chưa nhập link.\nVí dụ: /bypass https://link4m.com/xxxx")
-            return
+    args = message.text.split()
+    if len(args) < 2:
+        bot.reply_to(message, "⚠️ Bạn chưa nhập link.\nVí dụ: /bypass https://link4m.com/xxx")
+        return
 
-        url = args[1]
-        bot.reply_to(message, "⏳ Đang xử lý link...")
+    url = args[1]
+    bot.reply_to(message, "⏳ Đang xử lý link...")
 
-        if "link4m.com" in url:
-            result = bypass_link4m(url)
-        else:
-            result = "❌ Chưa hỗ trợ trang này."
+    if "link4m.com" in url:
+        result = bypass_link4m(url)
+    else:
+        result = "❌ Hiện tại chỉ hỗ trợ link4m.com."
 
-        bot.reply_to(message, f"✅ Kết quả:\n{result}")
-    except Exception as e:
-        bot.reply_to(message, f"❌ Lỗi xử lý: {e}")
-        
+    bot.reply_to(message, f"✅ Kết quả:\n{result}")
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
