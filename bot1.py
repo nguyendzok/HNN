@@ -272,7 +272,7 @@ def handle_bypass(message):
 
 @bot.message_handler(commands=['fltik'])
 def handle_fl(message):
-    allowed_groups = [1002639856138]  # Có thể là list nếu bạn có nhiều group
+    allowed_groups = -1002639856138  # Có thể là list nếu bạn có nhiều group
     user_id = str(message.from_user.id)
     chat_id = message.chat.id
 
