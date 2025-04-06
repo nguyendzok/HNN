@@ -179,17 +179,16 @@ def send_help(message):
 API_BASE_URL = "https://dichvukey.site/freefire/like.php?key=vlong"
 
 def call_api(uid):
-    url = f"{API_BASE_URL}?uid={uid}"
+    url = f"{API_BASE_URL}&uid={uid}"
     try:
         headers = {
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
         }
         response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        return response.json()
+        response.raise_for_status()  # Kiểm tra lỗi HTTP
+        return response.json()  # Trả về dữ liệu JSON
     except requests.exceptions.RequestException:
-        return {"status": "error", "message": "Server  đang bị admin Tắt"}
-
+        return {"status": "error", "message": "Server đang bị admin Tắt"}
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
@@ -203,8 +202,8 @@ def like_handler(message):
     data = call_api(uid)
 
     # Kiểm tra API có trả về lỗi không
-    if "error" in data:
-        bot.reply_to(message, f"<blockquote>❌ {data['error']}</blockquote>", parse_mode="HTML")
+    if data.get("status") == "error":
+        bot.reply_to(message, f"<blockquote>❌ {data['message']}</blockquote>", parse_mode="HTML")
         return
 
     # Nếu API trả về thông tin hợp lệ
