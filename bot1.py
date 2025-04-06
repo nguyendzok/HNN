@@ -248,18 +248,25 @@ def text_to_voice(message):
             os.remove(temp_file_path)
 
 
+import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
+import time
+
+# Hàm bypass link4m
 def bypass_link4m(url):
     try:
         options = uc.ChromeOptions()
-        options.headless = True  # không hiện cửa sổ trình duyệt
+        options.headless = True  # Không mở cửa sổ trình duyệt
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
+
+        # Khởi tạo trình duyệt mới
         driver = uc.Chrome(options=options)
 
         driver.get(url)
-        time.sleep(10)  # đợi trang load + đếm ngược
+        time.sleep(10)  # Đợi trang tải + đếm ngược
 
-        # Tìm nút GET LINK
+        # Tìm nút Get Link
         button = driver.find_element(By.XPATH, "//a[contains(text(),'Get Link')]")
         result = button.get_attribute('href')
 
