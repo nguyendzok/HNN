@@ -282,7 +282,7 @@ def handle_fl(message):
         user_id = str(message.from_user.id)
     
     
-    if user_id not in data or data[user_id]['token'] < 100:
+        if user_id not in data or data[user_id]['token'] < 100:
         bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
         return
 
