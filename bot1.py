@@ -23,6 +23,8 @@ import queue
 import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
+import undetected_chromedriver as uc
+from selenium.webdriver.common.by import By
 keep_alive()
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
