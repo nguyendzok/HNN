@@ -281,11 +281,19 @@ def handle_fl(message):
         bot.reply_to(message, "Tham Gia Nhóm Của Chúng Tôi Để Bot Có Thể Trò Chuyện Với Bạn Dễ Dàng Hơn.\nLink Đây: [ https://t.me/+AhM8n6X-63JmNTQ1 ]\n\nLưu Ý, Bot Chỉ Hoạt Động Trong Những Nhóm Cụ Thể Thôi Nha!")
         return
 
-    # Load data và kiểm tra token
     data = load_data()
-    if user_id not in data or data[user_id]['token'] < 100:
-        bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
-        return
+    user_id = str(message.from_user.id)
+
+if user_id not in data or data[user_id]['token'] < 100:
+    bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
+    return
+
+# Nếu đủ token thì trừ token và lưu lại
+data[user_id]['token'] -= 100
+save_data(data)
+
+if user_id not in data:
+    data[user_id] = {"token": 0}
 
     # Kiểm tra cú pháp
     args = message.text.split()
