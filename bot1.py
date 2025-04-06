@@ -256,34 +256,25 @@ def bypass_link4m(url):
             'Referer': url,
         }
 
-        # Bước 1: Lấy slug từ URL
-        slug = url.strip('/').split("/")[-1]
-
-        # Bước 2: Truy cập trang để lấy token hidden trong HTML
+        # Bước 1: Truy cập trang đầu
         res = session.get(url, headers=headers)
-        token_match = re.search(r'name="token"\s+value="([^"]+)"', res.text)
-        if not token_match:
-            return "❌ Không tìm thấy token."
+        
+        # Bước 2: Tìm link "/go/<ID>" trong HTML
+        match = re.search(r'href="(/go/[^"]+)"', res.text)
+        if not match:
+            return "❌ Không tìm thấy link go/"
 
-        token = token_match.group(1)
+        go_path = match.group(1)
+        go_url = "https://link4m.com" + go_path
 
-        # Bước 3: Gửi POST request tới API
-        api_url = f'https://link4m.com/links/go'
-        data = {
-            'token': token
-        }
+        # Bước 3: Truy cập link đó để lấy redirect
+        time.sleep(5)  # mô phỏng thời gian đếm ngược
+        final = session.get(go_url, headers=headers, allow_redirects=False)
 
-        headers['X-Requested-With'] = 'XMLHttpRequest'
-
-        time.sleep(5)  # mô phỏng chờ đếm ngược
-
-        r = session.post(api_url, headers=headers, data=data)
-        json_data = r.json()
-
-        if 'url' in json_data:
-            return json_data['url']
+        if 'Location' in final.headers:
+            return final.headers['Location']
         else:
-            return f"❌ Không thể lấy link gốc (res: {json_data})"
+            return "❌ Không tìm thấy redirect."
 
     except Exception as e:
         return f"❌ Lỗi: {e}"
@@ -292,19 +283,19 @@ def bypass_link4m(url):
 def handle_bypass(message):
     args = message.text.split()
     if len(args) < 2:
-        bot.reply_to(message, "⚠️ Bạn chưa gửi link.\nVí dụ: /bypass https://link4m.com/abc")
+        bot.reply_to(message, "⚠️ Bạn chưa nhập link.\nVí dụ: /bypass https://link4m.com/abcxyz")
         return
 
     url = args[1]
-    bot.reply_to(message, "⏳ Đang xử lý link...")
+    bot.reply_to(message, "⏳ Đang xử lý...")
 
     if "link4m.com" in url:
         result = bypass_link4m(url)
     else:
-        result = "❌ Hiện tại chỉ hỗ trợ link4m.com."
+        result = "❌ Hiện chỉ hỗ trợ link4m.com."
 
     bot.reply_to(message, f"✅ Kết quả:\n{result}")
-
+    
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
