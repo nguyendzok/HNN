@@ -23,7 +23,7 @@ import queue
 import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
-import undetected_chromedriver as uc
+import undetected_chromedriver.v2 as uc  # Lưu ý phiên bản v2
 from selenium.webdriver.common.by import By
 keep_alive()
 admin_diggory = "HaoEsport" 
@@ -248,25 +248,22 @@ def text_to_voice(message):
             os.remove(temp_file_path)
 
 
-import undetected_chromedriver as uc
-from selenium.webdriver.common.by import By
-import time
 
 # Hàm bypass link4m
 def bypass_link4m(url):
     try:
         options = uc.ChromeOptions()
-        options.headless = True  # Không mở cửa sổ trình duyệt
+        options.headless = True  # không hiện cửa sổ trình duyệt
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
 
-        # Khởi tạo trình duyệt mới
+        # Khởi tạo WebDriver mà không cần executable_path
         driver = uc.Chrome(options=options)
 
         driver.get(url)
-        time.sleep(10)  # Đợi trang tải + đếm ngược
+        time.sleep(10)  # đợi trang load + đếm ngược
 
-        # Tìm nút Get Link
+        # Tìm nút GET LINK
         button = driver.find_element(By.XPATH, "//a[contains(text(),'Get Link')]")
         result = button.get_attribute('href')
 
@@ -291,6 +288,7 @@ def handle_bypass(message):
         result = "❌ Hiện tại chỉ hỗ trợ link4m.com."
 
     bot.reply_to(message, f"✅ Kết quả:\n{result}")
+
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
