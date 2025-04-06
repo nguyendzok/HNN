@@ -187,8 +187,7 @@ def call_api(uid):
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException:
-        return {"status": "error", "message": "Server  đang bị adm
-        in"}
+        return {"status": "error", "message": "Server  đang bị admin Tắt"}
 
 
 @bot.message_handler(commands=['like'])
