@@ -273,6 +273,7 @@ def handle_bypass(message):
 
 @bot.message_handler(commands=['fltik'])
 def handle_fl(message):
+    ALLOWED_GROUP_ID = -1002639856138
     if message.chat.id not in ALLOWED_GROUP_ID:
         bot.reply_to(message, "Tham Gia Nhóm Của Chúng Tôi Để Bot Có Thể Trò Chuyện Với Bạn Dễ Dàng Hơn.\nLink Đây: [ https://t.me/+AhM8n6X-63JmNTQ1 ]\n\nLưu Ý, Bot Chỉ Hoạt Động Trong Những Nhóm Cụ Thể Thôi Nha!")
         return
