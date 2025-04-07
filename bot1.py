@@ -47,7 +47,7 @@ allowed_users = []
 processes = []
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
-ALLOWED_GROUP_ID = -1002639856138
+ALLOWED_GROUP_ID = [-1002639856138]
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
@@ -154,27 +154,24 @@ def is_key_approved(chat_id, key):
 
 @bot.message_handler(commands=['help','start'])
 def send_help(message):
+    if chat_id not in ALLOWED_GROUP_ID:
+        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
+        return
     bot.reply_to(message, """<blockquote>
 ┌───⭓ Trần Hào
 ➤ /spam : Spam + Call FREE
-➤ /status : SĐT Đang Spam
 ➤ /stop : Dừng Spam SĐT
-➤ /key : Nhập Key Đã Mua
-➤ /muavip : Mua VIP           
-➤ /checkme : Check VIP
-➤ /warning : Lưu Ý Khi Spam
 ➤ /tv : Tiếng việt cho telegram
+➤ /id : Lấy id bản thân
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
-➤ /ff : xem thông tin
 ➤ /fltik : Buff Follow Tiktok
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
-➤ /bypass : bypass linkm4
 ➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
-➤ /addtoken : tăng token
+➤ /rs : khởi động lại
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -195,6 +192,9 @@ def call_api(uid):
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     args = message.text.split()
+    if chat_id not in ALLOWED_GROUP_ID:
+        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
+        return
 
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
@@ -249,139 +249,26 @@ def text_to_voice(message):
 
 
 
-DATA_FILE = 'data.json'
-
-# Hàm load dữ liệu
-def load_data():
-    if not os.path.exists(DATA_FILE):
-        return {}
-    try:
-        with open(DATA_FILE, 'r') as f:
-            return json.load(f)
-    except json.JSONDecodeError:
-        return {}
-
-# Hàm lưu dữ liệu
-def save_data(data):
-    with open(DATA_FILE, 'w') as f:
-        json.dump(data, f, indent=4)
-
-# Danh sách các nhóm cho phép (có thể thêm nhiều nhóm vào đây)
 ALLOWED_GROUP_ID = [-1002639856138]  # Chỉnh ID nhóm ở đây
-
-# Xử lý lệnh /fltik
-@bot.message_handler(commands=['fltik'])
-def handle_fl(message):
-    chat_id = message.chat.id
-
-    # Kiểm tra nhóm có trong danh sách cho phép không
+@bot.message_handler(commands=['rs'])
+def handle_reset(message):
     if chat_id not in ALLOWED_GROUP_ID:
         bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
         return
-
-    # Load dữ liệu người dùng
-    data = load_data()
-    user_id = str(message.from_user.id)
-
-    # Kiểm tra token của người dùng
-    if user_id not in data or data[user_id]['token'] < 50:
-        bot.reply_to(message, "Bạn không đủ 50 token để sử dụng lệnh này!")
-        return
-
-    # Tách username TikTok từ lệnh
-    args = message.text.split()
-    if len(args) < 2:
-        bot.reply_to(message, "<b>⚠️ Vui Lòng Nhập Username TikTok</b> \n\nVí dụ: \n<code>/tt bacgau</code>", parse_mode="HTML")
-        return
-    
-    username = args[1]
-
-    # Gọi API TikTok để lấy thông tin người dùng
-    api2 = f"https://api.sumiproject.net/tiktok?info={username}"
-    try:
-        response2 = requests.get(api2, timeout=60, verify=False)
-        data_api = response2.json()
-    except (requests.RequestException, ValueError):
-        bot.reply_to(message, "Lỗi Khi Lấy Thông Tin Tài Khoản")
-        return
-
-    if data['code'] != 0 or 'data' not in data:
-            bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="Markdown")
-            return
-
-    user = data['data']['user']
-    stats = data['data']['stats']
-
-
-
-    # Gọi API TikTok để tăng follow
-    api1 = f"http://haigiaitrixin.great-site.net/follow.php?username={username}&key=giaitrixin"
-    try:
-        response1 = requests.get(api1, timeout=60, verify=False)
-        if response1.status_code != 200:
-            print("Lỗi khi tăng follow! API không phản hồi.")
-            return
-        
-        response1_data = response1.json()
-        if response1_data.get("success") is False:
-            message_text = response1_data.get("message", "")
-            wait_time_match = re.search(r'(\d+)\s*giây', message_text)
-            if wait_time_match:
-                wait_time = wait_time_match.group(1)
-                bot.reply_to(message, f"<b>⚠️ Vui Lòng Chờ {wait_time} Giây Trước Khi Thử Lại!</b>\n\nhttps://www.tiktok.com/@{username}", parse_mode="HTML")
-                return
-
-    except requests.RequestException:
-        print("Lỗi Kết Nối Api")
-        return
-    except ValueError:
-        print("Lỗi Định Dạng Api")
-        return
-
-    # Trừ token của người dùng và lưu lại
-    data[user_id]['token'] -= 50
-    save_data(data)
-    remaining_token = data[user_id]['token']
-
-    # Phản hồi kết quả
-    result = f"""
-╭─────────────⭓
-│ Tăng Follow Thành Công: @{user['uniqueId']} 
-│ 
-│ Nick Name: <code>{html.escape(info.get('nickname', 'N/A'))}</code>
-│ UID: <code>{info.get('user_id', 'N/A')}</code>
-│ Follower Ban Đầu: <code>{info.get('followers', 'N/A')}</code> Followers
-├─────────────⭔
-│ TK <a href="tg://user?id={user_id}">{user_id}</a> | GD: <code>-50</code> TOKEN
-│ SD: <code>{remaining_token}</code> TOKEN
-╰─────────────⭓
-"""
-    bot.reply_to(message, result, parse_mode="HTML")
-
-ADMIN_IDS = [7658079324]  # Thay bằng Telegram ID của bạn
-
-@bot.message_handler(commands=['addtoken'])
-def add_token(message):
-    if message.from_user.id not in ADMIN_IDS:
-        bot.reply_to(message, "❌ Bạn không có quyền sử dụng lệnh này.")
-        return
-
-    user_id = str(message.from_user.id)
-    data = load_data()
-    token_amount = 100
-
-    if user_id not in data:
-        data[user_id] = {"token": token_amount}
+    if message.from_user.id == ADMIN_ID:
+        bot.reply_to(message, "Bot đang khởi động lại...")
+        restart_program()
     else:
-        data[user_id]["token"] += token_amount
+        bot.reply_to(message, "Bạn không có quyền truy cập vào lệnh này!")
 
-    save_data(data)
-    bot.reply_to(message, f"✅ Đã cộng {token_amount} token!\n🎯 Bạn hiện có {data[user_id]['token']} token.")
 
 
 
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
+    if chat_id not in ALLOWED_GROUP_ID:
+        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
+        return
     text = message.text[len('/hoi '):].strip()
     
     if text:
