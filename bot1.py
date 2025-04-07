@@ -174,7 +174,6 @@ def send_help(message):
 ➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
-➤ /rs : khởi động lại
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -227,7 +226,7 @@ def like_handler(message):
 def text_to_voice(message):
     text = message.text[7:].strip()  
     if not text:
-        bot.reply_to(message, 'Nhập nội dung đi VD : /voice em đẹp trai')
+        bot.reply_to(message, 'Nhập nội dung đi VD : /voice Tôi là bot')
         return
 
     try:
@@ -245,18 +244,6 @@ def text_to_voice(message):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
-
-
-
-ALLOWED_GROUP_ID = [-1002639856138]  # Chỉnh ID nhóm ở đây
-@bot.message_handler(commands=['rs'])
-def handle_reset(message):
-    if message.from_user.id == ADMIN_ID:
-        bot.reply_to(message, "Bot đang khởi động lại...")
-        restart_program()
-    else:
-        bot.reply_to(message, "Bạn không có quyền truy cập vào lệnh này!")
 
 
 
