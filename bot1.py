@@ -206,11 +206,11 @@ def like_handler(message):
     reply_text = (
         f"<blockquote>\n"
         f"🎯 <b>Kết quả buff like:</b>\n"
-        f"👤 <b>Tên:</b> {data.get('username', 'Không xác định')}\n"
+        f"👤 <b>Tên:</b> {data.get('username', 'Tạm Thời Lỗi')}\n"
         f"🆔 <b>UID:</b> {data.get('uid', 'Không xác định')}\n"
-        f"👍 <b>Like trước:</b> {data.get('likes_before', 'Không xác định')}\n"
-        f"✅ <b>Like sau:</b> {data.get('likes_after', 'Không xác định')}\n"
-        f"➕ <b>Tổng cộng:</b> {data.get('likes_given', 'Không xác định')} like\n"
+        f"👍 <b>Like trước:</b> {data.get('likes_before', 'Tạm Thời Lỗi')}\n"
+        f"✅ <b>Like sau:</b> {data.get('likes_after', 'Tạm Thời Lỗi')}\n"
+        f"➕ <b>Tổng cộng:</b> {data.get('likes_given', 'Tạm Thời Lỗi')} like\n"
         f"</blockquote>"
     )
 
