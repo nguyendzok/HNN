@@ -641,13 +641,8 @@ def tieng_viet(message):
 ######
 
 # Hàm gọi API T
-import random
-
-EMOJIS = ["❤️", "🔥", "👍", "😂", "😎", "💯"]
-
-def react_to_message(chat_id, message_id):
-    emoji = random.choice(EMOJIS)
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/setMessageReaction"
+def react_to_message(chat_id, message_id, emoji="❤️"):
+    url = f"https://api.telegram.org/bot{os.environ.get('BOT_TOKEN')}/setMessageReaction"
     payload = {
         "chat_id": chat_id,
         "message_id": message_id,
@@ -656,10 +651,16 @@ def react_to_message(chat_id, message_id):
     }
     requests.post(url, json=payload)
 
-# Khi nhận tin nhắn thì bot tự "like"
+import random
+
+# Danh sách emoji tuỳ thích
+emojis = ["❤️", "😂", "🔥", "🤔", "👍", "😍", "😎", "💯", "👏", "😢", "😡"]
+
 @bot.message_handler(func=lambda message: True)
 def auto_like(message):
-    react_to_message(message.chat.id, message.message_id, emoji="🤔")
+    emoji = random.choice(emojis)  # Lấy emoji ngẫu nhiên
+    react_to_message(message.chat.id, message.message_id, emoji=emoji)
+
 
 
 
