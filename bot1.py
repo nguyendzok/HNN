@@ -501,6 +501,7 @@ def spam(message):
 
     username = message.from_user.username if message.from_user.username else "Không có username"
     first_name = message.from_user.first_name
+    now = datetime.now().strftime("%d/%m/%Y %H:%M")
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 ┌───⭓
 » {first_name} | @{username}
@@ -508,13 +509,12 @@ def spam(message):
 └───⧕
 
 ┌───⭓
-» Server: Spam SMS FREE
+» Server: Spam SMS VIP
 » Đang Tiến Hành Spam: [ {sdt} ]
 » Nhà Mạng: [ {carrier} ]
 » Vòng Lặp Spam: {count}
-» Lúc: [11:33:26, 07/04/2025]
+» Lúc: [ {now} ]
 » Dừng Spam [/stop {sdt}]
-» Hôm Nay Bạn Đã Spam {process} Lần VIP
 └───⧕
 '''
 
