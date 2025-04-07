@@ -634,6 +634,24 @@ def tieng_viet(message):
     bot.send_message(chat_id, '<blockquote>Click vào nút "<b>Tiếng Việt</b>" để đổi ngôn ngữ sang Tiếng Việt 🇻🇳</blockquote>', reply_markup=keyboard, parse_mode='HTML')
 ######
 
+# Hàm gọi API Telegram để thả reaction
+def react_to_message(chat_id, message_id, emoji="❤️"):
+    url = f"https://api.telegram.org/bot{token}/setMessageReaction"
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "reaction": [{"type": "emoji", "emoji": emoji}],
+        "is_big": True
+    }
+    requests.post(url, json=payload)
+
+# Khi nhận tin nhắn thì bot tự "like"
+@bot.message_handler(func=lambda message: True)
+def auto_like(message):
+    react_to_message(message.chat.id, message.message_id, emoji="👍")
+
+
+
 
 if __name__ == "__main__":
     bot_active = True
