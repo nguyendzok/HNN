@@ -47,7 +47,7 @@ allowed_users = []
 processes = []
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
-ALLOWED_GROUP_ID = [-1002639856138]
+allowed_group_id = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
@@ -152,11 +152,8 @@ def is_key_approved(chat_id, key):
 
 
 
-@bot.message_handler(commands=['help','start'])
+@bot.message_handler(commands=['bot','start'])
 def send_help(message):
-    if chat_id not in ALLOWED_GROUP_ID:
-        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
-        return
     bot.reply_to(message, """<blockquote>
 ┌───⭓ Trần Hào
 ➤ /spam : Spam + Call FREE
