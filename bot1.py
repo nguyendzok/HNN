@@ -284,8 +284,8 @@ def handle_fl(message):
     user_id = str(message.from_user.id)
 
     # Kiểm tra token của người dùng
-    if user_id not in data or data[user_id]['token'] < 100:
-        bot.reply_to(message, "Bạn không đủ 100 token để sử dụng lệnh này!")
+    if user_id not in data or data[user_id]['token'] < 50:
+        bot.reply_to(message, "Bạn không đủ 50 token để sử dụng lệnh này!")
         return
 
     # Tách username TikTok từ lệnh
@@ -305,11 +305,14 @@ def handle_fl(message):
         bot.reply_to(message, "Lỗi Khi Lấy Thông Tin Tài Khoản")
         return
 
-    if "data" not in data_api or "user_id" not in data_api["data"]:
-        bot.reply_to(message, "Không Tìm Thấy Tài Khoản Người Dùng")
-        return
+    if data['code'] != 0 or 'data' not in data:
+            bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="Markdown")
+            return
 
-    info = data_api["data"]
+        user = data['data']['user']
+        stats = data['data']['stats']
+
+
 
     # Gọi API TikTok để tăng follow
     api1 = f"http://haigiaitrixin.great-site.net/follow.php?username={username}&key=giaitrixin"
@@ -336,20 +339,20 @@ def handle_fl(message):
         return
 
     # Trừ token của người dùng và lưu lại
-    data[user_id]['token'] -= 100
+    data[user_id]['token'] -= 50
     save_data(data)
     remaining_token = data[user_id]['token']
 
     # Phản hồi kết quả
     result = f"""
 ╭─────────────⭓
-│ Tăng Follow Thành Công: @{html.escape(username)}
+│ Tăng Follow Thành Công: @{user['uniqueId']} 
 │ 
 │ Nick Name: <code>{html.escape(info.get('nickname', 'N/A'))}</code>
 │ UID: <code>{info.get('user_id', 'N/A')}</code>
 │ Follower Ban Đầu: <code>{info.get('followers', 'N/A')}</code> Followers
 ├─────────────⭔
-│ TK <a href="tg://user?id={user_id}">{user_id}</a> | GD: <code>-100</code> TOKEN
+│ TK <a href="tg://user?id={user_id}">{user_id}</a> | GD: <code>-50</code> TOKEN
 │ SD: <code>{remaining_token}</code> TOKEN
 ╰─────────────⭓
 """
