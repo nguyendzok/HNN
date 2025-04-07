@@ -25,6 +25,11 @@ import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
 keep_alive()
+BOT_TOKEN = os.environ.get('BOT_TOKEN')  # <- thêm dòng này
+bot = telebot.TeleBot(BOT_TOKEN)         # <- bot dùng biến này
+
+print(BOT_TOKEN)  # Kiểm tra token có tồn tại không
+print("Bot đã được khởi động thành công")
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
 ADMIN_ID = '7912024917'
@@ -50,9 +55,6 @@ cursor = connection.cursor()
 last_command_time = {}
 
 last_command_timegg = 0
-bot = telebot.TeleBot(os.environ.get('BOT_TOKEN')) 
-print(os.environ.get('BOT_TOKEN'))  # Kiểm tra token có tồn tại không
-print("Bot đã được khởi động thành công")
 
 
 def react_to_message(chat_id, message_id, emoji="❤️"):
