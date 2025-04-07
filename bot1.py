@@ -297,7 +297,7 @@ def handle_fl(message):
     username = args[1]
 
     # Gọi API TikTok để lấy thông tin người dùng
-    api2 = f"http://haigiaitrixin.great-site.net/follow.php?{username}&key=giaitrixin"
+    api2 = f"https://api.sumiproject.net/tiktok?info={username}"
     try:
         response2 = requests.get(api2, timeout=60, verify=False)
         data_api = response2.json()
