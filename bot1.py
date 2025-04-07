@@ -309,8 +309,8 @@ def handle_fl(message):
             bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="Markdown")
             return
 
-        user = data['data']['user']
-        stats = data['data']['stats']
+    user = data['data']['user']
+    stats = data['data']['stats']
 
 
 
