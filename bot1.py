@@ -57,23 +57,6 @@ last_command_time = {}
 last_command_timegg = 0
 
 
-def react_to_message(chat_id, message_id, emoji="❤️"):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/setMessageReaction"
-    payload = {
-        "chat_id": chat_id,
-        "message_id": message_id,
-        "reaction": [{"type": "emoji", "emoji": emoji}],
-        "is_big": True
-    }
-    requests.post(url, json=payload)
-
-# Khi nhận tin nhắn thì bot tự "like"
-@bot.message_handler(func=lambda message: True)
-def auto_like(message):
-    react_to_message(message.chat.id, message.message_id, emoji="👍")
-
-
-
 
 def check_command_cooldown(user_id, command, cooldown):
     current_time = time.time()
@@ -658,6 +641,21 @@ def tieng_viet(message):
 ######
 
 # Hàm gọi API T
+def react_to_message(chat_id, message_id, emoji="❤️"):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/setMessageReaction"
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "reaction": [{"type": "emoji", "emoji": emoji}],
+        "is_big": True
+    }
+    requests.post(url, json=payload)
+
+# Khi nhận tin nhắn thì bot tự "like"
+@bot.message_handler(func=lambda message: True)
+def auto_like(message):
+    react_to_message(message.chat.id, message.message_id, emoji="🤔")
+
 
 
 if __name__ == "__main__":
