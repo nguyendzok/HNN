@@ -156,13 +156,13 @@ def is_key_approved(chat_id, key):
 def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌───⭓ Trần Hào
-➤ /spam : Spam + Call FREE
+➤ /spam : Spam FREE
+➤ /spamvip : Spam Vip
 ➤ /stop : Dừng Spam SĐT
 ➤ /tv : Tiếng việt cho telegram
 ➤ /id : Lấy id bản thân
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
-➤ /fltik : Buff Follow Tiktok
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
@@ -189,9 +189,6 @@ def call_api(uid):
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     args = message.text.split()
-    if chat_id not in ALLOWED_GROUP_ID:
-        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
-        return
 
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
@@ -249,9 +246,6 @@ def text_to_voice(message):
 ALLOWED_GROUP_ID = [-1002639856138]  # Chỉnh ID nhóm ở đây
 @bot.message_handler(commands=['rs'])
 def handle_reset(message):
-    if chat_id not in ALLOWED_GROUP_ID:
-        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
-        return
     if message.from_user.id == ADMIN_ID:
         bot.reply_to(message, "Bot đang khởi động lại...")
         restart_program()
@@ -263,9 +257,6 @@ def handle_reset(message):
 
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
-    if chat_id not in ALLOWED_GROUP_ID:
-        bot.reply_to(message, "❌ Bot chỉ hoạt động trong nhóm được phép. Vui lòng tham gia nhóm sau: https://t.me/+AhM8n6X-63JmNTQ1")
-        return
     text = message.text[len('/hoi '):].strip()
     
     if text:
@@ -441,6 +432,131 @@ def spam(message):
 
 
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
+
+
+@bot.message_handler(commands=['spamvip'])
+def spam(message):
+    user_id = message.from_user.id
+    current_time = time.time()
+    
+    if not bot_active:
+        msg = bot.reply_to(message, 'Bot hiện đang tắt.')
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        except telebot.apihelper.ApiTelegramException as e:
+            print(f"Error deleting message: {e}")
+        return
+
+    if admin_mode and user_id not in admins:
+        msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        except telebot.apihelper.ApiTelegramException as e:
+            print(f"Error deleting message: {e}")
+        return
+
+    if user_id in last_usage and current_time - last_usage[user_id] < 10:
+        warn_msg = bot.reply_to(message, f"⏳ Vui lòng đợi {100 - (current_time - last_usage[user_id]):.1f} giây trước khi dùng lại.")
+        time.sleep(10)
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=warn_msg.message_id)
+        except:
+            pass
+        return
+
+    # Phân tích cú pháp
+    params = message.text.split()[1:]
+    if len(params) != 2:
+        msg = bot.reply_to(message, "/spamvip sdt số_lần")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        return
+
+    sdt, count = params
+    carrier = detect_carrier(sdt)
+
+    if not count.isdigit():
+        msg = bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        return
+
+    count = int(count)
+
+    if count > 100:
+        msg = bot.reply_to(message, "/spamvip sdt số_lần tối đa là 100 - đợi 100 giây sử dụng lại.")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        return
+
+    if sdt in blacklist:
+        msg = bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        time.sleep(10)
+        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
+        return
+
+    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
+
+    username = message.from_user.username if message.from_user.username else "Không có username"
+    diggory_chat3 = f'''┌──────⭓ {name_bot}
+┌───⭓
+» {first_name} | @{username}
+» ID [{user_id}]
+└───⧕
+
+┌───⭓
+» Server: Spam SMS FREE
+» Đang Tiến Hành Spam: [ {sdt} ]
+» Nhà Mạng: [ {carrier} ]
+» Vòng Lặp Spam: {count}
+» Lúc: [11:33:26, 07/04/2025]
+» Dừng Spam [/stop {sdt}]
+» Hôm Nay Bạn Đã Spam {process} Lần VIP
+└───⧕
+'''
+
+    script_filename = "dec.py"
+    try:
+        if not os.path.isfile(script_filename):
+            bot.reply_to(message, "Không tìm thấy file script.")
+            return
+
+        with open(script_filename, 'r', encoding='utf-8') as file:
+            script_content = file.read()
+
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+            temp_file.write(script_content.encode('utf-8'))
+            temp_file_path = temp_file.name
+
+        # Chạy script spam
+        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+        active_processes[sdt] = process
+        # Gửi kết quả spam
+        sent_msg = bot.send_message(
+            message.chat.id,
+            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: VIP</blockquote>',
+            parse_mode='HTML'
+        )
+
+        threading.Thread(
+        target=lambda: (
+        time.sleep(0),
+        bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
+    )
+).start()
+
+        last_usage[user_id] = current_time
+
+    except FileNotFoundError:
+        bot.reply_to(message, "Không tìm thấy file.")
+    except Exception as e:
+        bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+
+
+blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
+
 
 
 @bot.message_handler(commands=['stop'])
