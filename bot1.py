@@ -641,7 +641,12 @@ def tieng_viet(message):
 ######
 
 # Hàm gọi API T
-def react_to_message(chat_id, message_id, emoji="❤️"):
+import random
+
+EMOJIS = ["❤️", "🔥", "👍", "😂", "😎", "💯"]
+
+def react_to_message(chat_id, message_id):
+    emoji = random.choice(EMOJIS)
     url = f"https://api.telegram.org/bot{BOT_TOKEN}/setMessageReaction"
     payload = {
         "chat_id": chat_id,
