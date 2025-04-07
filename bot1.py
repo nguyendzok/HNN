@@ -31,9 +31,6 @@ ADMIN_ID = '7912024917'
 zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
-bot = telebot.TeleBot(os.environ.get('BOT_TOKEN')) 
-print(os.environ.get('BOT_TOKEN'))  # Kiểm tra token có tồn tại không
-print("Bot đã được khởi động thành công")
 users_keys = {}
 key = ""
 user_cooldown = {}
@@ -53,6 +50,28 @@ cursor = connection.cursor()
 last_command_time = {}
 
 last_command_timegg = 0
+bot = telebot.TeleBot(os.environ.get('BOT_TOKEN')) 
+print(os.environ.get('BOT_TOKEN'))  # Kiểm tra token có tồn tại không
+print("Bot đã được khởi động thành công")
+
+
+def react_to_message(chat_id, message_id, emoji="❤️"):
+    url = f"https://api.telegram.org/bot{BOT_TOKEN}/setMessageReaction"
+    payload = {
+        "chat_id": chat_id,
+        "message_id": message_id,
+        "reaction": [{"type": "emoji", "emoji": emoji}],
+        "is_big": True
+    }
+    requests.post(url, json=payload)
+
+# Khi nhận tin nhắn thì bot tự "like"
+@bot.message_handler(func=lambda message: True)
+def auto_like(message):
+    react_to_message(message.chat.id, message.message_id, emoji="👍")
+
+
+
 
 def check_command_cooldown(user_id, command, cooldown):
     current_time = time.time()
@@ -105,25 +124,6 @@ vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 
 ####
 start_time = time.time()
-
-
-def react_to_message(chat_id, message_id, emoji="❤️"):
-    url = f"https://api.telegram.org/bot{BOT_TOKEN}/setMessageReaction"
-    payload = {
-        "chat_id": chat_id,
-        "message_id": message_id,
-        "reaction": [{"type": "emoji", "emoji": emoji}],
-        "is_big": True
-    }
-    requests.post(url, json=payload)
-
-# Khi nhận tin nhắn thì bot tự "like"
-@bot.message_handler(func=lambda message: True)
-def auto_like(message):
-    react_to_message(message.chat.id, message.message_id, emoji="👍")
-
-
-
 
 
 
