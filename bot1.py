@@ -501,7 +501,6 @@ def spam(message):
 
     username = message.from_user.username if message.from_user.username else "Không có username"
     first_name = message.from_user.first_name
-    now = datetime.now().strftime("%d/%m/%Y %H:%M")
     diggory_chat3 = f'''┌──────⭓ {name_bot}
 ┌───⭓
 » {first_name} | @{username}
