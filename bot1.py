@@ -513,7 +513,6 @@ def spam(message):
 » Đang Tiến Hành Spam: [ {sdt} ]
 » Nhà Mạng: [ {carrier} ]
 » Vòng Lặp Spam: {count}
-» Lúc: [ {now} ]
 » Dừng Spam [/stop {sdt}]
 └───⧕
 '''
