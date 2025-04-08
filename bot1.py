@@ -265,6 +265,12 @@ def call_api(uid):
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     args = message.text.split()
+    if not is_user_verified(user_id):
+        bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
+        return
+
+    # Nếu hợp lệ, cho spam
+    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
 
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
@@ -307,6 +313,12 @@ def like_handler(message):
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
     text = message.text[7:].strip()  
+    if not is_user_verified(user_id):
+        bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
+        return
+
+    # Nếu hợp lệ, cho spam
+    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
     if not text:
         bot.reply_to(message, 'Nhập nội dung đi VD : /voice Tôi là bot')
         return
@@ -333,7 +345,12 @@ def text_to_voice(message):
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
-    
+    if not is_user_verified(user_id):
+        bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
+        return
+
+    # Nếu hợp lệ, cho spam
+    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
     if text:
         url = f"https://dichvukey.site/apishare/hoi.php?text={text}"
         response = requests.get(url)
@@ -394,14 +411,11 @@ def detect_carrier(phone_number: str) -> str:
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
-    today_day = datetime.date.today().day
-    today_path = f"./user/{today_day}/{user_id}.txt"
-
-    if not os.path.isfile(today_path):
-        bot.reply_to(message, '🚫 Bạn chưa nhập KEY hôm nay!\n👉 Dùng /getkey để lấy key hoặc /muavip để skip\n✅ Sau đó dùng /key <key> để nhập.')
+    if not is_user_verified(user_id):
+        bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
 
-    # Nếu hợp lệ → cho dùng lệnh spam
+    # Nếu hợp lệ, cho spam
     bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
     
     
