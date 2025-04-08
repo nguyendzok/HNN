@@ -22,6 +22,7 @@ import hashlib
 from flask import Flask, request
 from telebot.types import Message
 from threading import Lock
+from telegram.ext import ApplicationBuilder, CommandHandler
 import requests
 import sqlite3
 from telebot import types
@@ -36,6 +37,7 @@ bot = telebot.TeleBot(BOT_TOKEN)         # <- bot dùng biến này
 
 print(BOT_TOKEN)  # Kiểm tra token có tồn tại không
 print("Bot đã được khởi động thành công")
+application = ApplicationBuilder().token("BOT_TOKEN").build()
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
 ADMIN_ID = '7658079324'
