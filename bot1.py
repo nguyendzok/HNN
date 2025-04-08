@@ -14,6 +14,8 @@ from gtts import gTTS
 import re
 import string
 import os
+import base64
+import hashlib
 from flask import Flask, request
 from telebot.types import Message
 from threading import Lock
@@ -171,6 +173,7 @@ def send_help(message):
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
+ /tkey : Mã Hoá File .py
 └───Contact
 ➤ /admin : Liên Hệ admin
  /themvip : Thêm Vip
@@ -668,6 +671,114 @@ def get_tiktok_info(message):
         bot.send_message(chat_id, "⚠️ Lỗi khi lấy thông tin tài khoản TikTok!", parse_mode="Markdown")
         print(error)
 
+
+TEMP_DIR = "temp_files"
+os.makedirs(TEMP_DIR, exist_ok=True)
+
+# Biến để chứa key và số lần nhập
+key_attempts = 1
+current_key = None
+
+def generate_random_key(length=30):
+    characters = 'haoesportQWERTYUIOPASDFGHJKLZXCVBBNM123456789'
+    return ''.join(random.choice(characters) for i in range(length))
+
+
+@bot.message_handler(commands=['tkey'])
+def create_key(message):
+    global current_key, key_attempts
+    current_key = generate_random_key()  # Tạo key ngẫu nhiên
+    key_attempts = 1  # Số lần nhập mặc định là 1
+    bot.send_message(message.chat.id, f"Key đã được tạo: {current_key}\nBạn có {key_attempts} lần gửi file\nvui lòng gửi file. py")
+
+@bot.message_handler(content_types=['document'])
+def handle_document(message):
+    global key_attempts, current_key
+
+    if current_key is None:
+        bot.send_message(message.chat.id, "Vui lòng tạo key trước khi gửi file bằng lệnh /tkey.")
+        return
+
+    file_info = bot.get_file(message.document.file_id)
+    file_extension = message.document.file_name.split('.')[-1]
+
+    if file_extension != 'py':
+        bot.send_message(message.chat.id, "Vui lòng gửi một file .py hợp lệ.")
+        return
+
+    if key_attempts <= 0:
+        bot.send_message(message.chat.id, "Số lần gửi file đã hết. Vui lòng tạo lại key.")
+        return
+
+    downloaded_file = bot.download_file(file_info.file_path)
+    original_filename = message.document.file_name
+    file_path = os.path.join(TEMP_DIR, original_filename)
+
+    with open(file_path, 'wb') as new_file:
+        new_file.write(downloaded_file)
+
+    key_attempts -= 1  # Giảm số lần gửi file sau khi nhận file
+
+    # Gửi thông điệp loading và bắt đầu hiệu ứng loading
+    msg = bot.reply_to(message, "Đang mã hóa...", parse_mode='HTML')
+    
+    time.sleep(2)  # Mô phỏng xử lý
+
+    obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user)
+
+    # Tin nhắn cuối cùng trước khi gửi file
+    bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
+    
+    with open(obfuscated_file_path, 'rb') as obfuscated_file:
+        bot.send_document(message.chat.id, obfuscated_file)
+
+    os.remove(file_path)
+    os.remove(obfuscated_file_path)
+
+def obfuscate_file(file_path, key, user):
+    random_number = random.randint(99738, 101290)
+    obfuscated_filename = f"obf-{random_number}.py"
+    obfuscated_file_path = os.path.join(TEMP_DIR, obfuscated_filename)
+
+    with open(file_path, 'r', encoding='utf-8') as file:
+        code = file.read()
+
+    encoded_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
+    hash_object = hashlib.sha256(code.encode('utf-8'))
+    hash_code = hash_object.hexdigest()
+
+    username = user.username if user.username else "Không Công Khai"
+    user_id = user.id
+
+    current_time = datetime.utcnow() + timedelta(hours=7)
+    time_vietnam = current_time.strftime('%Y-%m-%d %H:%M:%S')
+
+    obfuscated_code = f"""
+# ENCODE BY HAOESPORTS
+# Key: {key}
+# Trial version
+# Username Obf: @{username} ({user_id})
+# Obf Time: {time_vietnam}
+
+import base64
+import hashlib
+
+expected_hash = '{hash_code}'
+current_hash = hashlib.sha256(base64.b64decode('{encoded_code}')).hexdigest()
+if current_hash != expected_hash:
+    raise Exception("I am bot enc test version.")
+
+exec(base64.b64decode('{encoded_code}').decode('utf-8'))
+"""
+
+    with open(obfuscated_file_path, 'w', encoding='utf-8') as obf_file:
+        obf_file.write(obfuscated_code)
+
+    return obfuscated_file_path
+
+
+
+
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
     chat_id = message.chat.id
@@ -697,7 +808,6 @@ emojis = ["❤️", "😂", "🔥", "🤔", "👍", "😍", "😎", "💯", "�
 def auto_like(message):
     emoji = random.choice(emojis)  # Lấy emoji ngẫu nhiên
     react_to_message(message.chat.id, message.message_id, emoji=emoji)
-
 
 
 
