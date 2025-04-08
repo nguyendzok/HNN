@@ -170,6 +170,7 @@ def send_help(message):
 ➤ /tv : Tiếng việt cho telegram
 ➤ /id : Lấy id bản thân
 ➤ /checkban : Kiểm tra tk có khoá không
+➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
 ➤ /vist : buff người Xem ff
@@ -338,6 +339,64 @@ def vist_account(message):
 
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi khi kiểm tra UID:\n`{e}`", parse_mode="Markdown")
+
+
+def format_timestamp(ts):
+    try:
+        dt = datetime.fromtimestamp(ts)
+        return dt.strftime("%d/%m/%Y %H:%M")
+    except:
+        return "Không rõ"
+
+@bot.message_handler(commands=['searchff'])
+def search_ff(message):
+    try:
+        args = message.text.split(maxsplit=1)
+        if len(args) < 2:
+            bot.reply_to(message, "❗ Vui lòng nhập tên cần tìm. Ví dụ: /searchff Scromnyi")
+            return
+
+        username = args[1]
+        api_url = f"https://ariflexlabs-search-api.vercel.app/search?name={username}"
+        response = requests.get(api_url)
+        regions = response.json()
+
+        all_players = []
+        for region_data in regions:
+            players = region_data.get("result", {}).get("player", [])
+            for player in players:
+                all_players.append({
+                    "nickname": player.get("nickname", "?"),
+                    "accountId": player.get("accountId", "?"),
+                    "level": player.get("level", "?"),
+                    "region": player.get("region", "?"),
+                    "lastLogin": format_timestamp(player.get("lastLogin", 0))
+                })
+
+        if not all_players:
+            bot.reply_to(message, f"❌ Không tìm thấy kết quả cho `{username}`.", parse_mode="Markdown")
+            return
+
+        # Giới hạn kết quả nếu quá nhiều
+        max_results = 10
+        reply_text = f"🔎 **Kết quả tìm kiếm cho `{username}`:**\n\n"
+        for i, player in enumerate(all_players[:max_results], 1):
+            reply_text += (
+                f"{i}. 👤 {player['nickname']}\n"
+                f"🆔 UID: `{player['accountId']}`\n"
+                f"🎮 Level: {player['level']} | 🌍 Region: {player['region']}\n"
+                f"⏰ Đăng nhập cuối: {player['lastLogin']}\n"
+                f"───────────────\n"
+            )
+
+        if len(all_players) > max_results:
+            reply_text += f"📌 Hiển thị {max_results}/{len(all_players)} kết quả đầu tiên."
+
+        bot.reply_to(message, reply_text, parse_mode="Markdown")
+
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
+
 
 
 @bot.message_handler(commands=['checkban'])
