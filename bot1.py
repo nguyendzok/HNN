@@ -265,6 +265,7 @@ def call_api(uid):
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     args = message.text.split()
+    user_id = message.from_user.id
     if not is_user_verified(user_id):
         bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
@@ -313,6 +314,7 @@ def like_handler(message):
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
     text = message.text[7:].strip()  
+    user_id = message.from_user.id
     if not is_user_verified(user_id):
         bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
@@ -345,6 +347,7 @@ def text_to_voice(message):
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
+    user_id = message.from_user.id
     if not is_user_verified(user_id):
         bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
