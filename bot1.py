@@ -170,6 +170,7 @@ def send_help(message):
 ➤ /id : Lấy id bản thân
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
+➤ /searchff : Tìm Tên Acc ff
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
@@ -315,6 +316,41 @@ def handle_hoi(message):
     else:
         reply = "Lệnh Ví Dụ : /hoi xin chào."
     bot.reply_to(message, reply)
+
+
+@bot.message_handler(commands=['searchff'])
+def search_ff(message):
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2:
+        bot.reply_to(message, "⚠️ Dùng như này: /searchff tên_người_chơi")
+        return
+
+    name = args[1].strip()
+    loading = bot.send_message(message.chat.id, f"🔍 Đang tìm kiếm `{name}`...", parse_mode="Markdown")
+
+    try:
+        response = requests.get(f"https://ariflexlabs-search-api.vercel.app/search?name={name}")
+        if response.status_code == 200:
+            data = response.json()
+            if not data:
+                bot.edit_message_text("❌ Không tìm thấy người chơi nào với tên đó.", message.chat.id, loading.message_id)
+                return
+
+            # Lấy danh sách kết quả và format
+            result_msg = f"🎮 Kết quả tìm kiếm cho: *{name}*\n\n"
+            for i, user in enumerate(data, start=1):
+                uid = user.get("uid", "Không rõ")
+                name_result = user.get("name", "Không rõ")
+                result_msg += f"{i}. 📛 *{name_result}*\n🆔 UID: `{uid}`\n\n"
+
+            bot.edit_message_text(result_msg, message.chat.id, loading.message_id, parse_mode="Markdown")
+        else:
+            bot.edit_message_text("⚠️ Không thể truy cập API. Vui lòng thử lại sau.", message.chat.id, loading.message_id)
+
+    except Exception as e:
+        bot.edit_message_text(f"❌ Lỗi khi gọi API: {str(e)}", message.chat.id, loading.message_id)
+
+
 
 @bot.message_handler(commands=['time'])
 def handle_time(message):
