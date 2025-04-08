@@ -245,6 +245,7 @@ def send_help(message):
 ➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
+ /themvip : Thêm Vip
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
@@ -269,9 +270,6 @@ def like_handler(message):
     if not is_user_verified(user_id):
         bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
-
-    # Nếu hợp lệ, cho spam
-    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
 
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
@@ -311,6 +309,39 @@ def like_handler(message):
         parse_mode="HTML"
     )
 
+VIP_FILE = "vip_users.txt"
+
+def is_user_vip(user_id):
+    if not os.path.exists(VIP_FILE):
+        return False
+    with open(VIP_FILE, "r") as f:
+        return str(user_id) in f.read()
+
+def save_vip_user(user_id):
+    with open(VIP_FILE, "a") as f:
+        f.write(f"{user_id}\n")
+
+
+
+ADMIN_ID = 7912024917  # thay bằng ID Telegram của bạn
+
+@bot.message_handler(commands=['themvip'])
+def themvip(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        bot.reply_to(message, "🚫 Bạn không có quyền sử dụng lệnh này.")
+        return
+
+    parts = message.text.split()
+    if len(parts) != 2 or not parts[1].isdigit():
+        bot.reply_to(message, "❓ Dùng đúng cú pháp: /themvip <user_id>")
+        return
+
+    user_id_to_add = int(parts[1])
+    save_vip_user(user_id_to_add)
+    bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
+
+
+
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
     text = message.text[7:].strip()  
@@ -319,8 +350,7 @@ def text_to_voice(message):
         bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
 
-    # Nếu hợp lệ, cho spam
-    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
+    
     if not text:
         bot.reply_to(message, 'Nhập nội dung đi VD : /voice Tôi là bot')
         return
@@ -353,7 +383,6 @@ def handle_hoi(message):
         return
 
     # Nếu hợp lệ, cho spam
-    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
     if text:
         url = f"https://dichvukey.site/apishare/hoi.php?text={text}"
         response = requests.get(url)
@@ -414,12 +443,11 @@ def detect_carrier(phone_number: str) -> str:
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
-    if not is_user_verified(user_id):
+    if not (is_user_verified(user_id) or is_user_vip(user_id)):
+
         bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
 
-    # Nếu hợp lệ, cho spam
-    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
     
     
     if not bot_active:
@@ -540,7 +568,8 @@ blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
-    
+    if not (is_user_vip(user_id)):
+
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
         time.sleep(10)
