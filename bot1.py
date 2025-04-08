@@ -750,7 +750,8 @@ def obfuscate_file(file_path, key, user):
     username = user.username if user.username else "Không Công Khai"
     user_id = user.id
 
-    current_time = datetime.utcnow() + timedelta(hours=7)
+    current_time = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
+
     time_vietnam = current_time.strftime('%Y-%m-%d %H:%M:%S')
 
     obfuscated_code = f"""
