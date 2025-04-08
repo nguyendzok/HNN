@@ -171,7 +171,7 @@ def send_help(message):
 ➤ /id : Lấy id bản thân
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
-➤ /check : Kiểm Tra Acc FF
+➤ /vist : buff người Xem ff
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
@@ -298,25 +298,37 @@ def text_to_voice(message):
 
 
 
-@bot.message_handler(commands=['check'])
-def check_account(message):
+@bot.message_handler(commands=['vist'])
+def vist_account(message):
     try:
         args = message.text.split()
         if len(args) < 2:
-            bot.reply_to(message, "❗ Vui lòng nhập UID. Ví dụ: /check 12345678")
+            bot.reply_to(message, "❗ Vui lòng nhập UID. Ví dụ: /check 9576602164")
             return
 
         uid = args[1]
-        api_url = f"https://scromnyi-modz.vercel.app/api/region?uid={uid}"
+        api_url = f"https://free-fire-visit.vercel.app/send_visit?uid={uid}"
         response = requests.get(api_url)
         data = response.json()
 
-        if response.status_code == 200 and "region" in data:
+        if (
+            response.status_code == 200
+            and data.get("player_details", {}).get("success")
+            and data.get("visit_results", {}).get("success")
+        ):
+            info = data["player_details"]["basic_info"]
+            stats = data["visit_results"]
+
             reply_text = (
                 f"🔍 **Kết quả kiểm tra UID `{uid}`**\n\n"
-                f"👤 Nickname: {data.get('nickname', 'Không rõ')}\n"
-                f"🌍 Khu vực: {data.get('region', 'Không rõ')}\n"
-                f"📌 Credit: {data.get('credit', '')}"
+                f"👤 Tên: {info.get('name', 'Không rõ')}\n"
+                f"🎮 Level: {info.get('level', '?')}\n"
+                f"🌍 Region: {info.get('region', '?')}\n"
+                f"🖥 Server: {info.get('server', '?')}\n\n"
+                f"📊 Thống kê lượt truy cập:\n"
+                f"• Lượt xem đã gửi: {stats.get('total_views_sent', '?')}\n"
+                f"• Token đã dùng: {stats.get('tokens_used', '?')}\n"
+                f"⏱️ Thời gian xử lý: {stats.get('total_time_takes', '?')} giây"
             )
         else:
             reply_text = f"❌ Không tìm thấy thông tin cho UID `{uid}`."
@@ -324,9 +336,7 @@ def check_account(message):
         bot.reply_to(message, reply_text, parse_mode="Markdown")
 
     except Exception as e:
-        bot.reply_to(message, f"⚠️ Lỗi khi kiểm tra UID: {e}")
-
-
+        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi khi kiểm tra UID:\n`{e}`", parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['hoi'])
