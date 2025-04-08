@@ -162,12 +162,12 @@ VERIFIED_FILE = "verified_users.txt"
 def TimeStamp():
     return datetime.datetime.now().strftime("%d/%m/%Y")
 
-# ✅ Kiểm tra user đã vượt key chưa
 def is_user_verified(user_id):
     if not os.path.exists(VERIFIED_FILE):
         return False
     with open(VERIFIED_FILE, "r") as f:
-        return str(user_id) in f.read()
+        return str(user_id) in f.read().splitlines()
+
 
 # 💾 Ghi user vào file sau khi xác thực thành công
 def save_verified_user(user_id):
