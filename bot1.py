@@ -394,6 +394,16 @@ def detect_carrier(phone_number: str) -> str:
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
+    today_day = datetime.date.today().day
+    today_path = f"./user/{today_day}/{user_id}.txt"
+
+    if not os.path.isfile(today_path):
+        bot.reply_to(message, '🚫 Bạn chưa nhập KEY hôm nay!\n👉 Dùng /getkey để lấy key hoặc /muavip để skip\n✅ Sau đó dùng /key <key> để nhập.')
+        return
+
+    # Nếu hợp lệ → cho dùng lệnh spam
+    bot.reply_to(message, '✅ KEY hợp lệ. Bạn có thể sử dụng tính năng SPAM.')
+    
     
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
