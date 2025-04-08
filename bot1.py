@@ -443,11 +443,14 @@ def detect_carrier(phone_number: str) -> str:
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
+    
     if not (is_user_verified(user_id) or is_user_vip(user_id)):
+        bot.reply_to(
+            message,
+            '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.'
+        )
+        return  # ✅ return này phải khớp indent với dòng trên
 
-       bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
-        return
-        
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
         time.sleep(10)
@@ -456,6 +459,7 @@ def spam(message):
         except telebot.apihelper.ApiTelegramException as e:
             print(f"Error deleting message: {e}")
         return
+
 
     if admin_mode and user_id not in admins:
         msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
