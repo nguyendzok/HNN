@@ -383,8 +383,15 @@ def spam(message):
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
-        return
+    warn = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
+    time.sleep(5)
+    try:
+        bot.delete_message(message.chat.id, warn.message_id)
+        bot.delete_message(message.chat.id, message.message_id)
+    except:
+        pass
+    return
+
 
     sdt, count = params
     carrier = detect_carrier(sdt)
