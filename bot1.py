@@ -8,6 +8,9 @@ import datetime
 import threading
 from urllib.parse import urlparse
 import psutil
+from telegram.ext import CommandHandler
+import httpx
+import logging
 import tempfile
 import random
 from gtts import gTTS
@@ -318,38 +321,73 @@ def handle_hoi(message):
     bot.reply_to(message, reply)
 
 
-@bot.message_handler(commands=['searchff'])
-def search_ff(message):
-    args = message.text.split(maxsplit=1)
-    if len(args) < 2:
-        bot.reply_to(message, "⚠️ Dùng như này: /searchff tên_người_chơi")
+
+# Đăng ký vào app
+application.add_handler(CommandHandler("searchff", searchff))
+
+
+Logger
+logger = logging.getLogger(__name__)
+
+# Danh sách người bị cấm và nhóm cho phép
+banned_players = set()  # hoặc load từ file
+GROUP_CHAT_IDS = [-1002639856138]  # thay bằng ID nhóm thật của bạn
+
+async def searchff(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    user_id = update.message.from_user.id
+
+    if str(user_id) in banned_players:
+        await update.message.reply_text("🚫⚠ Bạn đã bị cấm. ⚠🚫")
         return
 
-    name = args[1].strip()
-    loading = bot.send_message(message.chat.id, f"🔍 Đang tìm kiếm `{name}`...", parse_mode="Markdown")
+    if update.effective_chat.id not in GROUP_CHAT_IDS:
+        await update.message.reply_text("❌ Bạn chỉ có thể chơi trong nhóm này! (https://t.me/+AhM8n6X-63JmNTQ1) ❌")
+        return
 
-    try:
-        response = requests.get(f"https://ariflexlabs-search-api.vercel.app/search?name={name}")
-        if response.status_code == 200:
+    if len(context.args) < 1:
+        await update.message.reply_text('📌 Dùng như sau: /searchff tên_người_chơi')
+        return
+
+    username = " ".join(context.args).strip()
+    api_url = f"https://ariflexlabs-search-api.vercel.app/search?name={username}"
+
+    async with httpx.AsyncClient() as client:
+        try:
+            response = await client.get(api_url)
+            response.raise_for_status()
+
             data = response.json()
-            if not data:
-                bot.edit_message_text("❌ Không tìm thấy người chơi nào với tên đó.", message.chat.id, loading.message_id)
-                return
+            results = {}
 
-            # Lấy danh sách kết quả và format
-            result_msg = f"🎮 Kết quả tìm kiếm cho: *{name}*\n\n"
-            for i, user in enumerate(data, start=1):
-                uid = user.get("uid", "Không rõ")
-                name_result = user.get("name", "Không rõ")
-                result_msg += f"{i}. 📛 *{name_result}*\n🆔 UID: `{uid}`\n\n"
+            for region_info in data:
+                region = region_info.get("region")
+                players = region_info.get("result", {}).get("player", [])
 
-            bot.edit_message_text(result_msg, message.chat.id, loading.message_id, parse_mode="Markdown")
-        else:
-            bot.edit_message_text("⚠️ Không thể truy cập API. Vui lòng thử lại sau.", message.chat.id, loading.message_id)
+                for player in players:
+                    if username.lower() in player["nickname"].lower():
+                        results.setdefault(region, []).append({
+                            "nickname": player["nickname"],
+                            "level": player["level"]
+                        })
 
-    except Exception as e:
-        bot.edit_message_text(f"❌ Lỗi khi gọi API: {str(e)}", message.chat.id, loading.message_id)
+            if results:
+                response_text = f"🔍 Kết quả tìm kiếm cho *{username}*:\n\n"
+                for region, players in results.items():
+                    response_text += f"🌍 *{region}*\n"
+                    for p in players:
+                        response_text += f"• {p['nickname']} (Lv. {p['level']})\n"
+                    response_text += "\n"
 
+                await update.message.reply_text(response_text, parse_mode="Markdown")
+            else:
+                await update.message.reply_text(f"❌ Không tìm thấy người chơi nào với tên '{username}'.")
+
+        except httpx.HTTPStatusError as e:
+            await update.message.reply_text("🚨 Có lỗi với API. Thử lại sau.")
+            logger.error(f"HTTP error: {e.response.status_code} - {e.response.text}")
+        except Exception as e:
+            await update.message.reply_text("⚠️ Lỗi không xác định. Vui lòng thử lại.")
+            logger.error(f"Error while calling API: {str(e)}")
 
 
 @bot.message_handler(commands=['time'])
