@@ -171,8 +171,13 @@ def is_user_verified(user_id):
 
 # 💾 Ghi user vào file sau khi xác thực thành công
 def save_verified_user(user_id):
-    with open(VERIFIED_FILE, "a") as f:
-        f.write(f"{user_id}\n")
+    try:
+        with open(VERIFIED_FILE, "a") as f:
+            f.write(f"{user_id}\n")
+        print(f"[LOG] Đã ghi user_id {user_id} vào verified_users.txt")
+    except Exception as e:
+        print(f"[LỖI] Không ghi được user vào file: {e}")
+
 
 # 📩 /getkey – Gửi link lấy key
 @bot.message_handler(commands=['getkey'])
