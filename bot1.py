@@ -155,7 +155,77 @@ def is_key_approved(chat_id, key):
 
 
 
+VERIFIED_FILE = "verified_users.txt"
 
+# 🕒 Hàm tạo timestamp
+def TimeStamp():
+    return datetime.datetime.now().strftime("%d/%m/%Y")
+
+# ✅ Kiểm tra user đã vượt key chưa
+def is_user_verified(user_id):
+    if not os.path.exists(VERIFIED_FILE):
+        return False
+    with open(VERIFIED_FILE, "r") as f:
+        return str(user_id) in f.read()
+
+# 💾 Ghi user vào file sau khi xác thực thành công
+def save_verified_user(user_id):
+    with open(VERIFIED_FILE, "a") as f:
+        f.write(f"{user_id}\n")
+
+# 📩 /getkey – Gửi link lấy key
+@bot.message_handler(commands=['getkey'])
+def startkey(message: Message):
+    user_id = message.from_user.id
+
+    if is_user_verified(user_id):
+        bot.reply_to(message, "✅ Bạn đã vượt key rồi, không cần lấy lại nữa.")
+        return
+
+    today_day = datetime.date.today().day
+    key = "haoesport" + str(user_id * today_day - 2007)
+
+    api_token = '67c1fe72a448b83a9c7e7340'  # Bạn nên ẩn token nếu đưa lên GitHub
+    key_url = f"https://haoesportst.blogspot.com/2025/04/blog-post.html?key={key}"
+
+    try:
+        response = requests.get(f'https://link4m.co/api-shorten/v2?api={api_token}&url={key_url}')
+        response.raise_for_status()
+        url_data = response.json()
+
+        if 'shortenedUrl' in url_data:
+            url_key = url_data['shortenedUrl']
+            text = (f'🔑 Link lấy Key ngày {TimeStamp()} là:\n{url_key}\n\n'
+                    '✅ Sau khi lấy key, nhập /key <key của bạn> để xác thực.\n'
+                    '👉 Hoặc nhập /muavip nếu không muốn vượt key mỗi ngày.')
+            bot.reply_to(message, text)
+        else:
+            bot.reply_to(message, '⚠️ Lỗi: Không rút gọn được link.')
+    except requests.RequestException:
+        bot.reply_to(message, '⚠️ Lỗi khi kết nối đến hệ thống rút gọn.')
+
+# ✅ /key – Kiểm tra key người dùng nhập vào
+@bot.message_handler(commands=['key'])
+def key(message: Message):
+    if len(message.text.split()) != 2:
+        bot.reply_to(message, '❓ Nhập sai cú pháp! Vui lòng dùng: /key <key của bạn>')
+        return
+
+    user_id = message.from_user.id
+    key_input = message.text.split()[1]
+    today_day = datetime.date.today().day
+    expected_key = "haoesport" + str(user_id * today_day - 2007)
+
+    if key_input == expected_key:
+        if not is_user_verified(user_id):
+            save_verified_user(user_id)
+
+        text_message = f'<blockquote>[ ✅ KEY HỢP LỆ ]\nID Người dùng: <b>{user_id}</b>\nĐã được phép sử dụng các lệnh trong /bot</blockquote>'
+        video_url = 'https://v16m-default.tiktokcdn.com/0acc3d8de1dfd9654aa08021bba9a94f/67f4edda/video/tos/useast2a/tos-useast2a-ve-0068c003/oc1EA6nAeRTT8X3eRkbEGMU0EwMaeeRpADFM4g/?a=0&bti=OTg7QGo5QHM6OjZALTAzYCMvcCMxNDNg&ch=0&cr=0&dr=0&er=0&lr=all&net=0&cd=0%7C0%7C0%7C0&cv=1&br=4244&bt=2122&cs=0&ds=6&ft=EeF4ntZWD03Q12NvrxloeIxRSfYFpq_45SY&mime_type=video_mp4&qs=0&rc=aDppaTdkODRpZzc3NmczNkBpam08amY6ZjhpbTMzNzczM0A1LmBeYl9eXzIxMmBiLjYtYSMubzYucjQwY3FgLS1kMTZzcw%3D%3D&vvpl=1&l=20250408113503D5D8A4FD124771691A53&btag=e000b8000'  # Thay link video bạn muốn
+
+        bot.send_video(message.chat.id, video_url, caption=text_message, parse_mode='HTML')
+    else:
+        bot.reply_to(message, '❌ KEY KHÔNG HỢP LỆ. Hãy kiểm tra lại.')
 
 
 @bot.message_handler(commands=['bot','start'])
