@@ -386,15 +386,14 @@ def spam(message):
 
     params = message.text.split()[1:]
     if len(params) != 2:
-       warn = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
-    time.sleep(5)
-    try:
-        bot.delete_message(message.chat.id, warn.message_id)
-        bot.delete_message(message.chat.id, message.message_id)
-    except:
-        pass
-    return
-
+        warn = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
+        time.sleep(5)
+        try:
+            bot.delete_message(message.chat.id, warn.message_id)
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
+        return
 
     sdt, count = params
     carrier = detect_carrier(sdt)
@@ -472,9 +471,6 @@ def spam(message):
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
-
-blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
-
 
 @bot.message_handler(commands=['spamvip'])
 def spam(message):
