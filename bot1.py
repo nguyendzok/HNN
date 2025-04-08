@@ -192,7 +192,7 @@ def startkey(message: Message):
     key = "haoesport" + str(user_id * today_day - 2007)
 
     api_token = '67c1fe72a448b83a9c7e7340'  # Bạn nên ẩn token nếu đưa lên GitHub
-    key_url = f"https://haoesportst.blogspot.com/2025/04/blog-post.html?key={key}"
+    key_url = f"https://haoesportst.blogspot.com?key={key}"
 
     try:
         response = requests.get(f'https://link4m.co/api-shorten/v2?api={api_token}&url={key_url}')
