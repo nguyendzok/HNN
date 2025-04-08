@@ -445,11 +445,9 @@ def spam(message):
     current_time = time.time()
     if not (is_user_verified(user_id) or is_user_vip(user_id)):
 
-    bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
+       bot.reply_to(message, '🚫 Bạn chưa xác thực KEY hôm nay.\n👉 Dùng /getkey để lấy KEY\n✅ Sau đó dùng /key <key của bạn> để xác thực.')
         return
-
-    
-    
+        
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
         time.sleep(10)
