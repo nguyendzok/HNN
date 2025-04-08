@@ -177,7 +177,7 @@ def send_help(message):
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
-API_BASE_URL = "https://dichvukey.site/freefire/like.php?key=vlong"
+API_BASE_URL = "https://dichvukey.site/freefire/like.php?key=vLong161656"
 
 def call_api(uid):
     url = f"{API_BASE_URL}&uid={uid}"
