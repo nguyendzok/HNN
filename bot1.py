@@ -426,7 +426,6 @@ def spam(message):
 
     username = message.from_user.username if message.from_user.username else "Không có username"
     diggory_chat3 = f'''┌──────⭓ {name_bot}
-┌──⭓ TRAN HAO
 │ 🚀 Attack Sent Successfully
 │ 💳 Plan Free: Min 1 | Max 5
 │ 📞 Phone: {sdt}
