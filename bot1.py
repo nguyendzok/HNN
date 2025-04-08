@@ -186,8 +186,8 @@ def call_api(uid):
             "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
         }
         response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()  # Kiểm tra lỗi HTTP
-        return response.json()  # Trả về dữ liệu JSON
+        response.raise_for_status()
+        return response.json()
     except requests.exceptions.RequestException:
         return {"status": "error", "message": "Server đang bị admin Tắt"}
 
@@ -200,14 +200,21 @@ def like_handler(message):
         return
 
     uid = args[1]
+
+    # Gửi thông báo "loading"
+    loading_msg = bot.reply_to(message, "<i>⏳ Đang tiến hành buff like...</i>", parse_mode="HTML")
+
     data = call_api(uid)
 
-    # Kiểm tra API có trả về lỗi không
     if data.get("status") == "error":
-        bot.reply_to(message, f"<blockquote>❌ {data['message']}</blockquote>", parse_mode="HTML")
+        bot.edit_message_text(
+            f"<blockquote>❌ {data['message']}</blockquote>",
+            chat_id=loading_msg.chat.id,
+            message_id=loading_msg.message_id,
+            parse_mode="HTML"
+        )
         return
 
-    # Nếu API trả về thông tin hợp lệ
     reply_text = (
         f"<blockquote>\n"
         f"🎯 <b>Kết quả buff like:</b>\n"
@@ -219,8 +226,12 @@ def like_handler(message):
         f"</blockquote>"
     )
 
-    bot.reply_to(message, reply_text, parse_mode="HTML")
-
+    bot.edit_message_text(
+        reply_text,
+        chat_id=loading_msg.chat.id,
+        message_id=loading_msg.message_id,
+        parse_mode="HTML"
+    )
 
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
