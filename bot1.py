@@ -324,8 +324,7 @@ def handle_hoi(message):
 
 
 
-# Đăng ký vào app
-application.add_handler(CommandHandler("searchff", searchff))
+
 
 
 Logger
@@ -887,3 +886,4 @@ def auto_like(message):
 if __name__ == "__main__":
     bot_active = True
     bot.polling()  #
+    
