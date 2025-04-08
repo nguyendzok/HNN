@@ -570,7 +570,10 @@ blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "
 def spam(message):
     user_id = message.from_user.id
     current_time = time.time()
-    if not (is_user_vip(user_id)):
+
+    if not is_user_vip(user_id):
+        bot.reply_to(message, "🚫 Chỉ dành cho người dùng VIP!")
+        return
 
     if not bot_active:
         msg = bot.reply_to(message, 'Bot hiện đang tắt.')
