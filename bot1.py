@@ -171,7 +171,7 @@ def send_help(message):
 ➤ /id : Lấy id bản thân
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
-➤ /searchff : Tìm Tên Acc ff
+➤ /check : Kiểm Tra Acc FF
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
@@ -295,6 +295,36 @@ def text_to_voice(message):
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+
+
+
+@bot.message_handler(commands=['check'])
+def check_account(message):
+    try:
+        args = message.text.split()
+        if len(args) < 2:
+            bot.reply_to(message, "❗ Vui lòng nhập UID. Ví dụ: /check 12345678")
+            return
+
+        uid = args[1]
+        api_url = f"https://scromnyi-modz.vercel.app/api/region?uid={uid}"
+        response = requests.get(api_url)
+        data = response.json()
+
+        if response.status_code == 200 and "region" in data:
+            reply_text = (
+                f"🔍 **Kết quả kiểm tra UID `{uid}`**\n\n"
+                f"👤 Nickname: {data.get('nickname', 'Không rõ')}\n"
+                f"🌍 Khu vực: {data.get('region', 'Không rõ')}\n"
+                f"📌 Credit: {data.get('credit', '')}"
+            )
+        else:
+            reply_text = f"❌ Không tìm thấy thông tin cho UID `{uid}`."
+
+        bot.reply_to(message, reply_text, parse_mode="Markdown")
+
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Lỗi khi kiểm tra UID: {e}")
 
 
 
