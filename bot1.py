@@ -733,7 +733,7 @@ def handle_document(message):
 
 def obfuscate_file(file_path, key, user):
     random_number = random.randint(99738, 101290)
-    obfuscated_filename = f"obf-{random_number}.py"
+    obfuscated_filename = f"file-{random_number}.py"
     obfuscated_file_path = os.path.join(TEMP_DIR, obfuscated_filename)
 
     with open(file_path, 'r', encoding='utf-8') as file:
