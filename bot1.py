@@ -169,6 +169,7 @@ def send_help(message):
 ➤ /stop : Dừng Spam SĐT
 ➤ /tv : Tiếng việt cho telegram
 ➤ /id : Lấy id bản thân
+➤ /checkban : Kiểm tra tk có khoá không
 └───Tiện Ích Khác
 ➤ /like : Buff Like FF
 ➤ /vist : buff người Xem ff
@@ -303,7 +304,7 @@ def vist_account(message):
     try:
         args = message.text.split()
         if len(args) < 2:
-            bot.reply_to(message, "❗ Vui lòng nhập UID. Ví dụ: /check 9576602164")
+            bot.reply_to(message, "❗ Vui lòng nhập UID. Ví dụ: /vist 9576602164")
             return
 
         uid = args[1]
@@ -320,7 +321,7 @@ def vist_account(message):
             stats = data["visit_results"]
 
             reply_text = (
-                f"🔍 **Kết quả kiểm tra UID `{uid}`**\n\n"
+                f"🔍 **Kết quả Buff UID `{uid}`**\n\n"
                 f"👤 Tên: {info.get('name', 'Không rõ')}\n"
                 f"🎮 Level: {info.get('level', '?')}\n"
                 f"🌍 Region: {info.get('region', '?')}\n"
@@ -337,6 +338,36 @@ def vist_account(message):
 
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi khi kiểm tra UID:\n`{e}`", parse_mode="Markdown")
+
+
+@bot.message_handler(commands=['checkban'])
+def check_ban(message):
+    try:
+        args = message.text.split()
+        if len(args) < 2:
+            bot.reply_to(message, "❗ Vui lòng nhập ID. Ví dụ: /checkban 8324665667")
+            return
+
+        user_id = args[1]
+        api_url = f"https://wlx-scorpion.vercel.app/Checkban?key=Scromnyi&id={user_id}"
+        response = requests.get(api_url)
+        data = response.json()
+
+        if data.get("is_banned") == True:
+            reply_text = (
+                f"🚫 **ID `{user_id}` đã bị BAN**\n"
+                f"📆 Thời hạn ban: {data.get('ban_period', 'Không rõ')} ngày"
+            )
+        else:
+            reply_text = (
+                f"✅ **ID `{user_id}` không bị ban**\n"
+                f"📄 Trạng thái: {data.get('status', 'Không xác định')}"
+            )
+
+        bot.reply_to(message, reply_text, parse_mode="Markdown")
+
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
 
 
 @bot.message_handler(commands=['hoi'])
