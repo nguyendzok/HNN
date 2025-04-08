@@ -173,10 +173,10 @@ def send_help(message):
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
- /tkey : Mã Hoá File .py
+➤ /tkey : Mã Hoá File .py
 └───Contact
 ➤ /admin : Liên Hệ admin
- /themvip : Thêm Vip
+➤ /themvip : Thêm Vip
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
