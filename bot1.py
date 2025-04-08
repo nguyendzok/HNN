@@ -33,7 +33,7 @@ print(BOT_TOKEN)  # Kiểm tra token có tồn tại không
 print("Bot đã được khởi động thành công")
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
-ADMIN_ID = '7912024917'
+ADMIN_ID = '7658079324'
 zalo = "0585019743"
 web = "https://dichvukey.site/"
 facebook = "no"
@@ -323,7 +323,7 @@ def save_vip_user(user_id):
 
 
 
-ADMIN_ID = 7912024917  # thay bằng ID Telegram của bạn
+ADMIN_ID = 7658079324  # thay bằng ID Telegram của bạn
 
 @bot.message_handler(commands=['themvip'])
 def themvip(message: Message):
