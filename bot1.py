@@ -114,63 +114,6 @@ vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
 ####
 start_time = time.time()
 
-from telegram import Update
-from telegram.ext import CommandHandler, CallbackContext
-
-def searchff(update: Update, context: CallbackContext):
-    if not context.args:
-        update.message.reply_text("❗ Vui lòng nhập tên người chơi.\nVí dụ: /searchff TrungDauBoi")
-        return
-
-    username = " ".join(context.args)
-    api_url = f"https://ariflexlabs-search-api.vercel.app/search?name={username}"
-
-    try:
-        response = requests.get(api_url)
-        regions = response.json()
-
-        results = []
-
-        for region_data in regions:
-            region_name = region_data.get("region", "Unknown")
-            players = region_data.get("result", {}).get("player", [])
-            
-            for player in players:
-                nickname = player.get("nickname", "Không rõ")
-                uid = player.get("accountId", "Không rõ")
-                region = player.get("region", "Không rõ")
-                level = player.get("level", "Không rõ")
-                last_login = player.get("lastLogin", None)
-
-                if last_login:
-                    last_login_str = datetime.fromtimestamp(last_login).strftime("%d/%m/%Y %H:%M:%S")
-                else:
-                    last_login_str = "Không rõ"
-
-                results.append(
-                    f"👤 *Tên:* `{nickname}`\n"
-                    f"🆔 *UID:* `{uid}`\n"
-                    f"🌍 *Region:* `{region}`\n"
-                    f"📈 *Level:* `{level}`\n"
-                    f"⏰ *Đăng nhập gần nhất:* `{last_login_str}`\n"
-                    f"———————"
-                )
-
-        if results:
-            update.message.reply_text(
-                f"🔍 Kết quả tìm kiếm cho: *{username}*\n\n" + "\n".join(results),
-                parse_mode="Markdown"
-            )
-        else:
-            update.message.reply_text(f"❌ Không tìm thấy người chơi nào với tên *{username}*", parse_mode="Markdown")
-
-    except Exception as e:
-        update.message.reply_text(f"⚠️ Lỗi khi gọi API: {e}")
-
-# Thêm vào dispatcher như thường
-dispatcher.add_handler(CommandHandler("searchff", searchff))
-
-
 
 
 video_url = 'https://v16m-default.akamaized.net/b7650db4ac7f717b7be6bd6a04777a0d/66a418a5/video/tos/useast2a/tos-useast2a-ve-0068-euttp/o4QTIgGIrNbkAPGKKLKteXyLedLE7IEgeSzeE2/?a=0&bti=OTg7QGo5QHM6OjZALTAzYCMvcCMxNDNg&ch=0&cr=0&dr=0&lr=all&cd=0%7C0%7C0%7C0&cv=1&br=2576&bt=1288&cs=0&ds=6&ft=XE5bCqT0majPD12cy-773wUOx5EcMeF~O5&mime_type=video_mp4&qs=0&rc=Mzk1OzY7PGdpZjxkOTQ3M0Bpajh1O2w5cmlzbzMzZjgzM0AuNWJgLi02NjMxLzBgXjUyYSNzNmptMmRjazFgLS1kL2Nzcw%3D%3D&vvpl=1&l=202407261543513F37EAD38E23B6263167&btag=e00088000'
