@@ -172,6 +172,7 @@ def send_help(message):
 ➤ /checkban : Kiểm tra tk có khoá không
 ➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
+ /like : buff like
 ➤ /time : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
@@ -214,6 +215,36 @@ def themvip(message: Message):
     user_id_to_add = int(parts[1])
     save_vip_user(user_id_to_add)
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
+
+
+
+@bot.message_handler(commands=['like'])
+def like_user(message):
+    try:
+        uid = message.text.split()[1]
+    except IndexError:
+        bot.reply_to(message, "❗ Vui lòng nhập UID: /like <uid>")
+        return
+
+    url = f"https://dichvukey.site/likeff2.php?uid={uid}"
+    try:
+        response = requests.get(url)
+        data = response.json()
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Lỗi khi gọi API: {e}")
+        return
+
+    # Gửi phản hồi
+    msg = (
+        f"👤 Username: {data.get('username')}\n"
+        f"🔥 Level: {data.get('level')}\n"
+        f"🌍 Khu vực: {data.get('region')}\n"
+        f"👍 Likes: {data.get('likes_before')} ➡️ {data.get('likes_after')}\n"
+        f"📛 Thông báo: {data.get('message')}"
+    )
+    bot.reply_to(message, msg)
+
+
 
 
 
