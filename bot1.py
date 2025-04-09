@@ -189,20 +189,29 @@ API_URL_BASE = "https://ff-garena.run.place/v5/"
 
 def call_info_api(uid):
     url = f"{API_URL_BASE}?uid={uid}&key={API_KEY}"
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
     try:
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
         response.raise_for_status()
+        print("🟢 Raw Response:", response.text)  # Gỡ lỗi nếu cần
         return response.json()
-    except:
+    except requests.exceptions.RequestException as e:
+        print(f"🔴 Request Error: {e}")
         return {"error": True, "message": "⚠️ Không thể kết nối tới máy chủ"}
+    except ValueError as e:
+        print(f"🟠 JSON Decode Error: {e}")
+        return {"error": True, "message": "⚠️ Phản hồi không hợp lệ từ API"}
 
-@bot.message_handler(commands=['like'])
+@bot.message_handler(commandsage['like'])
 def like_handler(message):
     args = message.text.split()
     if len(args) != 2:
         bot.reply_to(message, "<i>🔹 Dùng đúng cú pháp: /like [UID]</i>", parse_mode="HTML")
         return
 
+    
     uid = args[1]
     loading_msg = bot.reply_to(message, "<i>🔍 Đang lấy thông tin từ Garena...</i>", parse_mode="HTML")
     
@@ -226,13 +235,11 @@ def like_handler(message):
         f"🆔 <b>UID:</b> {data.get('uid')}\n"
         f"🎮 <b>Level:</b> {user.get('level', '?')}\n"
         f"🌍 <b>Region:</b> {user.get('region', '?')}\n\n"
-
         f"👍 <b>Buff Like:</b>\n"
         f"🔸 Trước: {likes.get('LikesbeforeCommand', '?')}\n"
         f"🔹 Sau: {likes.get('LikesafterCommand', '?')}\n"
         f"➕ Tăng: {likes.get('LikesGivenByAPI', 0)} like\n"
         f"📣 Trạng thái: {likes.get('message', 'Không rõ')}\n\n"
-
         f"⏱️ Thời gian xử lý: {round(data.get('response_time', 0), 2)}s"
     )
 
@@ -242,6 +249,7 @@ def like_handler(message):
         message_id=loading_msg.message_id,
         parse_mode="HTML"
     )
+
 
 VIP_FILE = "vip_users.txt"
 
