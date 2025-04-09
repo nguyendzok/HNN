@@ -172,8 +172,7 @@ def send_help(message):
 ➤ /checkban : Kiểm tra tk có khoá không
 ➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
-➤ /like : Buff Like FF
-➤ /vist : buff người Xem ff
+➤ /time : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
@@ -184,72 +183,6 @@ def send_help(message):
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
-API_KEY = "FF-X-JIM"
-API_URL_BASE = "https://ff-garena.run.place/v5/"
-
-def call_info_api(uid):
-    url = f"{API_URL_BASE}?uid={uid}&key={API_KEY}"
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-    try:
-        response = requests.get(url, headers=headers, timeout=10)
-        response.raise_for_status()
-        print("🟢 Raw Response:", response.text)  # Gỡ lỗi nếu cần
-        return response.json()
-    except requests.exceptions.RequestException as e:
-        print(f"🔴 Request Error: {e}")
-        return {"error": True, "message": "⚠️ Không thể kết nối tới máy chủ"}
-    except ValueError as e:
-        print(f"🟠 JSON Decode Error: {e}")
-        return {"error": True, "message": "⚠️ Phản hồi không hợp lệ từ API"}
-
-@bot.message_handler(commands=['like'])
-def like_handler(message):
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "<i>🔹 Dùng đúng cú pháp: /like [UID]</i>", parse_mode="HTML")
-        return
-
-    
-    uid = args[1]
-    loading_msg = bot.reply_to(message, "<i>🔍 Đang lấy thông tin từ Garena...</i>", parse_mode="HTML")
-    
-    data = call_info_api(uid)
-
-    if data.get("error"):
-        bot.edit_message_text(
-            f"<b>❌ Lỗi:</b> {data.get('message')}",
-            chat_id=loading_msg.chat.id,
-            message_id=loading_msg.message_id,
-            parse_mode="HTML"
-        )
-        return
-
-    user = data.get("user_info", {})
-    likes = data.get("likes_response", {})
-
-    reply_text = (
-        f"<b>📄 Thông tin Free Fire:</b>\n\n"
-        f"👤 <b>Tên:</b> {user.get('username', 'Không rõ')}\n"
-        f"🆔 <b>UID:</b> {data.get('uid')}\n"
-        f"🎮 <b>Level:</b> {user.get('level', '?')}\n"
-        f"🌍 <b>Region:</b> {user.get('region', '?')}\n\n"
-        f"👍 <b>Buff Like:</b>\n"
-        f"🔸 Trước: {likes.get('LikesbeforeCommand', '?')}\n"
-        f"🔹 Sau: {likes.get('LikesafterCommand', '?')}\n"
-        f"➕ Tăng: {likes.get('LikesGivenByAPI', 0)} like\n"
-        f"📣 Trạng thái: {likes.get('message', 'Không rõ')}\n\n"
-        f"⏱️ Thời gian xử lý: {round(data.get('response_time', 0), 2)}s"
-    )
-
-    bot.edit_message_text(
-        reply_text,
-        chat_id=loading_msg.chat.id,
-        message_id=loading_msg.message_id,
-        parse_mode="HTML"
-    )
-
 
 VIP_FILE = "vip_users.txt"
 
@@ -310,46 +243,6 @@ def text_to_voice(message):
             os.remove(temp_file_path)
 
 
-
-@bot.message_handler(commands=['vist'])
-def vist_account(message):
-    try:
-        args = message.text.split()
-        if len(args) < 2:
-            bot.reply_to(message, "❗ Vui lòng nhập UID. Ví dụ: /vist 9576602164")
-            return
-
-        uid = args[1]
-        api_url = f"https://free-fire-visit.vercel.app/send_visit?uid={uid}"
-        response = requests.get(api_url)
-        data = response.json()
-
-        if (
-            response.status_code == 200
-            and data.get("player_details", {}).get("success")
-            and data.get("visit_results", {}).get("success")
-        ):
-            info = data["player_details"]["basic_info"]
-            stats = data["visit_results"]
-
-            reply_text = (
-                f"🔍 **Kết quả Buff UID `{uid}`**\n\n"
-                f"👤 Tên: {info.get('name', 'Không rõ')}\n"
-                f"🎮 Level: {info.get('level', '?')}\n"
-                f"🌍 Region: {info.get('region', '?')}\n"
-                f"🖥 Server: {info.get('server', '?')}\n\n"
-                f"📊 Thống kê lượt truy cập:\n"
-                f"• Lượt xem đã gửi: {stats.get('total_views_sent', '?')}\n"
-                f"• Token đã dùng: {stats.get('tokens_used', '?')}\n"
-                f"⏱️ Thời gian xử lý: {stats.get('total_time_takes', '?')} giây"
-            )
-        else:
-            reply_text = f"❌ Không tìm thấy thông tin cho UID `{uid}`."
-
-        bot.reply_to(message, reply_text, parse_mode="Markdown")
-
-    except Exception as e:
-        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi khi kiểm tra UID:\n`{e}`", parse_mode="Markdown")
 
 
 def format_timestamp(ts):
@@ -618,133 +511,6 @@ def spam(message):
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
 
-@bot.message_handler(commands=['spamvip'])
-def spam(message):
-    user_id = message.from_user.id
-    current_time = time.time()
-
-    if not is_user_vip(user_id):
-        bot.reply_to(message, "🚫 Chỉ dành cho người dùng VIP!")
-        return
-
-    if not bot_active:
-        msg = bot.reply_to(message, 'Bot hiện đang tắt.')
-        time.sleep(10)
-        try:
-            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        except telebot.apihelper.ApiTelegramException as e:
-            print(f"Error deleting message: {e}")
-        return
-
-    if admin_mode and user_id not in admins:
-        msg = bot.reply_to(message, 'có lẽ admin đang fix gì đó hãy đợi xíu')
-        time.sleep(10)
-        try:
-            bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        except telebot.apihelper.ApiTelegramException as e:
-            print(f"Error deleting message: {e}")
-        return
-
-    if user_id in last_usage and current_time - last_usage[user_id] < 10:
-        warn_msg = bot.reply_to(message, f"⏳ Vui lòng đợi {100 - (current_time - last_usage[user_id]):.1f} giây trước khi dùng lại.")
-        time.sleep(10)
-        try:
-            bot.delete_message(chat_id=message.chat.id, message_id=warn_msg.message_id)
-        except:
-            pass
-        return
-
-    # Phân tích cú pháp
-    params = message.text.split()[1:]
-    if len(params) != 2:
-        msg = bot.reply_to(message, "/spamvip sdt số_lần")
-        time.sleep(10)
-        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        return
-
-    sdt, count = params
-    carrier = detect_carrier(sdt)
-
-    if not count.isdigit():
-        msg = bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
-        time.sleep(10)
-        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        return
-
-    count = int(count)
-
-    if count > 100:
-        msg = bot.reply_to(message, "/spamvip sdt số_lần tối đa là 100 - đợi 100 giây sử dụng lại.")
-        time.sleep(10)
-        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        return
-
-    if sdt in blacklist:
-        msg = bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
-        time.sleep(10)
-        bot.delete_message(chat_id=message.chat.id, message_id=msg.message_id)
-        return
-
-    sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
-
-    username = message.from_user.username if message.from_user.username else "Không có username"
-    first_name = message.from_user.first_name
-    diggory_chat3 = f'''┌──────⭓ {name_bot}
-┌───⭓
-» {first_name} | @{username}
-» ID [{user_id}]
-└───⧕
-
-┌───⭓
-» Server: Spam SMS VIP
-» Đang Tiến Hành Spam: [ {sdt} ]
-» Nhà Mạng: [ {carrier} ]
-» Vòng Lặp Spam: {count}
-» Dừng Spam [/stop {sdt}]
-└───⧕
-'''
-
-    script_filename = "dec.py"
-    try:
-        if not os.path.isfile(script_filename):
-            bot.reply_to(message, "Không tìm thấy file script.")
-            return
-
-        with open(script_filename, 'r', encoding='utf-8') as file:
-            script_content = file.read()
-
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            temp_file.write(script_content.encode('utf-8'))
-            temp_file_path = temp_file.name
-
-        # Chạy script spam
-        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        active_processes[sdt] = process
-        # Gửi kết quả spam
-        sent_msg = bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>\n<blockquote>GÓI NGƯỜI DÙNG: VIP</blockquote>',
-            parse_mode='HTML'
-        )
-
-        threading.Thread(
-        target=lambda: (
-        time.sleep(0),
-        bot.delete_message(chat_id=message.chat.id, message_id=message.message_id)
-    )
-).start()
-
-        last_usage[user_id] = current_time
-
-    except FileNotFoundError:
-        bot.reply_to(message, "Không tìm thấy file.")
-    except Exception as e:
-        bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
-
-
-blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4"]
-
-
 
 @bot.message_handler(commands=['stop'])
 def stop_spam(message):
@@ -825,13 +591,12 @@ def generate_random_key(length=30):
     characters = 'haoesportQWERTYUIOPASDFGHJKLZXCVBBNM123456789'
     return ''.join(random.choice(characters) for i in range(length))
 
-
 @bot.message_handler(commands=['tkey'])
 def create_key(message):
     global current_key, key_attempts
-    current_key = generate_random_key()  # Tạo key ngẫu nhiên
-    key_attempts = 1  # Số lần nhập mặc định là 1
-    bot.send_message(message.chat.id, f"Key đã được tạo: {current_key}\nBạn có {key_attempts} lần gửi file\nvui lòng gửi file. py")
+    current_key = generate_random_key()
+    key_attempts = 1
+    bot.send_message(message.chat.id, f"Key đã được tạo: {current_key}\nBạn có {key_attempts} lần gửi file\nvui lòng gửi file .py")
 
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
@@ -859,42 +624,43 @@ def handle_document(message):
     with open(file_path, 'wb') as new_file:
         new_file.write(downloaded_file)
 
-    key_attempts -= 1  # Giảm số lần gửi file sau khi nhận file
+    key_attempts -= 1
 
-    # Gửi thông điệp loading và bắt đầu hiệu ứng loading
     msg = bot.reply_to(message, "Đang mã hóa...", parse_mode='HTML')
-    
-    time.sleep(2)  # Mô phỏng xử lý
+    time.sleep(2)
 
-    obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user)
+    try:
+        obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user)
 
-    # Tin nhắn cuối cùng trước khi gửi file
-    bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
-    
-    with open(obfuscated_file_path, 'rb') as obfuscated_file:
-        bot.send_document(message.chat.id, obfuscated_file)
+        bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
 
-    os.remove(file_path)
-    os.remove(obfuscated_file_path)
+        with open(obfuscated_file_path, 'rb') as obfuscated_file:
+            bot.send_document(message.chat.id, obfuscated_file)
+
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Đã xảy ra lỗi khi mã hóa: {e}")
+    finally:
+        # Xóa cả file gốc và file mã hóa sau khi xử lý
+        if os.path.exists(file_path):
+            os.remove(file_path)
+        if os.path.exists(obfuscated_file_path):
+            os.remove(obfuscated_file_path)
 
 def obfuscate_file(file_path, key, user):
-    random_number = random.randint(99738, 101290)
-    obfuscated_filename = f"file-{random_number}.py"
+    original_filename = os.path.basename(file_path)
+    name_without_ext = os.path.splitext(original_filename)[0]
+    obfuscated_filename = f"{name_without_ext}-enc.py"
     obfuscated_file_path = os.path.join(TEMP_DIR, obfuscated_filename)
 
     with open(file_path, 'r', encoding='utf-8') as file:
         code = file.read()
 
     encoded_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
-    hash_object = hashlib.sha256(code.encode('utf-8'))
-    hash_code = hash_object.hexdigest()
+    hash_code = hashlib.sha256(code.encode('utf-8')).hexdigest()
 
     username = user.username if user.username else "Không Công Khai"
     user_id = user.id
-
-    current_time = datetime.datetime.utcnow() + datetime.timedelta(hours=7)
-
-    time_vietnam = current_time.strftime('%Y-%m-%d %H:%M:%S')
+    time_vietnam = (datetime.datetime.utcnow() + datetime.timedelta(hours=7)).strftime('%Y-%m-%d %H:%M:%S')
 
     obfuscated_code = f"""
 # ENCODE BY HAOESPORTS
@@ -918,7 +684,6 @@ exec(base64.b64decode('{encoded_code}').decode('utf-8'))
         obf_file.write(obfuscated_code)
 
     return obfuscated_file_path
-
 
 
 
