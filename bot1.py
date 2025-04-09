@@ -301,6 +301,36 @@ def search_ff(message):
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
 
+ADMINS = [7658079324]  # Thay bằng user_id admin của bạn
+GROUP_CHAT_IDS = [-1002639856138]  # Thay bằng chat_id nhóm
+
+@bot.message_handler(commands=['thongbao'])
+def thongbao_to_groups(message):
+    if message.chat.type != 'private':
+        bot.reply_to(message, "⚠️ Vui lòng dùng lệnh này trong chat riêng với bot.")
+        return
+
+    if message.from_user.id not in ADMINS:
+        bot.reply_to(message, "🚫 Bạn không có quyền dùng lệnh này.")
+        return
+
+    try:
+        announcement = message.text.split(' ', 1)[1]
+    except IndexError:
+        bot.reply_to(message, "❗ Vui lòng nhập nội dung: /announce <nội dung>")
+        return
+
+    success = 0
+    for chat_id in GROUP_CHAT_IDS:
+        try:
+            bot.send_message(chat_id, f"📢 <b>Thông báo từ Admin</b>:\n\n{announcement}", parse_mode='HTML')
+            success += 1
+        except Exception as e:
+            print(f"Lỗi gửi nhóm {chat_id}: {e}")
+
+    bot.reply_to(message, f"✅ Đã gửi thông báo đến {success} nhóm.")
+
+
 
 
 @bot.message_handler(commands=['checkban'])
