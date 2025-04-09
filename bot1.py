@@ -204,7 +204,7 @@ def call_info_api(uid):
         print(f"🟠 JSON Decode Error: {e}")
         return {"error": True, "message": "⚠️ Phản hồi không hợp lệ từ API"}
 
-@bot.message_handler(commandsage['like'])
+@bot.message_handler(commands=['like'])
 def like_handler(message):
     args = message.text.split()
     if len(args) != 2:
