@@ -184,53 +184,56 @@ def send_help(message):
 └───
 </blockquote>""", parse_mode="HTML")
 ### /like
-API_BASE_URL = "https://dichvukey.site/freefire/like.php?key=vLong161656"
+API_KEY = "FF-X-JIM"
+API_URL_BASE = "https://ff-garena.run.place/v5/"
 
-def call_api(uid):
-    url = f"{API_BASE_URL}&uid={uid}"
+def call_info_api(uid):
+    url = f"{API_URL_BASE}?uid={uid}&key={API_KEY}"
     try:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Safari/537.36"
-        }
-        response = requests.get(url, headers=headers, timeout=10)
+        response = requests.get(url, timeout=10)
         response.raise_for_status()
         return response.json()
-    except requests.exceptions.RequestException:
-        return {"status": "error", "message": "Server đang bị admin Tắt"}
+    except:
+        return {"error": True, "message": "⚠️ Không thể kết nối tới máy chủ"}
 
 @bot.message_handler(commands=['like'])
 def like_handler(message):
     args = message.text.split()
-    
     if len(args) != 2:
-        bot.reply_to(message, "<blockquote>🔹 Cách dùng: /like [UID]</blockquote>", parse_mode="HTML")
+        bot.reply_to(message, "<i>🔹 Dùng đúng cú pháp: /like [UID]</i>", parse_mode="HTML")
         return
 
     uid = args[1]
+    loading_msg = bot.reply_to(message, "<i>🔍 Đang lấy thông tin từ Garena...</i>", parse_mode="HTML")
+    
+    data = call_info_api(uid)
 
-    # Gửi thông báo "loading"
-    loading_msg = bot.reply_to(message, "<i>⏳ Đang tiến hành buff like...</i>", parse_mode="HTML")
-
-    data = call_api(uid)
-
-    if data.get("status") == "error":
+    if data.get("error"):
         bot.edit_message_text(
-            f"<blockquote>❌ {data['message']}</blockquote>",
+            f"<b>❌ Lỗi:</b> {data.get('message')}",
             chat_id=loading_msg.chat.id,
             message_id=loading_msg.message_id,
             parse_mode="HTML"
         )
         return
 
+    user = data.get("user_info", {})
+    likes = data.get("likes_response", {})
+
     reply_text = (
-        f"<blockquote>\n"
-        f"🎯 <b>Kết quả buff like:</b>\n"
-        f"👤 <b>Tên:</b> {data.get('username', 'Tạm Thời Lỗi')}\n"
-        f"🆔 <b>UID:</b> {data.get('uid', 'Không xác định')}\n"
-        f"👍 <b>Like trước:</b> {data.get('likes_before', 'Tạm Thời Lỗi')}\n"
-        f"✅ <b>Like sau:</b> {data.get('likes_after', 'Tạm Thời Lỗi')}\n"
-        f"➕ <b>Tổng cộng:</b> {data.get('likes_given', 'Tạm Thời Lỗi')} like\n"
-        f"</blockquote>"
+        f"<b>📄 Thông tin Free Fire:</b>\n\n"
+        f"👤 <b>Tên:</b> {user.get('username', 'Không rõ')}\n"
+        f"🆔 <b>UID:</b> {data.get('uid')}\n"
+        f"🎮 <b>Level:</b> {user.get('level', '?')}\n"
+        f"🌍 <b>Region:</b> {user.get('region', '?')}\n\n"
+
+        f"👍 <b>Buff Like:</b>\n"
+        f"🔸 Trước: {likes.get('LikesbeforeCommand', '?')}\n"
+        f"🔹 Sau: {likes.get('LikesafterCommand', '?')}\n"
+        f"➕ Tăng: {likes.get('LikesGivenByAPI', 0)} like\n"
+        f"📣 Trạng thái: {likes.get('message', 'Không rõ')}\n\n"
+
+        f"⏱️ Thời gian xử lý: {round(data.get('response_time', 0), 2)}s"
     )
 
     bot.edit_message_text(
