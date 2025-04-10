@@ -42,6 +42,7 @@ web = "https://dichvukey.site/"
 facebook = "no"
 users_keys = {}
 key = ""
+blacklist = []  # hoặc set(), hoặc list chứa sẵn các số
 user_cooldown = {}
 active_processes = {}
 last_usage = {} 
