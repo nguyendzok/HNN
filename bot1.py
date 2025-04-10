@@ -277,12 +277,20 @@ def text_to_voice(message):
 
 
 
-def format_timestamp(ts):
+def format_timestamp(timestamp):
     try:
-        dt = datetime.fromtimestamp(ts)
-        return dt.strftime("%d/%m/%Y %H:%M")
+        if not timestamp:
+            return "Không rõ"
+        dt = datetime.fromtimestamp(timestamp)
+        return dt.strftime("%H:%M:%S %d-%m-%Y")
     except:
-        return "Không rõ"
+        return "Không xác định"
+
+def escape_html(text):
+    """
+    Escape các ký tự đặc biệt để tránh lỗi khi dùng HTML parse mode.
+    """
+    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 @bot.message_handler(commands=['searchff'])
 def search_ff(message):
@@ -292,10 +300,19 @@ def search_ff(message):
             bot.reply_to(message, "❗ Vui lòng nhập tên cần tìm. Ví dụ: /searchff Scromnyi")
             return
 
-        username = args[1]
+        username = args[1].strip()
         api_url = f"https://ariflexlabs-search-api.vercel.app/search?name={username}"
         response = requests.get(api_url)
-        regions = response.json()
+
+        if response.status_code != 200:
+            bot.reply_to(message, f"⚠️ Lỗi từ máy chủ API: {response.status_code}")
+            return
+
+        try:
+            regions = response.json()
+        except ValueError:
+            bot.reply_to(message, "⚠️ Không thể phân tích dữ liệu từ API.")
+            return
 
         all_players = []
         for region_data in regions:
@@ -310,28 +327,28 @@ def search_ff(message):
                 })
 
         if not all_players:
-            bot.reply_to(message, f"❌ Không tìm thấy kết quả cho `{username}`.", parse_mode="Markdown")
+            bot.reply_to(message, f"❌ Không tìm thấy kết quả cho <code>{escape_html(username)}</code>.", parse_mode="HTML")
             return
 
-        # Giới hạn kết quả nếu quá nhiều
         max_results = 10
-        reply_text = f"🔎 **Kết quả tìm kiếm cho `{username}`:**\n\n"
+        reply_text = f"🔎 <b>Kết quả tìm kiếm cho</b> <code>{escape_html(username)}</code>:\n\n"
         for i, player in enumerate(all_players[:max_results], 1):
             reply_text += (
-                f"{i}. 👤 {player['nickname']}\n"
-                f"🆔 UID: `{player['accountId']}`\n"
-                f"🎮 Level: {player['level']} | 🌍 Region: {player['region']}\n"
-                f"⏰ Đăng nhập cuối: {player['lastLogin']}\n"
-                f"───────────────\n"
+                f"<blockquote>\n"
+                f"<b>{i}. {escape_html(player['nickname'])}</b>\n"
+                f"🆔 UID: <code>{escape_html(player['accountId'])}</code>\n"
+                f"🎮 Level: {player['level']} | 🌍 Region: {escape_html(player['region'])}\n"
+                f"⏰ Đăng nhập cuối: {escape_html(player['lastLogin'])}\n"
+                f"</blockquote>\n"
             )
 
         if len(all_players) > max_results:
             reply_text += f"📌 Hiển thị {max_results}/{len(all_players)} kết quả đầu tiên."
 
-        bot.reply_to(message, reply_text, parse_mode="Markdown")
+        bot.reply_to(message, reply_text, parse_mode="HTML")
 
     except Exception as e:
-        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
+        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n<code>{escape_html(str(e))}</code>", parse_mode="HTML")
 
 ADMINS = [7658079324]  # Thay bằng user_id admin của bạn
 GROUP_CHAT_IDS = [-1002639856138]  # Thay bằng chat_id nhóm
