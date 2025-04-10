@@ -506,7 +506,7 @@ def spam(message):
     count = int(count)
 
     if count > 25:
-        bot.reply_to(message, "/spam sdt số_lần tối đa là 25 - đợi 10 giây sử dụng lại.")
+        bot.send_message(message.chat.id, "/spam sdt số_lần như này cơ mà")
         return
 
     if sdt in blacklist:
