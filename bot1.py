@@ -240,7 +240,8 @@ def like_user(message):
         f"👤 Username: {data.get('username')}\n"
         f"🔥 Level: {data.get('level')}\n"
         f"🌍 Khu vực: {data.get('region')}\n"
-        f"👍 Likes: {data.get('likes_before')} ➡️ {data.get('likes_after')}\n"
+        f"👍 Likes: {data.get('likes_before')}
+        f"➡️ {data.get('likes_after')}\n"
         f"📛 Thông báo: {data.get('message')}"
     )
     bot.reply_to(message, msg)
