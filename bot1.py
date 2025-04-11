@@ -256,15 +256,13 @@ def call_api(uid):
     except Exception as e:
         return {"message": f"Lỗi khi gọi API: {e}"}
 
+# Định nghĩa hàm xử lý lỗi API
 def handle_api_error(message, note):
     bot.reply_to(message, f"<blockquote>⚠️ {note}</blockquote>", parse_mode="HTML")
 
+# Hàm xử lý lệnh '/like'
 @bot.message_handler(commands=['like'])
 def like_handler(message):
-    if not check_user_permission(message):
-        bot.reply_to(message, "<blockquote>Bạn chưa có quyền sử dụng lệnh này.</blockquote>", parse_mode="HTML")
-        return
-
     args = message.text.split()
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>❗ Vui lòng nhập đúng cú pháp: /like 1733997441</blockquote>", parse_mode="HTML")
@@ -281,12 +279,12 @@ def like_handler(message):
             reply_text = (
                 f"<blockquote>\n"
                 f"🎯 <b>Kết quả buff like:</b><br>"
-                f"👤 <b>Name:</b> {msg_content.get('Name', 'Không xác định')}<br>"
+                f"👤 <b>Tên:</b> {msg_content.get('Name', 'Không xác định')}<br>"
                 f"🆔 <b>UID:</b> {msg_content.get('UID', uid)}<br>"
-                f"🌎 <b>Region:</b> {msg_content.get('Region', 'Không xác định')}<br>"
+                f"🌎 <b>Khu vực:</b> {msg_content.get('Region', 'Không xác định')}<br>"
                 f"📊 <b>Level:</b> {msg_content.get('Level', 'Không xác định')}<br>"
-                f"📉 <b>Like trước đó:</b> {msg_content.get('Likes Before', 'Không xác định')}<br>"
-                f"📈 <b>Like sau khi gửi:</b> {msg_content.get('Likes After', 'Không xác định')}<br>"
+                f"👍 <b>Like trước:</b> {msg_content.get('Likes Before', 'Không xác định')}<br>"
+                f"✅ <b>Like sau:</b> {msg_content.get('Likes After', 'Không xác định')}<br>"
                 f"➕ <b>Tổng cộng:</b> {msg_content.get('Likes Added', 'Không xác định')} like<br>"
                 f"</blockquote>"
             )
@@ -296,7 +294,6 @@ def like_handler(message):
         bot.reply_to(message, reply_text, parse_mode="HTML")
     else:
         handle_api_error(message, "API không trả về kết quả hợp lệ.")
-
 
 
 
