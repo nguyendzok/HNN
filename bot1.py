@@ -258,6 +258,12 @@ def ff(message):
 
         bot.send_message(message.chat.id, text, parse_mode="HTML")
 
+#abc
+
+
+
+
+
 
 start_time = time.time()
 
