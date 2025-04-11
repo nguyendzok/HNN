@@ -173,7 +173,7 @@ def send_help(message):
 ➤ /checkban : Kiểm tra tk có khoá không
 ➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
- /like : buff like
+➤ /like : buff like
 ➤ /time : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
