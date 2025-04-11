@@ -264,39 +264,6 @@ def ff(message):
 
 
 
-
-start_time = time.time()
-
-# Biến để tính toán FPS
-last_time = time.time()
-frame_count = 0
-fps = 0
-
-# Lệnh /uptime
-@bot.message_handler(commands=['uptime'])
-def uptime(message):
-    global last_time, frame_count, fps
-
-    # Tính toán thời gian hoạt động
-    uptime_seconds = int(time.time() - start_time)
-    uptime_formatted = str(timedelta(seconds=uptime_seconds))
-
-    # Cập nhật FPS mỗi khi lệnh được xử lý
-    current_time = time.time()
-    frame_count += 1
-    if current_time - last_time >= 1:  # Tính FPS mỗi giây
-        fps = frame_count
-        frame_count = 0
-        last_time = current_time
-
-    # Gửi tin nhắn (đã xóa phần video)
-    bot.send_message(message.chat.id, 
-                     f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
-                     f"🎮 FPS trung bình: {fps} FPS\n"
-                     "Không thể lấy thông tin cấu hình.")
-
-
-
 def call_api(uid):
     try:
         url = f"https://dichvukey.site/likeff2.php?uid={uid}"
