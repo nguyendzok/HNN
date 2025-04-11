@@ -218,16 +218,6 @@ def themvip(message: Message):
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
 
 #pet
-def download_image(url):
-    try:
-        r = requests.get(url)
-        if r.status_code == 200:
-            return io.BytesIO(r.content)
-    except:
-        pass
-    return None
-
-
 @bot.message_handler(commands=['ff'])
 def ff(message):
     try:
@@ -246,26 +236,27 @@ def ff(message):
             return
 
         data = response.json()
-        captain = data.get("captainBasicInfo", {})
 
-        nickname = captain.get("nickname", "Unknown")
-        level = captain.get("level", 0)
-        rank = captain.get("rank", "N/A")
-        likes = captain.get("liked", 0)
-        avatar_id = captain.get("headPic", "902000001")
+        account = data.get("AccountInfo", {})
+        name = account.get("AccountName", "Unknown")
+        level = account.get("AccountLevel", "N/A")
+        likes = account.get("AccountLikes", 0)
+        br_rank = account.get("BrMaxRank", "N/A")
+        br_point = account.get("BrRankPoint", 0)
+        cs_rank = account.get("CsMaxRank", "N/A")
+        cs_point = account.get("CsRankPoint", 0)
+        region = account.get("AccountRegion", "N/A")
 
-        avatar_url = f"https://cdn.garena.com/platform/ff/avatar/{avatar_id}.png"
-        avatar_img = download_image(avatar_url)
-        caption_avatar = f"<b>{nickname}</b>\nLevel: {level}\nRank: {rank}\nLikes: {likes}"
+        text = (
+            f"<b>Tên:</b> {name}\n"
+            f"<b>Level:</b> {level}\n"
+            f"<b>Region:</b> {region}\n"
+            f"<b>Likes:</b> {likes}\n\n"
+            f"<b>BR Rank:</b> {br_rank} ({br_point} RP)\n"
+            f"<b>CS Rank:</b> {cs_rank} ({cs_point} RP)"
+        )
 
-        if avatar_img:
-            bot.send_photo(message.chat.id, avatar_img, caption=caption_avatar, parse_mode="HTML")
-        else:
-            bot.send_message(message.chat.id, "Không tải được ảnh đại diện.")
-
-    except Exception as e:
-        bot.reply_to(message, f"Có lỗi xảy ra: {str(e)}")
-
+        bot.send_message(message.chat.id, text, parse_mode="HTML")
 
 
 start_time = time.time()
