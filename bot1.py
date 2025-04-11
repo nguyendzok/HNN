@@ -15,6 +15,7 @@ from gtts import gTTS
 import re
 import string
 import os
+import io
 import base64
 import hashlib
 from flask import Flask, request
@@ -237,6 +238,17 @@ pet_skill_map = {
     1315000010: "Healing Song",
 }
 
+def download_image(url):
+    try:
+        r = requests.get(url)
+        if r.status_code == 200:
+            return io.BytesIO(r.content)
+    except:
+        pass
+    return None
+
+
+
 @bot.message_handler(commands=['ff'])
 def ff(message):
     try:
@@ -251,7 +263,7 @@ def ff(message):
         response = requests.get(url)
 
         if response.status_code != 200:
-            bot.reply_to(message, "Không tìm thấy thông tin hoặc API bị lỗi.")
+            bot.reply_to(message, "Không tìm thấy thông tin hoặc API lỗi.")
             return
 
         data = response.json()
@@ -269,13 +281,21 @@ def ff(message):
         banner_url = f"https://cdn.garena.com/platform/ff/banner/{banner_id}.png"
 
         # Gửi avatar
+        avatar_img = download_image(avatar_url)
         caption_avatar = f"<b>{nickname}</b>\nLevel: {level}\nRank: {rank}\nLikes: {likes}"
-        bot.send_photo(message.chat.id, avatar_url, caption=caption_avatar, parse_mode="HTML")
+        if avatar_img:
+            bot.send_photo(message.chat.id, avatar_img, caption=caption_avatar, parse_mode="HTML")
+        else:
+            bot.send_message(message.chat.id, "Không tải được ảnh đại diện.")
 
         # Gửi banner
-        bot.send_photo(message.chat.id, banner_url, caption="Banner của người chơi")
+        banner_img = download_image(banner_url)
+        if banner_img:
+            bot.send_photo(message.chat.id, banner_img, caption="Banner của người chơi")
+        else:
+            bot.send_message(message.chat.id, "Không tải được banner.")
 
-        # Gửi pet nếu có
+        # Gửi pet (nếu có)
         if pet and pet.get("id"):
             pet_id = pet.get("id")
             pet_level = pet.get("level", 1)
@@ -283,11 +303,15 @@ def ff(message):
             pet_skill = pet.get("selectedSkillId")
 
             pet_url = f"https://cdn.garena.com/platform/ff/pet/{pet_skin}.png"
+            pet_img = download_image(pet_url)
             pet_name = pet_name_map.get(pet_id, f"ID: {pet_id}")
             pet_skill_name = pet_skill_map.get(pet_skill, f"Skill ID: {pet_skill}")
-
             caption_pet = f"<b>Pet:</b> {pet_name} (Lv.{pet_level})\n<b>Skill:</b> {pet_skill_name}"
-            bot.send_photo(message.chat.id, pet_url, caption=caption_pet, parse_mode="HTML")
+
+            if pet_img:
+                bot.send_photo(message.chat.id, pet_img, caption=caption_pet, parse_mode="HTML")
+            else:
+                bot.send_message(message.chat.id, "Không tải được ảnh pet.")
 
     except Exception as e:
         bot.reply_to(message, f"Có lỗi xảy ra: {str(e)}")
