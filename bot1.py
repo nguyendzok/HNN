@@ -172,6 +172,7 @@ def send_help(message):
 ➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
 ➤ /like : buff like
+➤ /ff : check info
 ➤ /uptime : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
@@ -214,6 +215,84 @@ def themvip(message: Message):
     user_id_to_add = int(parts[1])
     save_vip_user(user_id_to_add)
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
+
+#pet
+pet_name_map = {
+    1300000113: "Detective Panda",
+    1300000101: "Mr. Waggor",
+    1300000094: "Beaston",
+    1300000095: "Falco",
+    1300000102: "Ottero",
+    1300000092: "Poring",
+    1300000110: "Rockie",
+}
+
+# Bản đồ kỹ năng Pet
+pet_skill_map = {
+    1315000011: "Panda’s Blessings",
+    1315000001: "Smooth Gloo",
+    1315000002: "Helping Hand",
+    1315000003: "Flying Boost",
+    1315000004: "Silent Sentinel",
+    1315000010: "Healing Song",
+}
+
+@bot.message_handler(commands=['ff'])
+def ff(message):
+    try:
+        args = message.text.split()
+        if len(args) != 3:
+            bot.reply_to(message, "Sai cú pháp! Dùng: /ff [uid] [region]")
+            return
+
+        uid = args[1]
+        region = args[2]
+        url = f"https://ariiflexlabs-playerinfo-icxc.onrender.com/ff_info?uid={uid}&region={region}"
+        response = requests.get(url)
+
+        if response.status_code != 200:
+            bot.reply_to(message, "Không tìm thấy thông tin hoặc API bị lỗi.")
+            return
+
+        data = response.json()
+        captain = data.get("captainBasicInfo", {})
+        pet = data.get("petInfo", {})
+
+        nickname = captain.get("nickname", "Unknown")
+        level = captain.get("level", 0)
+        rank = captain.get("rank", "N/A")
+        likes = captain.get("liked", 0)
+        avatar_id = captain.get("headPic", "902000001")
+        banner_id = captain.get("bannerId", "901000001")
+
+        avatar_url = f"https://cdn.garena.com/platform/ff/avatar/{avatar_id}.png"
+        banner_url = f"https://cdn.garena.com/platform/ff/banner/{banner_id}.png"
+
+        # Gửi avatar
+        caption_avatar = f"<b>{nickname}</b>\nLevel: {level}\nRank: {rank}\nLikes: {likes}"
+        bot.send_photo(message.chat.id, avatar_url, caption=caption_avatar, parse_mode="HTML")
+
+        # Gửi banner
+        bot.send_photo(message.chat.id, banner_url, caption="Banner của người chơi")
+
+        # Gửi pet nếu có
+        if pet and pet.get("id"):
+            pet_id = pet.get("id")
+            pet_level = pet.get("level", 1)
+            pet_skin = pet.get("skinId", "1310000001")
+            pet_skill = pet.get("selectedSkillId")
+
+            pet_url = f"https://cdn.garena.com/platform/ff/pet/{pet_skin}.png"
+            pet_name = pet_name_map.get(pet_id, f"ID: {pet_id}")
+            pet_skill_name = pet_skill_map.get(pet_skill, f"Skill ID: {pet_skill}")
+
+            caption_pet = f"<b>Pet:</b> {pet_name} (Lv.{pet_level})\n<b>Skill:</b> {pet_skill_name}"
+            bot.send_photo(message.chat.id, pet_url, caption=caption_pet, parse_mode="HTML")
+
+    except Exception as e:
+        bot.reply_to(message, f"Có lỗi xảy ra: {str(e)}")
+
+
 
 
 start_time = time.time()
