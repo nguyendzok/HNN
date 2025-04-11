@@ -37,8 +37,6 @@ print("Bot đã được khởi động thành công")
 admin_diggory = "HaoEsport" 
 name_bot = "Trần Hào"
 ADMIN_ID = '7658079324'
-zalo = "0585019743"
-web = "https://dichvukey.site/"
 facebook = "no"
 users_keys = {}
 key = ""
@@ -174,7 +172,7 @@ def send_help(message):
 ➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
 ➤ /like : buff like
-➤ /time : Xem Thời gian bot hoạt động
+➤ /uptime : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
@@ -218,33 +216,86 @@ def themvip(message: Message):
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
 
 
+start_time = time.time()
+
+# Biến để tính toán FPS
+last_time = time.time()
+frame_count = 0
+fps = 0
+
+# Lệnh /uptime
+@bot.message_handler(commands=['uptime'])
+def uptime(message):
+    global last_time, frame_count, fps
+
+    # Tính toán thời gian hoạt động
+    uptime_seconds = int(time.time() - start_time)
+    uptime_formatted = str(timedelta(seconds=uptime_seconds))
+
+    # Cập nhật FPS mỗi khi lệnh được xử lý
+    current_time = time.time()
+    frame_count += 1
+    if current_time - last_time >= 1:  # Tính FPS mỗi giây
+        fps = frame_count
+        frame_count = 0
+        last_time = current_time
+
+    # Gửi tin nhắn (đã xóa phần video)
+    bot.send_message(message.chat.id, 
+                     f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
+                     f"🎮 FPS trung bình: {fps} FPS\n"
+                     "Không thể lấy thông tin cấu hình.")
+
+
+
+def call_api(uid):
+    try:
+        url = f"https://dichvukey.site/likeff2.php?uid={uid}"
+        response = requests.get(url)
+        return response.json()
+    except Exception as e:
+        return {"message": f"Lỗi khi gọi API: {e}"}
+
+def handle_api_error(message, note):
+    bot.reply_to(message, f"<blockquote>⚠️ {note}</blockquote>", parse_mode="HTML")
 
 @bot.message_handler(commands=['like'])
-def like_user(message):
-    try:
-        uid = message.text.split()[1]
-    except IndexError:
-        bot.reply_to(message, "❗ Vui lòng nhập UID: /like <uid>")
+def like_handler(message):
+    if not check_user_permission(message):
+        bot.reply_to(message, "<blockquote>Bạn chưa có quyền sử dụng lệnh này.</blockquote>", parse_mode="HTML")
         return
 
-    url = f"https://dichvukey.site/likeff2.php?uid={uid}"
-    try:
-        response = requests.get(url)
-        data = response.json()
-    except Exception as e:
-        bot.reply_to(message, f"⚠️ Lỗi khi gọi API: {e}")
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "<blockquote>❗ Vui lòng nhập đúng cú pháp: /like 1733997441</blockquote>", parse_mode="HTML")
         return
 
-    # Gửi phản hồi
-    msg = (
-        f"👤 Username: {data.get('username')}\n"
-        f"🔥 Level: {data.get('level')}\n"
-        f"🌍 Khu vực: {data.get('region')}\n"
-        f"👍 Likes: {data.get('likes_before')}➡️ {data.get('likes_after')}\n"
-        f"📛 Thông báo: {data.get('message')}"
-    )
-    bot.reply_to(message, msg)
+    uid = args[1]
+    data = call_api(uid)
 
+    if "message" in data:
+        msg_content = data["message"]
+        if isinstance(msg_content, str):
+            reply_text = f"<blockquote>⚠️ {msg_content}</blockquote>"
+        elif isinstance(msg_content, dict):
+            reply_text = (
+                f"<blockquote>\n"
+                f"🎯 <b>Kết quả buff like:</b><br>"
+                f"👤 <b>Name:</b> {msg_content.get('Name', 'Không xác định')}<br>"
+                f"🆔 <b>UID:</b> {msg_content.get('UID', uid)}<br>"
+                f"🌎 <b>Region:</b> {msg_content.get('Region', 'Không xác định')}<br>"
+                f"📊 <b>Level:</b> {msg_content.get('Level', 'Không xác định')}<br>"
+                f"📉 <b>Like trước đó:</b> {msg_content.get('Likes Before', 'Không xác định')}<br>"
+                f"📈 <b>Like sau khi gửi:</b> {msg_content.get('Likes After', 'Không xác định')}<br>"
+                f"➕ <b>Tổng cộng:</b> {msg_content.get('Likes Added', 'Không xác định')} like<br>"
+                f"</blockquote>"
+            )
+        else:
+            reply_text = "<blockquote>Dữ liệu trả về không đúng định dạng.</blockquote>"
+
+        bot.reply_to(message, reply_text, parse_mode="HTML")
+    else:
+        handle_api_error(message, "API không trả về kết quả hợp lệ.")
 
 
 
