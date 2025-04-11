@@ -218,26 +218,6 @@ def themvip(message: Message):
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
 
 #pet
-pet_name_map = {
-    1300000113: "Detective Panda",
-    1300000101: "Mr. Waggor",
-    1300000094: "Beaston",
-    1300000095: "Falco",
-    1300000102: "Ottero",
-    1300000092: "Poring",
-    1300000110: "Rockie",
-}
-
-# Bản đồ kỹ năng Pet
-pet_skill_map = {
-    1315000011: "Panda’s Blessings",
-    1315000001: "Smooth Gloo",
-    1315000002: "Helping Hand",
-    1315000003: "Flying Boost",
-    1315000004: "Silent Sentinel",
-    1315000010: "Healing Song",
-}
-
 def download_image(url):
     try:
         r = requests.get(url)
@@ -246,7 +226,6 @@ def download_image(url):
     except:
         pass
     return None
-
 
 
 @bot.message_handler(commands=['ff'])
@@ -268,54 +247,24 @@ def ff(message):
 
         data = response.json()
         captain = data.get("captainBasicInfo", {})
-        pet = data.get("petInfo", {})
 
         nickname = captain.get("nickname", "Unknown")
         level = captain.get("level", 0)
         rank = captain.get("rank", "N/A")
         likes = captain.get("liked", 0)
         avatar_id = captain.get("headPic", "902000001")
-        banner_id = captain.get("bannerId", "901000001")
 
         avatar_url = f"https://cdn.garena.com/platform/ff/avatar/{avatar_id}.png"
-        banner_url = f"https://cdn.garena.com/platform/ff/banner/{banner_id}.png"
-
-        # Gửi avatar
         avatar_img = download_image(avatar_url)
         caption_avatar = f"<b>{nickname}</b>\nLevel: {level}\nRank: {rank}\nLikes: {likes}"
+
         if avatar_img:
             bot.send_photo(message.chat.id, avatar_img, caption=caption_avatar, parse_mode="HTML")
         else:
             bot.send_message(message.chat.id, "Không tải được ảnh đại diện.")
 
-        # Gửi banner
-        banner_img = download_image(banner_url)
-        if banner_img:
-            bot.send_photo(message.chat.id, banner_img, caption="Banner của người chơi")
-        else:
-            bot.send_message(message.chat.id, "Không tải được banner.")
-
-        # Gửi pet (nếu có)
-        if pet and pet.get("id"):
-            pet_id = pet.get("id")
-            pet_level = pet.get("level", 1)
-            pet_skin = pet.get("skinId", "1310000001")
-            pet_skill = pet.get("selectedSkillId")
-
-            pet_url = f"https://cdn.garena.com/platform/ff/pet/{pet_skin}.png"
-            pet_img = download_image(pet_url)
-            pet_name = pet_name_map.get(pet_id, f"ID: {pet_id}")
-            pet_skill_name = pet_skill_map.get(pet_skill, f"Skill ID: {pet_skill}")
-            caption_pet = f"<b>Pet:</b> {pet_name} (Lv.{pet_level})\n<b>Skill:</b> {pet_skill_name}"
-
-            if pet_img:
-                bot.send_photo(message.chat.id, pet_img, caption=caption_pet, parse_mode="HTML")
-            else:
-                bot.send_message(message.chat.id, "Không tải được ảnh pet.")
-
     except Exception as e:
         bot.reply_to(message, f"Có lỗi xảy ra: {str(e)}")
-
 
 
 
