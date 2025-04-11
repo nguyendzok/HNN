@@ -230,11 +230,7 @@ def ff(message):
         region = args[2]
         url = f"https://ariiflexlabs-playerinfo-icxc.onrender.com/ff_info?uid={uid}&region={region}"
         response = requests.get(url)
-
-        if response.status_code != 200:
-            bot.reply_to(message, "Không tìm thấy thông tin hoặc API lỗi.")
-            return
-
+        response.raise_for_status()
         data = response.json()
 
         account = data.get("AccountInfo", {})
@@ -258,7 +254,9 @@ def ff(message):
 
         bot.send_message(message.chat.id, text, parse_mode="HTML")
 
-#abc
+    except Exception as e:
+        bot.reply_to(message, f"Có lỗi xảy ra: {e}")
+
 
 
 
