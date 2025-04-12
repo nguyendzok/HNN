@@ -36,12 +36,12 @@ bot = telebot.TeleBot(BOT_TOKEN)         # <- bot dùng biến này
 print(BOT_TOKEN)  # Kiểm tra token có tồn tại không
 print("Bot đã được khởi động thành công")
 admin_diggory = "HaoEsport" 
-name_bot = "Trần Hào"
+name_bot = "SPAM PRO BOT"
 ADMIN_ID = '7658079324'
 facebook = "no"
 users_keys = {}
 key = ""
-blacklist = []  # hoặc set(), hoặc list chứa sẵn các số
+blacklist = set()# hoặc set(), hoặc list chứa sẵn các số
 user_cooldown = {}
 active_processes = {}
 last_usage = {} 
@@ -470,21 +470,17 @@ def detect_carrier(phone_number: str) -> str:
 
 
 def animate_loading(chat_id, message_id, stop_event):
-    emojis = ['⏳', '⌛']
-    idx = 0
+    dots = ""
     while not stop_event.is_set():
+        dots += "."
+        if len(dots) > 3:
+            dots = ""
         try:
-            bot.edit_message_text(
-                f"{emojis[idx % 2]} Đang xử lý...",
-                chat_id=chat_id,
-                message_id=message_id
-            )
-            idx += 1
-            time.sleep(1)
-        except Exception as e:
-            print(f"Lỗi khi update loading: {e}")
-            break
-
+            bot.edit_message_text(f"⏳ Đang xử lý{dots}", chat_id, message_id)
+        except:
+            pass
+        time.sleep(0.5)
+        
 @bot.message_handler(commands=['spam'])
 def spam(message):
     user_id = message.from_user.id
@@ -508,14 +504,12 @@ def spam(message):
     sdt, count = params
     carrier = detect_carrier(sdt)
 
-    if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
-        return
-
-    count = int(count)
-
-    if count > 25:
-        bot.send_message(message.chat.id, "/spam sdt số_lần như này cơ mà")
+    try:
+        count = int(count)
+        if count < 1 or count > 500:
+            raise ValueError
+    except ValueError:
+        bot.reply_to(message, "Số lần spam không hợp lệ. Chỉ chấp nhận từ 1 đến 500.")
         return
 
     if sdt in blacklist:
@@ -525,34 +519,21 @@ def spam(message):
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
     username = message.from_user.username if message.from_user.username else "Không có username"
 
-    diggory_chat3 = f'''┌──────⭓ {name_bot}
-│ 🚀 Attack Sent Successfully
-│ 💳 Plan Free: Min 1 | Max 5
-│ 📞 Phone: {sdt}
-│ ⚔️ Attack By: @{username}
-│ ⏳ Delay: 20s
-│ 📎 Vòng Lặp: {count}
-└────────────⭓
-'''
-
     script_filename = "dec.py"
     try:
         if not os.path.isfile(script_filename):
             bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        # Gửi loading ban đầu
         loading_msg = bot.send_message(message.chat.id, "⏳ Đang xử lý...")
-
-        # Bắt đầu hiệu ứng loading động
         stop_loading = threading.Event()
         loading_thread = threading.Thread(
             target=animate_loading,
-            args=(message.chat.id, loading_msg.message_id, stop_loading)
+            args=(message.chat.id, loading_msg.message_id, stop_loading),
+            daemon=True
         )
         loading_thread.start()
 
-        # Đọc nội dung file script
         with open(script_filename, 'r', encoding='utf-8') as file:
             script_content = file.read()
 
@@ -560,19 +541,38 @@ def spam(message):
             temp_file.write(script_content.encode('utf-8'))
             temp_file_path = temp_file.name
 
-        # Chạy script spam
         process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
         active_processes[sdt] = process
 
-        # Dừng hiệu ứng loading và xóa tin nhắn đó
         stop_loading.set()
         bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
 
-        # Gửi kết quả
+        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        masked_sdt = sdt[:3] + "***" + sdt[-3:]
+
+        spam_msg = f"""
+<pre>======[ 𝙎𝙋𝘼𝙈 𝙋𝙍𝙊 ]======</pre>
+
+<b>🕵️‍♂️ Số điện thoại mục tiêu:</b>
+  ├─> {masked_sdt}
+  ├─────────────⭔
+<b>⏳ Thời gian tấn công:</b>
+  ├─> {now}
+  ├─────────────⭔
+<b>🌐 SEVER 1</b>
+  ├─────────────⭔
+<b>💥 Thời gian chờ (Cooldown):</b>
+  ├─> 120 giây
+  ├─────────────⭔
+<b>🔁 Số lần tấn công lặp lại:</b>
+  ├─> {count} lần
+  ├─────────────⭔
+"""
+
         bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>',
-            parse_mode='HTML'
+            chat_id=message.chat.id,
+            text=spam_msg,
+            parse_mode="HTML"
         )
 
         last_usage[user_id] = current_time
@@ -581,6 +581,7 @@ def spam(message):
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+
 
 
 @bot.message_handler(commands=['stop'])
