@@ -489,15 +489,9 @@ def animate_loading(chat_id, message_id, stop_event):
         
     
 from datetime import datetime
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
       
 @bot.message_handler(commands=['spam'])
 def spam(message):
-    # Kiểm tra nhóm có nằm trong danh sách cho phép không
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "🚫 Nhóm này không có quyền sử dụng lệnh này.")
-        return
-
     user_id = message.from_user.id
     current_time = time.time()
 
