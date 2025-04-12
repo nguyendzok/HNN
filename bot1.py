@@ -204,9 +204,14 @@ def call_api(uid):
 def handle_api_error(message, note):
     bot.reply_to(message, f"<blockquote>⚠️ {note}</blockquote>", parse_mode="HTML")
 
+GROUP_CHAT_IDS = [1002282514761, 1002639856138]
+
 # Hàm xử lý lệnh '/like'
 @bot.message_handler(commands=['like'])
 def like_handler(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "⚠️ Lệnh này chỉ sử dụng được trong nhóm đã được cấp quyền.")
+        return
     args = message.text.split()
     if len(args) != 2:
         bot.reply_to(message, "<blockquote>❗ Vui lòng nhập đúng cú pháp: /like 1733997441</blockquote>", parse_mode="HTML")
@@ -483,9 +488,15 @@ def animate_loading(chat_id, message_id, stop_event):
         
     
 from datetime import datetime
-        
+GROUP_CHAT_IDS = [1002282514761, 1002639856138]
+      
 @bot.message_handler(commands=['spam'])
 def spam(message):
+    # Kiểm tra nhóm có nằm trong danh sách cho phép không
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "🚫 Nhóm này không có quyền sử dụng lệnh này.")
+        return
+
     user_id = message.from_user.id
     current_time = time.time()
 
@@ -571,7 +582,6 @@ def spam(message):
   ├─> {count} lần
   ├─────────────⭔
 """
-
         bot.send_message(
             chat_id=message.chat.id,
             text=spam_msg,
