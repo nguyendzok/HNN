@@ -245,8 +245,53 @@ def like_handler(message):
     else:
         handle_api_error(message, "API không trả về kết quả hợp lệ.")
 
+start_time = time.time()
+
+# Biến để tính toán FPS
+last_time = time.time()
+frame_count = 0
+fps = 0
+
+# Lệnh /uptime
+@bot.message_handler(commands=['uptime'])
+def uptime(message):
+    global last_time, frame_count, fps
+    
+    # Tính toán thời gian hoạt động
+    uptime_seconds = int(time.time() - start_time)
+    uptime_formatted = str(timedelta(seconds=uptime_seconds))
+    
+    # Cập nhật FPS mỗi khi lệnh được xử lý
+    current_time = time.time()
+    frame_count += 1
+    if current_time - last_time >= 1:  # Tính FPS mỗi giây
+        fps = frame_count
+        frame_count = 0
+        last_time = current_time
+    
+    # Gửi video từ API
+    video_url = "https://api.ffcommunity.site/randomvideo.php"
+    video_response = requests.get(video_url)
+    
+    # Phân tích dữ liệu JSON và lấy đường dẫn video (chú ý đến phần https)
+    try:
+        video_data = video_response.json()  # Phân tích JSON
+        video_url = video_data.get('url', '')  # Lấy đường dẫn video từ trường 'url'
+
+    except ValueError:
+        video_link = 'Không thể lấy video'
+
+    # Tạo và gửi tin nhắn
+    bot.send_message(message.chat.id, 
+                     f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
+                     f"🎮 FPS trung bình: {fps} FPS\n"
+                     "Không thể lấy thông tin cấu hình.\n"
+                     f"🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_url 
+                                                               }")
 
 
+
+ 
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
     text = message.text[7:].strip()  
