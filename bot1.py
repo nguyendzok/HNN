@@ -204,7 +204,8 @@ def call_api(uid):
 def handle_api_error(message, note):
     bot.reply_to(message, f"<blockquote>⚠️ {note}</blockquote>", parse_mode="HTML")
 
-GROUP_CHAT_IDS = [1002282514761, 1002639856138]
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
+
 
 # Hàm xử lý lệnh '/like'
 @bot.message_handler(commands=['like'])
@@ -488,7 +489,7 @@ def animate_loading(chat_id, message_id, stop_event):
         
     
 from datetime import datetime
-GROUP_CHAT_IDS = [1002282514761, 1002639856138]
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
       
 @bot.message_handler(commands=['spam'])
 def spam(message):
