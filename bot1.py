@@ -286,8 +286,8 @@ def uptime(message):
                      f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
                      f"🎮 FPS trung bình: {fps} FPS\n"
                      "Không thể lấy thông tin cấu hình.\n"
-                     f"🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_url 
-                                                               }")
+                     f"🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_url})"
+
 
 
 
