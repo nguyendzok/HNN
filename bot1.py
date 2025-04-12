@@ -85,78 +85,9 @@ def TimeStamp():
   return now
 
 #vLong zz#v
-def load_users_from_database():
-  cursor.execute('SELECT user_id, expiration_time FROM users')
-  rows = cursor.fetchall()
-  for row in rows:
-    user_id = row[0]
-    expiration_time = datetime.datetime.strptime(row[1], '%Y-%m-%d %H:%M:%S')
-    if expiration_time > datetime.datetime.now():
-      allowed_users.append(user_id)
 
 
-def save_user_to_database(connection, user_id, expiration_time):
-  cursor = connection.cursor()
-  cursor.execute(
-    '''
-        INSERT OR REPLACE INTO users (user_id, expiration_time)
-        VALUES (?, ?)
-    ''', (user_id, expiration_time.strftime('%Y-%m-%d %H:%M:%S')))
-  connection.commit()
-###
-
-vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
-
-
-###
-#zalo ...07890416.31
-
-####
 start_time = time.time()
-
-
-
-video_url = 'https://v16m-default.akamaized.net/b7650db4ac7f717b7be6bd6a04777a0d/66a418a5/video/tos/useast2a/tos-useast2a-ve-0068-euttp/o4QTIgGIrNbkAPGKKLKteXyLedLE7IEgeSzeE2/?a=0&bti=OTg7QGo5QHM6OjZALTAzYCMvcCMxNDNg&ch=0&cr=0&dr=0&lr=all&cd=0%7C0%7C0%7C0&cv=1&br=2576&bt=1288&cs=0&ds=6&ft=XE5bCqT0majPD12cy-773wUOx5EcMeF~O5&mime_type=video_mp4&qs=0&rc=Mzk1OzY7PGdpZjxkOTQ3M0Bpajh1O2w5cmlzbzMzZjgzM0AuNWJgLi02NjMxLzBgXjUyYSNzNmptMmRjazFgLS1kL2Nzcw%3D%3D&vvpl=1&l=202407261543513F37EAD38E23B6263167&btag=e00088000'
-@bot.message_handler(commands=['add', 'adduser'])
-def add_user(message):
-    admin_id = message.from_user.id
-    if admin_id != ADMIN_ID:
-        bot.reply_to(message, 'Bạn Không Phải admin')
-        return
-
-    if len(message.text.split()) == 1:
-        bot.reply_to(message, 'VUI LÒNG NHẬP ID NGƯỜI DÙNG VÀ SỐ NGÀY')
-        return
-    if len(message.text.split()) == 2:
-        bot.reply_to(message, 'HÃY NHẬP SỐ NGÀY')
-        return
-    user_id = int(message.text.split()[1])
-    allowed_users.append(user_id)
-    days = int(message.text.split()[2])
-    expiration_time = datetime.datetime.now() + datetime.timedelta(days)
-    connection = sqlite3.connect('user_data.db')
-    save_user_to_database(connection, user_id, expiration_time)
-    connection.close()
-
-    caption_text = (f'<blockquote>NGƯỜI DÙNG CÓ ID {user_id}\nĐÃ ĐƯỢC THÊM VÀO DANH SÁCH VIP\nTHỜI GIAN: {days} DAY\nLỆNH CÓ THỂ SỬ DỤNG CÁC LỆNH TRONG [/start]</blockquote>')
-    bot.send_video(
-        message.chat.id,
-        video_url,
-        caption=caption_text, parse_mode='HTML')
-
-load_users_from_database()
-
-def is_key_approved(chat_id, key):
-    if chat_id in users_keys:
-        user_key, timestamp = users_keys[chat_id]
-        if user_key == key:
-            current_time = datetime.datetime.now()
-            if current_time - timestamp <= datetime.timedelta(hours=2):
-                return True
-            else:
-                del users_keys[chat_id]
-    return False
-
 
 
 
@@ -165,7 +96,6 @@ def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌───⭓ Trần Hào
 ➤ /spam : Spam FREE
-➤ /spamvip : Spam Vip
 ➤ /stop : Dừng Spam SĐT
 ➤ /tv : Tiếng việt cho telegram
 ➤ /id : Lấy id bản thân
@@ -721,23 +651,35 @@ def get_tiktok_info(message):
         print(error)
 
 
-TEMP_DIR = "temp_files"
-os.makedirs(TEMP_DIR, exist_ok=True)
-
-# Biến để chứa key và số lần nhập
-key_attempts = 1
+#tkey
 current_key = None
+key_attempts = 0
+encryption_method = "base64"
 
-def generate_random_key(length=30):
-    characters = 'haoesportQWERTYUIOPASDFGHJKLZXCVBBNM123456789'
-    return ''.join(random.choice(characters) for i in range(length))
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
 @bot.message_handler(commands=['tkey'])
 def create_key(message):
-    global current_key, key_attempts
+    markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
+    markup.add(KeyboardButton("Mã hóa base64"), KeyboardButton("Mã hóa nâng cao"))
+    bot.send_message(message.chat.id, "Chọn kiểu mã hóa:", reply_markup=markup)
+    bot.register_next_step_handler(message, process_encryption_choice)
+
+def process_encryption_choice(message):
+    global current_key, key_attempts, encryption_method
     current_key = generate_random_key()
     key_attempts = 1
-    bot.send_message(message.chat.id, f"Key đã được tạo: {current_key}\nBạn có {key_attempts} lần gửi file\nvui lòng gửi file .py")
+
+    if "nâng cao" in message.text.lower():
+        encryption_method = "advanced"
+    else:
+        encryption_method = "base64"
+
+    bot.send_message(
+        message.chat.id,
+        f"Key đã được tạo: {current_key}\nPhương pháp mã hóa: {encryption_method.upper()}\n"
+        f"Bạn có {key_attempts} lần gửi file .py"
+    )
 
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
@@ -771,7 +713,8 @@ def handle_document(message):
     time.sleep(2)
 
     try:
-        obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user)
+        obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user, encryption_method)
+
 
         bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
 
@@ -787,7 +730,9 @@ def handle_document(message):
         if os.path.exists(obfuscated_file_path):
             os.remove(obfuscated_file_path)
 
-def obfuscate_file(file_path, key, user):
+def obfuscate_file(file_path, key, user, method):
+    import base64, zlib, hashlib
+
     original_filename = os.path.basename(file_path)
     name_without_ext = os.path.splitext(original_filename)[0]
     obfuscated_filename = f"{name_without_ext}-enc.py"
@@ -796,36 +741,47 @@ def obfuscate_file(file_path, key, user):
     with open(file_path, 'r', encoding='utf-8') as file:
         code = file.read()
 
-    encoded_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
+    # Tùy phương thức mã hóa
+    if method == "advanced":
+        compressed_code = zlib.compress(code.encode('utf-8'))
+        encoded_code = base64.b85encode(compressed_code).decode('utf-8')
+        decode_code = f"zlib.decompress(base64.b85decode(encoded)).decode('utf-8')"
+        import_lines = "import base64, zlib, hashlib"
+    else:
+        encoded_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
+        decode_code = f"base64.b64decode(encoded).decode('utf-8')"
+        import_lines = "import base64, hashlib"
+
     hash_code = hashlib.sha256(code.encode('utf-8')).hexdigest()
 
     username = user.username if user.username else "Không Công Khai"
     user_id = user.id
     time_vietnam = (datetime.datetime.utcnow() + datetime.timedelta(hours=7)).strftime('%Y-%m-%d %H:%M:%S')
 
-    obfuscated_code = f"""
-# ENCODE BY HAOESPORTS
+    obfuscated_code = f"""# ENCODE BY HAOESPORTS
 # Key: {key}
-# Trial version
+# Method: {method}
 # Username Obf: @{username} ({user_id})
 # Obf Time: {time_vietnam}
 
-import base64
-import hashlib
+{import_lines}
 
+encoded = '{encoded_code}'
 expected_hash = '{hash_code}'
-current_hash = hashlib.sha256(base64.b64decode('{encoded_code}')).hexdigest()
+
+decoded = {decode_code}
+current_hash = hashlib.sha256(decoded.encode('utf-8')).hexdigest()
+
 if current_hash != expected_hash:
     raise Exception("I am bot enc test version.")
 
-exec(base64.b64decode('{encoded_code}').decode('utf-8'))
+exec(decoded)
 """
 
     with open(obfuscated_file_path, 'w', encoding='utf-8') as obf_file:
         obf_file.write(obfuscated_code)
 
     return obfuscated_file_path
-
 
 
 @bot.message_handler(commands=['tv'])
