@@ -643,7 +643,7 @@ def get_tiktok_info(message):
     args = message.text.split()
 
     if len(args) < 2:
-        bot.send_message(chat_id, "⚠️ Vui lòng nhập tên người dùng TikTok!<br>Ví dụ: <b>/tiktokinfo ho.esports</b>", parse_mode="HTML")
+        bot.send_message(chat_id, "⚠️ Vui lòng nhập tên người dùng TikTok!\nVí dụ: <b>/tiktokinfo ho.esports</b>", parse_mode="HTML")
         return
 
     username = args[1]
