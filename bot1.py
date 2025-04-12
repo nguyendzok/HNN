@@ -725,7 +725,7 @@ def handle_document(message):
         new_file.write(downloaded_file)
 
     key_attempts -= 1
-        obfuscated_file_path = None  # đảm bảo biến tồn tại để dùng trong finally
+    obfuscated_file_path = None  # đảm bảo biến tồn tại để dùng trong finally
 
     msg = bot.reply_to(message, "Đang mã hóa...", parse_mode='HTML')
     time.sleep(2)
