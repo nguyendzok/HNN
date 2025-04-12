@@ -283,11 +283,12 @@ def uptime(message):
 
     # Tạo và gửi tin nhắn
     # Tạo và gửi tin nhắn
-bot.send_message(message.chat.id, 
+    bot.send_message(message.chat.id, 
                  f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
                  f"🎮 FPS trung bình: {fps} FPS\n"
                  "Không thể lấy thông tin cấu hình.\n"
                  f"🎥 Video giải trí cho ae FA vibu đây! 😏\n{video_url}")
+
 
 
 
