@@ -51,7 +51,6 @@ last_sms_time = {}
 global_lock = Lock()
 allowed_users = []
 processes = []
-datetime.now()
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
 allowed_group_id = -1002639856138
@@ -97,7 +96,6 @@ def send_help(message):
     bot.reply_to(message, """<blockquote>
 ┌───⭓ Trần Hào
 ➤ /spam : Spam FREE
-➤ /stop : Dừng Spam SĐT
 ➤ /tv : Tiếng việt cho telegram
 ➤ /id : Lấy id bản thân
 ➤ /checkban : Kiểm tra tk có khoá không
@@ -109,7 +107,6 @@ def send_help(message):
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
 ➤ /tiktokinfo : xem thông tin tiktok
-➤ /tkey : Mã Hoá File .py
 └───Contact
 ➤ /admin : Liên Hệ admin
 ➤ /themvip : Thêm Vip
@@ -640,33 +637,13 @@ def spam(message):
 
 
 
-@bot.message_handler(commands=['stop'])
-def stop_spam(message):
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "Dùng đúng cú pháp: /stop 098xxxxxxx")
-        return
-
-    sdt = args[1]
-    process = active_processes.get(sdt)
-
-    if process:
-        process.terminate()  # Dừng tiến trình
-        del active_processes[sdt]  # Xóa khỏi danh sách
-        bot.reply_to(message, f"⛔️ Đã dừng spam số {sdt}")
-    else:
-        bot.reply_to(message, f"Không tìm thấy tiến trình spam với số {sdt}. Có thể đã hoàn thành hoặc sai số.")
-
-
-
-
 @bot.message_handler(commands=['tiktokinfo'])
 def get_tiktok_info(message):
     chat_id = message.chat.id
     args = message.text.split()
 
     if len(args) < 2:
-        bot.send_message(chat_id, "⚠️ Vui lòng nhập tên người dùng TikTok!\nVí dụ: /tiktokinfo ho.esports", parse_mode="Markdown")
+        bot.send_message(chat_id, "⚠️ Vui lòng nhập tên người dùng TikTok!<br>Ví dụ: <b>/tiktokinfo ho.esports</b>", parse_mode="HTML")
         return
 
     username = args[1]
@@ -676,188 +653,38 @@ def get_tiktok_info(message):
         response = requests.get(api_url)
         data = response.json()
 
-        if data['code'] != 0 or 'data' not in data:
-            bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="Markdown")
+        if data.get('code') != 0 or 'data' not in data:
+            bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="HTML")
             return
 
         user = data['data']['user']
         stats = data['data']['stats']
 
-        profile_message = f"""
-======[ 𝙏𝙄𝙆𝙏𝙊𝙆 𝙄𝙉𝙁𝙊 ]======  
+        yt_link = f"▶️ <a href=\"https://www.youtube.com/channel/{user['youtube_channel_id']}\">YouTube</a>" if user.get('youtube_channel_id') else "🚫 Không có YouTube"
+        bio = f"📌 <i>Bio:</i> {user['signature']}" if user.get('signature') else "🚫 Không có mô tả"
 
-👤 Tên hiển thị: {user['nickname']}  
-🆔 Username: @{user['uniqueId']}  
-🔗 Profile: [Xem trên TikTok](https://www.tiktok.com/@{user['uniqueId']})  
+        profile_message = (
+            "<b>======[ 𝙏𝙄𝙆𝙏𝙊𝙆 𝙄𝙉𝙁𝙊 ]======</b>\n\n"
+            f"👤 <b>Tên hiển thị:</b> {user['nickname']}\n"
+            f"🆔 <b>Username:</b> @{user['uniqueId']}\n"
+            f"🔗 <b>Profile:</b> <a href=\"https://www.tiktok.com/@{user['uniqueId']}\">Xem trên TikTok</a>\n\n"
+            "📊 <b>Thống kê:</b>\n"
+            f"├ 👥 Người theo dõi: {stats['followerCount']}\n"
+            f"├ 👤 Đang theo dõi: {stats['followingCount']}\n"
+            f"├ ❤️ Tổng lượt thích: {stats['heartCount']}\n"
+            f"├ 🎥 Số video: {stats['videoCount']}\n\n"
+            "🔗 <b>Mạng xã hội khác:</b>\n"
+            f"{yt_link}\n"
+            f"{bio}"
+        )
 
-📊 Thống kê:  
-├ 👥 Người theo dõi: {stats['followerCount']}  
-├ 👤 Đang theo dõi: {stats['followingCount']}  
-├ ❤️ Tổng lượt thích: {stats['heartCount']}  
-├ 🎥 Số video: {stats['videoCount']}  
-
-🔗 Mạng xã hội khác:  
-{f"▶️ [YouTube](https://www.youtube.com/channel/{user['youtube_channel_id']})" if user.get('youtube_channel_id') else "🚫 Không có YouTube"}  
-{f"📌 Bio: {user['signature']}" if user.get('signature') else "🚫 Không có mô tả"}  
-        """
-
-        bot.send_photo(chat_id, user['avatarLarger'], caption=profile_message, parse_mode="Markdown")
+        bot.send_photo(chat_id, user['avatarLarger'], caption=profile_message, parse_mode="HTML")
 
     except Exception as error:
-        bot.send_message(chat_id, "⚠️ Lỗi khi lấy thông tin tài khoản TikTok!", parse_mode="Markdown")
+        bot.send_message(chat_id, "⚠️ Lỗi khi lấy thông tin tài khoản TikTok!", parse_mode="HTML")
         print(error)
 
 
-#tkey
-import random
-import string
-import base64
-import zlib
-import hashlib
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
-
-TEMP_DIR = "temp"
-if not os.path.exists(TEMP_DIR):
-    os.makedirs(TEMP_DIR)
-
-# Biến toàn cục
-current_key = None
-key_attempts = 0
-encryption_method = "base64"
-
-# Tạo key ngẫu nhiên
-def generate_random_key(length=16):
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(length))
-
-# Giao diện tạo key
-@bot.message_handler(commands=['tkey'])
-def create_key(message):
-    markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
-    markup.add(KeyboardButton("Mã hóa base64"), KeyboardButton("Mã hóa nâng cao"))
-    bot.send_message(message.chat.id, "Chọn kiểu mã hóa:", reply_markup=markup)
-    bot.register_next_step_handler(message, process_encryption_choice)
-
-def process_encryption_choice(message):
-    global current_key, key_attempts, encryption_method
-    current_key = generate_random_key()
-    key_attempts = 1
-
-    if "nâng cao" in message.text.lower():
-        encryption_method = "advanced"
-    else:
-        encryption_method = "base64"
-
-    bot.send_message(
-        message.chat.id,
-        f"Key đã được tạo: {current_key}\nPhương pháp mã hóa: {encryption_method.upper()}\n"
-        f"Bạn có {key_attempts} lần gửi file .py"
-    )
-
-# Xử lý file .py gửi lên
-@bot.message_handler(content_types=['document'])
-def handle_document(message):
-    global key_attempts, current_key
-
-    if current_key is None:
-        bot.send_message(message.chat.id, "Vui lòng tạo key trước khi gửi file bằng lệnh /tkey.")
-        return
-
-    file_info = bot.get_file(message.document.file_id)
-    file_extension = message.document.file_name.split('.')[-1]
-
-    if file_extension != 'py':
-        bot.send_message(message.chat.id, "Vui lòng gửi một file .py hợp lệ.")
-        return
-
-    if key_attempts <= 0:
-        bot.send_message(message.chat.id, "Số lần gửi file đã hết. Vui lòng tạo lại key.")
-        return
-
-    downloaded_file = bot.download_file(file_info.file_path)
-    original_filename = message.document.file_name
-    file_path = os.path.join(TEMP_DIR, original_filename)
-
-    with open(file_path, 'wb') as new_file:
-        new_file.write(downloaded_file)
-
-    key_attempts -= 1
-    obfuscated_file_path = None  # đảm bảo biến tồn tại để dùng trong finally
-
-    msg = bot.reply_to(message, "Đang mã hóa...", parse_mode='HTML')
-    time.sleep(2)
-
-    try:
-        obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user, encryption_method)
-
-        # XÓA FILE GỐC trước khi gửi file đã mã hóa
-        if os.path.exists(file_path):
-            os.remove(file_path)
-
-        bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
-        with open(obfuscated_file_path, 'rb') as obfuscated_file:
-            bot.send_document(message.chat.id, obfuscated_file)
-
-        bot.send_message(message.chat.id, f"Đã gửi: {os.path.basename(obfuscated_file_path)}")
-
-    except Exception as e:
-        bot.send_message(message.chat.id, f"Đã xảy ra lỗi khi mã hóa: {e}")
-
-    finally:
-        if obfuscated_file_path and os.path.exists(obfuscated_file_path):
-            os.remove(obfuscated_file_path)
-
-
-# Hàm mã hóa file
-def obfuscate_file(file_path, key, user, method):
-    original_filename = os.path.basename(file_path)
-    name_without_ext = os.path.splitext(original_filename)[0]
-    obfuscated_filename = f"{name_without_ext}-enc.py"
-    obfuscated_file_path = os.path.join(TEMP_DIR, obfuscated_filename)
-
-    with open(file_path, 'r', encoding='utf-8') as file:
-        code = file.read()
-
-    if method == "advanced":
-        compressed_code = zlib.compress(code.encode('utf-8'))
-        encoded_code = base64.b85encode(compressed_code).decode('utf-8')
-        decode_code = f"zlib.decompress(base64.b85decode(encoded)).decode('utf-8')"
-        import_lines = "import base64, zlib, hashlib"
-    else:
-        encoded_code = base64.b64encode(code.encode('utf-8')).decode('utf-8')
-        decode_code = f"base64.b64decode(encoded).decode('utf-8')"
-        import_lines = "import base64, hashlib"
-
-    hash_code = hashlib.sha256(code.encode('utf-8')).hexdigest()
-
-    username = user.username if user.username else "Không Công Khai"
-    user_id = user.id
-    time_vietnam = (datetime.datetime.utcnow() + datetime.timedelta(hours=7)).strftime('%Y-%m-%d %H:%M:%S')
-
-    obfuscated_code = f"""# ENCODE BY HAOESPORTS
-# Key: {key}
-# Method: {method}
-# Username Obf: @{username} ({user_id})
-# Obf Time: {time_vietnam}
-
-{import_lines}
-
-encoded = '{encoded_code}'
-expected_hash = '{hash_code}'
-
-decoded = {decode_code}
-current_hash = hashlib.sha256(decoded.encode('utf-8')).hexdigest()
-
-if current_hash != expected_hash:
-    raise Exception("I am bot enc test version.")
-
-exec(decoded)
-"""
-
-    with open(obfuscated_file_path, 'w', encoding='utf-8') as obf_file:
-        obf_file.write(obfuscated_code)
-
-    return obfuscated_file_path
 
 
 @bot.message_handler(commands=['tv'])
