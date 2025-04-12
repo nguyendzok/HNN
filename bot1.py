@@ -725,30 +725,30 @@ def handle_document(message):
         new_file.write(downloaded_file)
 
     key_attempts -= 1
-    obfuscated_file_path = None
+        obfuscated_file_path = None  # đảm bảo biến tồn tại để dùng trong finally
 
     msg = bot.reply_to(message, "Đang mã hóa...", parse_mode='HTML')
     time.sleep(2)
 
     try:
-    obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user, encryption_method)
+        obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user, encryption_method)
 
-    # XÓA FILE GỐC trước khi gửi file đã mã hóa
-    if os.path.exists(file_path):
-        os.remove(file_path)
+        # XÓA FILE GỐC trước khi gửi file đã mã hóa
+        if os.path.exists(file_path):
+            os.remove(file_path)
 
-    bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
-    with open(obfuscated_file_path, 'rb') as obfuscated_file:
-        bot.send_document(message.chat.id, obfuscated_file)
+        bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
+        with open(obfuscated_file_path, 'rb') as obfuscated_file:
+            bot.send_document(message.chat.id, obfuscated_file)
 
-    bot.send_message(message.chat.id, f"Đã gửi: {os.path.basename(obfuscated_file_path)}")
+        bot.send_message(message.chat.id, f"Đã gửi: {os.path.basename(obfuscated_file_path)}")
 
-except Exception as e:
-    bot.send_message(message.chat.id, f"Đã xảy ra lỗi khi mã hóa: {e}")
+    except Exception as e:
+        bot.send_message(message.chat.id, f"Đã xảy ra lỗi khi mã hóa: {e}")
 
-finally:
-    if obfuscated_file_path and os.path.exists(obfuscated_file_path):
-        os.remove(obfuscated_file_path)
+    finally:
+        if obfuscated_file_path and os.path.exists(obfuscated_file_path):
+            os.remove(obfuscated_file_path)
 
 
 # Hàm mã hóa file
