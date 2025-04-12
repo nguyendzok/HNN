@@ -51,6 +51,7 @@ last_sms_time = {}
 global_lock = Lock()
 allowed_users = []
 processes = []
+datetime.now()
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
 allowed_group_id = -1002639856138
