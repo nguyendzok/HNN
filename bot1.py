@@ -652,6 +652,14 @@ def get_tiktok_info(message):
 
 
 #tkey
+import random
+import string
+
+def generate_random_key(length=16):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
+
+
 current_key = None
 key_attempts = 0
 encryption_method = "base64"
