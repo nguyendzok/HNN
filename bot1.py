@@ -654,18 +654,26 @@ def get_tiktok_info(message):
 #tkey
 import random
 import string
+import base64
+import zlib
+import hashlib
+from telebot.types import ReplyKeyboardMarkup, KeyboardButton
 
-def generate_random_key(length=16):
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(length))
+TEMP_DIR = "temp"
+if not os.path.exists(TEMP_DIR):
+    os.makedirs(TEMP_DIR)
 
-
+# Biến toàn cục
 current_key = None
 key_attempts = 0
 encryption_method = "base64"
 
-from telebot.types import ReplyKeyboardMarkup, KeyboardButton
+# Tạo key ngẫu nhiên
+def generate_random_key(length=16):
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(length))
 
+# Giao diện tạo key
 @bot.message_handler(commands=['tkey'])
 def create_key(message):
     markup = ReplyKeyboardMarkup(resize_keyboard=True, one_time_keyboard=True)
@@ -689,6 +697,7 @@ def process_encryption_choice(message):
         f"Bạn có {key_attempts} lần gửi file .py"
     )
 
+# Xử lý file .py gửi lên
 @bot.message_handler(content_types=['document'])
 def handle_document(message):
     global key_attempts, current_key
@@ -716,6 +725,7 @@ def handle_document(message):
         new_file.write(downloaded_file)
 
     key_attempts -= 1
+    obfuscated_file_path = None
 
     msg = bot.reply_to(message, "Đang mã hóa...", parse_mode='HTML')
     time.sleep(2)
@@ -723,24 +733,22 @@ def handle_document(message):
     try:
         obfuscated_file_path = obfuscate_file(file_path, current_key, message.from_user, encryption_method)
 
-
         bot.send_message(message.chat.id, "Mã hóa hoàn tất! Đang gửi file...")
-
         with open(obfuscated_file_path, 'rb') as obfuscated_file:
             bot.send_document(message.chat.id, obfuscated_file)
+
+        bot.send_message(message.chat.id, f"Đã gửi: {os.path.basename(obfuscated_file_path)}")
 
     except Exception as e:
         bot.send_message(message.chat.id, f"Đã xảy ra lỗi khi mã hóa: {e}")
     finally:
-        # Xóa cả file gốc và file mã hóa sau khi xử lý
         if os.path.exists(file_path):
             os.remove(file_path)
-        if os.path.exists(obfuscated_file_path):
+        if obfuscated_file_path and os.path.exists(obfuscated_file_path):
             os.remove(obfuscated_file_path)
 
+# Hàm mã hóa file
 def obfuscate_file(file_path, key, user, method):
-    import base64, zlib, hashlib
-
     original_filename = os.path.basename(file_path)
     name_without_ext = os.path.splitext(original_filename)[0]
     obfuscated_filename = f"{name_without_ext}-enc.py"
@@ -749,7 +757,6 @@ def obfuscate_file(file_path, key, user, method):
     with open(file_path, 'r', encoding='utf-8') as file:
         code = file.read()
 
-    # Tùy phương thức mã hóa
     if method == "advanced":
         compressed_code = zlib.compress(code.encode('utf-8'))
         encoded_code = base64.b85encode(compressed_code).decode('utf-8')
