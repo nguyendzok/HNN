@@ -624,23 +624,36 @@ def spam(message):
             pass
 
         # Gửi thông báo kết quả
-        now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        masked_sdt = sdt[:3] + "***" + sdt[-3:]
-        spam_msg = f"""
-<pre>
-│ 🚀 User: {name}
-│ 💳 Plan: {plan}
-│ 📞 Phone: ||{masked_sdt}||
-│ ⚔️ Attack By: ||@{username}||
-│ ⏰ Time: {now}
-│ ❌ Stop: /stop {sdt}
-</pre>
+        import re
+
+def escape_md(text):
+    # Escape ký tự đặc biệt cho MarkdownV2
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
+
+# Sau khi lấy thông tin
+now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
+masked_sdt = sdt[:3] + "***" + sdt[-3:]
+escaped_name = escape_md(name)
+escaped_plan = escape_md(plan)
+escaped_username = escape_md(username)
+escaped_time = escape_md(now)
+escaped_sdt = escape_md(masked_sdt)
+
+spam_msg = f"""
+*🚀 User:* {escaped_name}
+*💳 Plan:* {escaped_plan}
+*📞 Phone:* ||{escaped_sdt}||
+*⚔️ Attack By:* ||@{escaped_username}||
+*⏰ Time:* {escaped_time}
+*❌ Stop:* /stop {sdt}
 """
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=spam_msg,
-            parse_mode="HTML"
-        )
+
+bot.send_message(
+    chat_id=message.chat.id,
+    text=spam_msg,
+    parse_mode="MarkdownV2"
+)
 
         last_usage[user_id] = current_time
 
