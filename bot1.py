@@ -630,8 +630,8 @@ def spam(message):
 <pre>
 │ 🚀 User: {name}
 │ 💳 Plan: {plan}
-│ 📞 Phone: {masked_sdt}
-│ ⚔️ Attack By: @{username}
+│ 📞 Phone: ||{masked_sdt}||
+│ ⚔️ Attack By: ||@{username}||
 │ ⏰ Time: {now}
 │ ❌ Stop: /stop {sdt}
 </pre>
