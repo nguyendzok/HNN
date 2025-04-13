@@ -551,27 +551,29 @@ def spam(message):
             bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        loading_msg = bot.send_message(message.chat.id, "⏳")
-        stop_loading = threading.Event()
-        loading_thread = threading.Thread(
-            target=animate_loading,
-            args=(message.chat.id, loading_msg.message_id, stop_loading),
-            daemon=True
-        )
-        loading_thread.start()
+        # Gửi tin nhắn loading
+loading_msg = bot.send_message(message.chat.id, "⏳")
+stop_loading = threading.Event()
+loading_thread = threading.Thread(
+    target=animate_loading,
+    args=(message.chat.id, loading_msg.message_id, stop_loading),
+    daemon=True
+)
+loading_thread.start()
 
-        with open(script_filename, 'r', encoding='utf-8') as file:
-            script_content = file.read()
+# Giả sử bạn vẫn muốn xử lý script ngay sau đó
+process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+active_processes[sdt] = process
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            temp_file.write(script_content.encode('utf-8'))
-            temp_file_path = temp_file.name
+# Đợi cho xoay đủ vòng rồi mới dừng
+time.sleep(4)  # Cho hiệu ứng xoay trọn vẹn
+stop_loading.set()
 
-        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        active_processes[sdt] = process
-
-        stop_loading.set()
-        bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
+# Xóa đồng hồ cát sau khi xoay xong
+try:
+    bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
+except:
+    pass
 
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
