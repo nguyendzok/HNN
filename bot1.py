@@ -579,8 +579,9 @@ def spam(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
     username = message.from_user.username if message.from_user.username else "None"
-    name = users.get(user_id, {}).get("name", "Không rõ")
-    plan = users.get(user_id, {}).get("plan", "Free")
+    name = message.from_user.first_name or "Không rõ"
+    plan = "Free"
+
 
     script_filename = "dec.py"
     try:
