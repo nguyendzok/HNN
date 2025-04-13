@@ -637,12 +637,12 @@ def spam(message):
         escaped_sdt = escape_md(masked_sdt)
 
         spam_msg = f"""
-|*🚀 User:* {escaped_name}
-|*💳 Plan:* {escaped_plan}
-|*📞 Phone:* ||{escaped_sdt}||
-|*⚔️ Attack By:* ||@{escaped_username}||
-|*⏰ Time:* {escaped_time}
-|*❌ Stop:* /stop {sdt}
+*🚀 User:* {escaped_name}
+*💳 Plan:* {escaped_plan}
+*📞 Phone:* ||{escaped_sdt}||
+*⚔️ Attack By:* ||@{escaped_username}||
+*⏰ Time:* {escaped_time}
+*❌ Stop:* /stop {sdt}
 """
 
         bot.send_message(
