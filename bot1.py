@@ -560,11 +560,10 @@ def spam(message):
         warn = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
         time.sleep(5)
         try:
-           bot.delete_message(message.chat.id, loading_msg.message_id)
-           bot.delete_message(message.chat.id, message.message_id)
-       except:
-           pass
-
+            bot.delete_message(message.chat.id, warn.message_id)
+            bot.delete_message(message.chat.id, message.message_id)
+        except:
+            pass
         return
 
     sdt, count = params
@@ -593,7 +592,7 @@ def spam(message):
             bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        # 1. Loading icon
+        # 1. Gửi đồng hồ cát
         loading_msg = bot.send_message(message.chat.id, "⏳")
         stop_loading = threading.Event()
         loading_thread = threading.Thread(
@@ -603,12 +602,12 @@ def spam(message):
         )
         loading_thread.start()
 
-        time.sleep(2.5)  # cho xoay 1 tí
+        time.sleep(2.5)
 
-        # 2. Thông báo đang spam
+        # 2. Gửi thông báo đang spam
         noti = bot.send_message(message.chat.id, f"⌛ Đang spam cho @{username}...")
 
-        # 3. Tạo file tạm và chạy subprocess
+        # 3. Đọc file dec.py và chạy subprocess
         with open(script_filename, 'r', encoding='utf-8') as file:
             script_content = file.read()
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
@@ -618,16 +617,14 @@ def spam(message):
         process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
         active_processes[sdt] = process
 
-        # 4. Kết thúc loading
+        # 4. Kết thúc loading và xóa tin nhắn gốc
         stop_loading.set()
         time.sleep(0.3)
-
         try:
-           bot.delete_message(message.chat.id, loading_msg.message_id)  # Xóa đồng hồ cát
-           bot.delete_message(message.chat.id, message.message_id)       # Xóa tin nhắn gốc của user
+            bot.delete_message(message.chat.id, loading_msg.message_id)      # Xóa đồng hồ cát
+            bot.delete_message(message.chat.id, message.message_id)          # Xóa lệnh spam gốc của user
         except:
-           pass
-
+            pass
 
         # 5. Gửi kết quả
         now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
@@ -648,6 +645,7 @@ def spam(message):
 
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+
 
 
 
