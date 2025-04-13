@@ -106,7 +106,6 @@ def send_help(message):
 ➤ /uptime : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
 ➤ /hoi : hỏi gamini 
-➤ /tiktokinfo : xem thông tin tiktok
 └───Contact
 ➤ /admin : Liên Hệ admin
 ➤ /themvip : Thêm Vip
@@ -634,70 +633,6 @@ def spam(message):
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
-
-
-
-@bot.message_handler(commands=['tiktokinfo'])
-def get_tiktok_info(message):
-    chat_id = message.chat.id
-    args = message.text.split()
-
-    if len(args) < 2:
-        bot.send_message(chat_id, "⚠️ Vui lòng nhập tên người dùng TikTok!\nVí dụ: <b>/tiktokinfo ho.esports</b>", parse_mode="HTML")
-        return
-
-    username = args[1]
-    api_url = f"https://api.sumiproject.net/tiktok?info={username}"
-
-    def human_format(num):
-        for unit in ["", "K", "M", "B"]:
-            if abs(num) < 1000:
-                return f"{num:.0f}{unit}"
-            num /= 1000
-        return f"{num:.1f}B"
-
-    try:
-        response = requests.get(api_url)
-        data = response.json()
-
-        if data.get('code') != 0 or 'data' not in data:
-            bot.send_message(chat_id, "❌ Không tìm thấy tài khoản TikTok!", parse_mode="HTML")
-            return
-
-        user = data['data'].get('user', {})
-        stats = data['data'].get('stats', {})
-
-        nickname = user.get('nickname', 'Không rõ')
-        unique_id = user.get('uniqueId', 'Không rõ')
-        avatar = user.get('avatarLarger', 'https://i.imgur.com/4M34hi2.png')
-        bio = user.get('signature', None)
-        youtube_id = user.get('youtube_channel_id')
-
-        yt_link = f"▶️ <a href=\"https://www.youtube.com/channel/{youtube_id}\">YouTube</a>" if youtube_id else "🚫 Không có YouTube"
-        bio_text = f"📌 <i>Bio:</i> {bio}" if bio else "🚫 Không có mô tả"
-
-        profile_message = (
-            "<b>======[ 𝙏𝙄𝙆𝙏𝙊𝙆 𝙄𝙉𝙁𝙊 ]======</b>\n\n"
-            f"👤 <b>Tên hiển thị:</b> {nickname}\n"
-            f"🆔 <b>Username:</b> @{unique_id}\n"
-            f"🔗 <b>Profile:</b> <a href=\"https://www.tiktok.com/@{unique_id}\">Xem trên TikTok</a>\n\n"
-            "📊 <b>Thống kê:</b>\n"
-            f"├ 👥 Người theo dõi: {human_format(stats.get('followerCount', 0))}\n"
-            f"├ 👤 Đang theo dõi: {human_format(stats.get('followingCount', 0))}\n"
-            f"├ ❤️ Tổng lượt thích: {human_format(stats.get('heartCount', 0))}\n"
-            f"├ 🎥 Số video: {stats.get('videoCount', 0)}\n\n"
-            "🔗 <b>Mạng xã hội khác:</b>\n"
-            f"{yt_link}\n"
-            f"{bio_text}"
-        )
-
-        bot.send_photo(chat_id, avatar, caption=profile_message, parse_mode="HTML")
-
-    except Exception as error:
-        bot.send_message(chat_id, "⚠️ Lỗi khi lấy thông tin tài khoản TikTok!", parse_mode="HTML")
-        print("Lỗi get_tiktok_info:", error)
-
-
 
 
 
