@@ -144,62 +144,56 @@ def themvip(message: Message):
     save_vip_user(user_id_to_add)
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
 
+
+def fetch_data(user_id):
+    url = f'https://scromnyimodz-444.vercel.app/api/player-info?id={user_id}'
+    response = requests.get(url)
+    return response.json()
 #pet
 @bot.message_handler(commands=['ff'])
-def ff(message):
+def handle_ff(message):
+    parts = message.text.split()
+    if len(parts) != 2:
+        bot.reply_to(message, "<i>⚠️ Dùng đúng cú pháp:</i>\n<code>/ff 12345678</code>", parse_mode="HTML")
+        return
+
+    user_id = parts[1]
+
     try:
-        args = message.text.split()
-        if len(args) != 3:
-            bot.reply_to(message, "Sai cú pháp! Dùng: /ff [uid] [region]")
+        data = fetch_data(user_id)
+
+        if data.get("status") != "success":
+            bot.reply_to(message, "❌ <i>Không tìm thấy thông tin người chơi.</i>", parse_mode="HTML")
             return
 
-        uid = args[1]
-        region = args[2]
-        url = f"https://ariiflexlabs-playerinfo-icxc.onrender.com/ff_info?uid={uid}&region={region}"
-        response = requests.get(url)
-        response.raise_for_status()
-        data = response.json()
+        basic = data["data"].get("basic_info", {})
+        clan = data["data"].get("clan", {})
+        leader = clan.get("leader", {})
+        pet = data["data"].get("animal", {}).get("name", "Không có")
 
-        account = data.get("AccountInfo", {})
-        name = account.get("AccountName", "Unknown")
-        level = account.get("AccountLevel", "N/A")
-        likes = account.get("AccountLikes", 0)
-        br_rank = account.get("BrMaxRank", "N/A")
-        br_point = account.get("BrRankPoint", 0)
-        cs_rank = account.get("CsMaxRank", "N/A")
-        cs_point = account.get("CsRankPoint", 0)
-        region = account.get("AccountRegion", "N/A")
+        info = f"""
+<code>──── Free Fire Info ────</code>
+<i>👤 {basic.get('name', 'N/A')} | 🆔 {basic.get('id', 'N/A')}</i>
+<i>⭐ Cấp: {basic.get('level', 'N/A')} | ❤️ Like: {basic.get('likes', 'N/A')}</i>
+<i>🌍 Server: {basic.get('server', 'N/A')}</i>
+<i>📅 Tạo: {basic.get('account_created', 'N/A')}</i>
+<i>🎫 BP: {basic.get('booyah_pass_level', 'N/A')}</i>
+<i>📝 Bio: {basic.get('bio', 'Không có')}</i>
+<i>🐾 Pet: {pet}</i>
 
-        text = (
-            f"<b>Tên:</b> {name}\n"
-            f"<b>Level:</b> {level}\n"
-            f"<b>Region:</b> {region}\n"
-            f"<b>Likes:</b> {likes}\n\n"
-            f"<b>BR Rank:</b> {br_rank} ({br_point} RP)\n"
-            f"<b>CS Rank:</b> {cs_rank} ({cs_point} RP)"
-        )
+<code>─── Quân Đoàn ───</code>
+<i>🛡️ {clan.get('name', 'Không có')} (Lv. {clan.get('level', 'N/A')})</i>
+<i>👥 Thành viên: {clan.get('members_count', 'N/A')}</i>
+<i>👑 Chủ: {leader.get('name', 'N/A')} (Lv. {leader.get('level', 'N/A')})</i>
+"""
 
-        bot.send_message(message.chat.id, text, parse_mode="HTML")
+        bot.send_message(message.chat.id, info, parse_mode="HTML")
 
     except Exception as e:
-        bot.reply_to(message, f"Có lỗi xảy ra: {e}")
+        print(e)
+        bot.reply_to(message, "⚠️ <i>Đã xảy ra lỗi khi xử lý yêu cầu.</i>", parse_mode="HTML")
 
 
-
-
-
-
-def call_api(uid):
-    try:
-        url = f"https://dichvukey.site/likeff2.php?uid={uid}"
-        response = requests.get(url)
-        return response.json()
-    except Exception as e:
-        return {"message": f"Lỗi khi gọi API: {e}"}
-
-# Định nghĩa hàm xử lý lỗi API
-def handle_api_error(message, note):
-    bot.reply_to(message, f"<blockquote>⚠️ {note}</blockquote>", parse_mode="HTML")
 
 GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 
