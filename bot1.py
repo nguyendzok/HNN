@@ -625,7 +625,7 @@ def spam(message):
         try:
            bot.delete_message(message.chat.id, loading_msg.message_id)  # Xóa đồng hồ cát
            bot.delete_message(message.chat.id, message.message_id)       # Xóa tin nhắn gốc của user
-       except:
+        except:
            pass
 
 
