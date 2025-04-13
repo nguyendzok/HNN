@@ -527,7 +527,7 @@ def detect_carrier(phone_number: str) -> str:
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
     max_cycles = 2
-    delay = 0.7
+    delay = 0.4
     total_frames = len(frames) * max_cycles
     i = 0
     while not stop_event.is_set() and i < total_frames:
@@ -627,24 +627,28 @@ def spam(message):
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
 
         spam_msg = f"""
-<b>┌──⭓ HÀO ESPORTS</b>
-<b>│ 🚀 Attack Sent Successfully</b>
-<b>│ 💳 Plan:</b> {plan}
-<b>│ 📞 Phone:</b> <spoiler>{masked_sdt}</spoiler>
-<b>│ ⚔️ Attack By:</b> <spoiler>@{username}</spoiler>
-<b>│ 🔗 Api:</b> 1x (MAX)
-<b>│ ⏳ Delay:</b> 20s
-<b>│ 📎 Vòng Lặp:</b> {count}
-<b>│ ❌ Stop:</b> /stop {sdt}
-<b>└────────────⭓</b>
+┌──⭓ HÀO ESPORTS😘
+│ 🚀 Attack Sent Successfully
+│ 💳 Plan: {plan}
+│ 📞 Phone: ||{masked_sdt}||
+│ ⚔️ Attack By: ||@{username}||
+│ 🔗 Api: 1x (MAX)
+│ ⏳ Delay: 20s
+│ 📎 Vòng Lặp: {count}
+│ ❌ Stop: /stop {sdt}
+└────────────⭓
 """
 
+# Thoát các ký tự đặc biệt cho MarkdownV2
+def escape_md(text):
+    escape_chars = r"_*[]()~`>#+-=|{}.!\\"
+    return ''.join(['\\' + c if c in escape_chars else c for c in text])
 
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=spam_msg,
-            parse_mode="HTML"
-        )
+bot.send_message(
+    chat_id=message.chat.id,
+    text=escape_md(spam_msg),
+    parse_mode="MarkdownV2"
+)
 
         last_usage[user_id] = current_time
 
