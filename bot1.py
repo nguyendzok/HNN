@@ -508,7 +508,7 @@ def handle_id_command(message):
 
    
 from datetime import datetime
-import time, threading, subprocess, tempfile, os
+import time, threading, subprocess, tempfile, os, re
 
 def detect_carrier(phone_number: str) -> str:
     phone_number = phone_number.strip().replace("+84", "0")
@@ -524,6 +524,11 @@ def detect_carrier(phone_number: str) -> str:
             return name
     return "Không xác định"
 
+def escape_md(text):
+    # Escape ký tự đặc biệt cho MarkdownV2
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
+
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
     max_cycles = 2
@@ -537,10 +542,6 @@ def animate_loading(chat_id, message_id, stop_event):
         except:
             pass
         time.sleep(delay)
-
-def escape_md(text):
-    escape_chars = r"_*[]()~`>#+-=|{}.!\\"
-    return ''.join(['\\' + c if c in escape_chars else c for c in text])
 
 @bot.message_handler(commands=['spam'])
 def spam(message):
@@ -619,33 +620,34 @@ def spam(message):
 
         # Dừng loading và xóa đồng hồ cát + tin nhắn gốc
         stop_loading.set()
-        time.sleep(0.8)
+        time.sleep(0.5)
         try:
             bot.delete_message(message.chat.id, loading_msg.message_id)
             bot.delete_message(message.chat.id, message.message_id)
         except:
             pass
 
-        # Chuẩn bị kết quả
+        # Chuẩn bị thông tin có spoiler
         now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
+        escaped_name = escape_md(name)
+        escaped_plan = escape_md(plan)
+        escaped_username = escape_md(username)
+        escaped_time = escape_md(now)
+        escaped_sdt = escape_md(masked_sdt)
 
         spam_msg = f"""
-┌──⭓ SPAM SMS😘
-│ 🚀 Attack Sent Successfully
-│ 💳 Plan: {plan}
-│ 📞 Phone: ||{masked_sdt}||
-│ ⚔️ Attack By: ||@{username}||
-│ 🔗 Api: 1x (MAX)
-│ ⏳ Delay: 20s
-│ 📎 Vòng Lặp: {count}
-│ ❌ Stop: /stop {sdt}
-└────────────⭓
+*|🚀 User:* {escaped_name}
+*|💳 Plan:* {escaped_plan}
+*|📞 Phone:* ||{escaped_sdt}||
+*|⚔️ Attack By:* ||@{escaped_username}||
+*|⏰ Time:* {escaped_time}
+*|❌ Stop:* /stop {sdt}
 """
 
         bot.send_message(
             chat_id=message.chat.id,
-            text=escape_md(spam_msg),
+            text=spam_msg,
             parse_mode="MarkdownV2"
         )
 
