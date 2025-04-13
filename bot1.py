@@ -622,11 +622,11 @@ def spam(message):
         time.sleep(0.3)
 
         try:
-            bot.delete_message(message.chat.id, loading_msg.message_id)
-            bot.delete_message(message.chat.id, noti.message_id)
-            bot.delete_message(message.chat.id, message.message_id)
-        except:
-            pass
+           bot.delete_message(message.chat.id, loading_msg.message_id)  # Xóa đồng hồ cát
+           bot.delete_message(message.chat.id, message.message_id)       # Xóa tin nhắn gốc của user
+       except:
+           pass
+
 
         # 5. Gửi kết quả
         now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
