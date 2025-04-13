@@ -627,19 +627,18 @@ def spam(message):
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
 
         spam_msg = f"""
-<pre>
-┌──⭓ SPAM SMS😘
-│ 🚀 Attack Sent Successfully
-│ 💳 Plan: {plan}
-│ 📞 Phone: <spoiler>{masked_sdt}</spoiler>
-│ ⚔️ Attack By: <spoiler>@{username}</spoiler>
-│ 🔗 Api: 1x (MAX)
-│ ⏳ Delay: 20s
-│ 📎 Vòng Lặp: {count}
-│ ❌ Stop: /stop {sdt}
-└────────────⭓
-</pre>
+<b>┌──⭓ HÀO ESPORTS</b>
+<b>│ 🚀 Attack Sent Successfully</b>
+<b>│ 💳 Plan:</b> {plan}
+<b>│ 📞 Phone:</b> <spoiler>{masked_sdt}</spoiler>
+<b>│ ⚔️ Attack By:</b> <spoiler>@{username}</spoiler>
+<b>│ 🔗 Api:</b> 1x (MAX)
+<b>│ ⏳ Delay:</b> 20s
+<b>│ 📎 Vòng Lặp:</b> {count}
+<b>│ ❌ Stop:</b> /stop {sdt}
+<b>└────────────⭓</b>
 """
+
 
         bot.send_message(
             chat_id=message.chat.id,
