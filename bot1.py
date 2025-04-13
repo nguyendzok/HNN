@@ -145,65 +145,65 @@ def themvip(message: Message):
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
 
 
+import requests
+
 def fetch_data(user_id):
     url = f'https://scromnyimodz-444.vercel.app/api/player-info?id={user_id}'
     response = requests.get(url)
+    if response.status_code != 200:
+        return None
     return response.json()
 
-def safe_get(d, key, default="N/A"):
-    return d.get(key, default) if isinstance(d, dict) else default
-
-#pet
 @bot.message_handler(commands=['ff'])
-def handle_ff(message):
+def handle_command(message):
     parts = message.text.split()
     if len(parts) != 2:
-        bot.reply_to(message, "<i>⚠️ Dùng đúng cú pháp:</i>\n<code>/ff 12345678</code>", parse_mode="HTML")
+        bot.reply_to(message, "<blockquote>❌ Sai cú pháp!\nVí dụ: /ff 12345678</blockquote>", parse_mode="HTML")
         return
 
-    user_id = parts[1]
+    _, user_id = parts
 
     try:
         data = fetch_data(user_id)
-        if not data or data.get("status") != "success":
-            bot.reply_to(message, "❌ <i>Không tìm thấy người chơi hoặc API lỗi.</i>", parse_mode="HTML")
+        if not data or data.get('status') != 'success':
+            bot.reply_to(message, "<blockquote>❌ Không tìm thấy người chơi hoặc server quá tải!</blockquote>", parse_mode="HTML")
             return
 
-        d = data.get("data", {})
-        basic = d.get("basic_info", {})
-        clan = d.get("clan", {})
-        leader = clan.get("leader", {})
-        pet = d.get("animal", {}).get("name", "Không có")
+        basic = data['data'].get('basic_info', {})
+        clan = data['data'].get('clan', {})
+        leader = clan.get('leader', {})
 
-        from html import escape
-
-        def safe(val):
-            return escape(str(val)) if val else "Không có"
+        def g(key, dic): return dic.get(key, 'Không có')
 
         info = f"""
 <blockquote>
-👤 <b>{safe(basic.get('name'))}</b> | 🆔 <code>{basic.get('id', 'N/A')}</code>
-⭐ Cấp: <b>{basic.get('level', 'N/A')}</b> | ❤️ Like: {basic.get('likes', 'N/A')}
-🌍 Server: <code>{safe(basic.get('server'))}</code>
-📅 Tạo: {basic.get('account_created', 'N/A')}
-🎫 Booyah Pass: {basic.get('booyah_pass_level', 'N/A')}
-📝 Bio: <i>{safe(basic.get('bio'))}</i>
-🐾 Pet: <i>{safe(pet)}</i>
+<b>📌 Thông tin tài khoản:</b>
+Tên: {g('name', basic)}
+ID: {g('id', basic)}
+Cấp độ: {g('level', basic)}
+Booyah Pass: {g('booyah_pass_level', basic)}
+Lượt thích: {g('likes', basic)}
+Máy chủ: {g('server', basic)}
+Tiểu sử: {g('bio', basic)}
+Ngày tạo: {g('account_created', basic)}
 
-<b>─── Quân Đoàn ───</b>
-🛡️ {safe(clan.get('name'))} (Lv. {clan.get('level', 'N/A')})
-👥 Thành viên: {clan.get('members_count', 'N/A')}
-👑 Chủ: {safe(leader.get('name'))} (Lv. {leader.get('level', 'N/A')})
+<b>👥 Thông tin quân đoàn:</b>
+Tên: {g('name', clan)}
+Cấp độ: {g('level', clan)}
+Thành viên: {g('members_count', clan)}
+
+<b>👑 Chủ quân đoàn:</b>
+Tên: {g('name', leader)}
+Cấp độ: {g('level', leader)}
+Lượt thích: {g('likes', leader)}
+Ngày tạo: {g('account_created', leader)}
 </blockquote>
 """
-
-        bot.send_message(message.chat.id, info, parse_mode="HTML")
-
+        bot.reply_to(message, info.strip(), parse_mode="HTML")
 
     except Exception as e:
-        print("Lỗi:", e)
-        bot.reply_to(message, "⚠️ <i>Đã xảy ra lỗi khi xử lý yêu cầu.</i>", parse_mode="HTML")
-
+        bot.reply_to(message, "<blockquote>⚠️ Đã xảy ra lỗi khi xử lý yêu cầu.</blockquote>", parse_mode="HTML")
+        print(e)
 
 
 
