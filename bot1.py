@@ -101,7 +101,6 @@ def send_help(message):
 ➤ /checkban : Kiểm tra tk có khoá không
 ➤ /searchff : Tìm tk ff bằng tên
 └───Tiện Ích Khác
-➤ /like : buff like
 ➤ /ff : check info
 ➤ /uptime : Xem Thời gian bot hoạt động
 ➤ /voice : Chuyển văn bản thành giọng nói 
@@ -207,47 +206,9 @@ Ngày tạo: {g('account_created', leader)}
 
 
 
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 
 
 # Hàm xử lý lệnh '/like'
-@bot.message_handler(commands=['like'])
-def like_handler(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "⚠️ Lệnh này chỉ sử dụng được trong nhóm đã được cấp quyền.")
-        return
-    args = message.text.split()
-    if len(args) != 2:
-        bot.reply_to(message, "<blockquote>❗ Vui lòng nhập đúng cú pháp: /like 1733997441</blockquote>", parse_mode="HTML")
-        return
-
-    uid = args[1]
-    data = call_api(uid)
-
-    if "message" in data:
-        msg_content = data["message"]
-        if isinstance(msg_content, str):
-            reply_text = f"<blockquote>⚠️ {msg_content}</blockquote>"
-        elif isinstance(msg_content, dict):
-            reply_text = (
-                f"<blockquote>\n"
-                f"🎯 <b>Kết quả buff like:</b><br>"
-                f"👤 <b>Tên:</b> {msg_content.get('Name', 'Không xác định')}<br>"
-                f"🆔 <b>UID:</b> {msg_content.get('UID', uid)}<br>"
-                f"🌎 <b>Khu vực:</b> {msg_content.get('Region', 'Không xác định')}<br>"
-                f"📊 <b>Level:</b> {msg_content.get('Level', 'Không xác định')}<br>"
-                f"👍 <b>Like trước:</b> {msg_content.get('Likes Before', 'Không xác định')}<br>"
-                f"✅ <b>Like sau:</b> {msg_content.get('Likes After', 'Không xác định')}<br>"
-                f"➕ <b>Tổng cộng:</b> {msg_content.get('Likes Added', 'Không xác định')} like<br>"
-                f"</blockquote>"
-            )
-        else:
-            reply_text = "<blockquote>Dữ liệu trả về không đúng định dạng.</blockquote>"
-
-        bot.reply_to(message, reply_text, parse_mode="HTML")
-    else:
-        handle_api_error(message, "API không trả về kết quả hợp lệ.")
-
 start_time = time.time()
 
 # Biến để tính toán FPS
