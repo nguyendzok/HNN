@@ -488,8 +488,8 @@ def detect_carrier(phone_number: str) -> str:
 
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
-    max_cycles = 2  # Số vòng xoay
-    delay = 0.7     # Thời gian giữa mỗi frame (giây)
+    max_cycles = 2
+    delay = 0.7
     total_frames = len(frames) * max_cycles
     i = 0
     while not stop_event.is_set() and i < total_frames:
@@ -499,14 +499,14 @@ def animate_loading(chat_id, message_id, stop_event):
         except:
             pass
         time.sleep(delay)
-        
-    
+
+
 from datetime import datetime
-      
+
 @bot.message_handler(commands=['spam'])
 def spam(message):
     user_id = message.from_user.id
-    cooldown_time = 120# Thời gian chờ giữa mỗi lần sử dụng (giây)
+    cooldown_time = 120  # giây
     current_time = time.time()
 
     if user_id in last_usage:
@@ -551,30 +551,36 @@ def spam(message):
             bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        # Gửi tin nhắn loading
-loading_msg = bot.send_message(message.chat.id, "⏳")
-stop_loading = threading.Event()
-loading_thread = threading.Thread(
-    target=animate_loading,
-    args=(message.chat.id, loading_msg.message_id, stop_loading),
-    daemon=True
-)
-loading_thread.start()
+        # Gửi đồng hồ cát xoay
+        loading_msg = bot.send_message(message.chat.id, "⏳")
+        stop_loading = threading.Event()
+        loading_thread = threading.Thread(
+            target=animate_loading,
+            args=(message.chat.id, loading_msg.message_id, stop_loading),
+            daemon=True
+        )
+        loading_thread.start()
 
-# Giả sử bạn vẫn muốn xử lý script ngay sau đó
-process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-active_processes[sdt] = process
+        # Tạo file tạm từ dec.py
+        with open(script_filename, 'r', encoding='utf-8') as file:
+            script_content = file.read()
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+            temp_file.write(script_content.encode('utf-8'))
+            temp_file_path = temp_file.name
 
-# Đợi cho xoay đủ vòng rồi mới dừng
-time.sleep(4)  # Cho hiệu ứng xoay trọn vẹn
-stop_loading.set()
+        # Gọi subprocess spam
+        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+        active_processes[sdt] = process
 
-# Xóa đồng hồ cát sau khi xoay xong
-try:
-    bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
-except:
-    pass
+        # Chờ xoay xong rồi xóa đồng hồ cát
+        time.sleep(4)
+        stop_loading.set()
+        try:
+            bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
+        except:
+            pass
 
+        # Gửi thông báo kết quả
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
 
