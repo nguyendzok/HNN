@@ -487,15 +487,18 @@ def detect_carrier(phone_number: str) -> str:
 
 
 def animate_loading(chat_id, message_id, stop_event):
-    symbols = ["⏳", "⌛"]
+    frames = ["⏳", "⌛"]
+    max_cycles = 2  # Số vòng xoay
+    delay = 0.7     # Thời gian giữa mỗi frame (giây)
+    total_frames = len(frames) * max_cycles
     i = 0
-    while not stop_event.is_set():
+    while not stop_event.is_set() and i < total_frames:
         try:
-            bot.edit_message_text(symbols[i % len(symbols)], chat_id, message_id)
+            bot.edit_message_text(frames[i % len(frames)], chat_id, message_id)
             i += 1
         except:
             pass
-        time.sleep(0.8)
+        time.sleep(delay)
         
     
 from datetime import datetime
