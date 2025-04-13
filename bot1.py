@@ -525,11 +525,9 @@ def detect_carrier(phone_number: str) -> str:
 
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
-    max_cycles = 2
     delay = 0.7
-    total_frames = len(frames) * max_cycles
     i = 0
-    while not stop_event.is_set() and i < total_frames:
+    while not stop_event.is_set():
         try:
             bot.edit_message_text(frames[i % len(frames)], chat_id, message_id)
             i += 1
@@ -580,7 +578,9 @@ def spam(message):
         return
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
-    username = message.from_user.username if message.from_user.username else "Không có username"
+    name = message.from_user.first_name or "Không rõ"
+    plan = "Free"
+    username = f"@{message.from_user.username}" if message.from_user.username else "Không rõ"
 
     script_filename = "dec.py"
     try:
@@ -588,7 +588,7 @@ def spam(message):
             bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        # Gửi đồng hồ cát xoay
+        # Gửi đồng hồ cát
         loading_msg = bot.send_message(message.chat.id, "⏳")
         stop_loading = threading.Event()
         loading_thread = threading.Thread(
@@ -609,7 +609,7 @@ def spam(message):
         process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
         active_processes[sdt] = process
 
-        # Chờ xoay xong rồi xóa đồng hồ cát
+        # Chờ vài giây rồi dừng loading
         time.sleep(4)
         stop_loading.set()
         try:
@@ -618,32 +618,18 @@ def spam(message):
             pass
 
         # Gửi thông báo kết quả
-        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        masked_sdt = sdt[:3] + "***" + sdt[-3:]
-
+        now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         spam_msg = f"""
-<pre>======[ 𝙎𝙋𝘼𝙈 𝙋𝙍𝙊 ]======</pre>
-
-<b>🕵️‍♂️ Số điện thoại mục tiêu:</b>
-  ├─> {masked_sdt}
-  ├─────────────⭔
-<b>⏳ Thời gian tấn công:</b>
-  ├─> {now}
-  ├─────────────⭔
-<b>🌐 SEVER 1</b>
-  ├─────────────⭔
-<b>💥 Thời gian chờ (Cooldown):</b>
-  ├─> 120 giây
-  ├─────────────⭔
-<b>🔁 Số lần tấn công lặp lại:</b>
-  ├─> {count} lần
-  ├─────────────⭔
+<pre>
+│ 🚀 User: {name}
+│ 💳 Plan: {plan}
+│ 📞 Phone: {sdt}
+│ ⚔️ Attack By: {username}
+│ ⏰ Time: {now}
+│ ❌ Stop: /stop {sdt}
+</pre>
 """
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=spam_msg,
-            parse_mode="HTML"
-        )
+        bot.send_message(message.chat.id, spam_msg, parse_mode="HTML")
 
         last_usage[user_id] = current_time
 
@@ -651,6 +637,19 @@ def spam(message):
         bot.reply_to(message, "Không tìm thấy file.")
     except Exception as e:
         bot.reply_to(message, f"Lỗi xảy ra: {str(e)}")
+
+
+@bot.message_handler(commands=['status'])
+def status(message):
+    if not active_processes:
+        bot.reply_to(message, "✅ Hiện không có tiến trình spam nào đang chạy.")
+        return
+
+    status_msg = "<b>📊 Danh sách số đang bị spam:</b>\n"
+    for phone, process in active_processes.items():
+        status_msg += f"  ├─> {phone}\n"
+
+    bot.send_message(message.chat.id, status_msg, parse_mode="HTML")
 
 
 
