@@ -560,10 +560,11 @@ def spam(message):
         warn = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
         time.sleep(5)
         try:
-            bot.delete_message(message.chat.id, warn.message_id)
-            bot.delete_message(message.chat.id, message.message_id)
-        except:
-            pass
+           bot.delete_message(message.chat.id, loading_msg.message_id)
+           bot.delete_message(message.chat.id, message.message_id)
+       except:
+           pass
+
         return
 
     sdt, count = params
