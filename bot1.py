@@ -593,44 +593,44 @@ def spam(message):
             return
 
         # 1. Gửi đồng hồ cát
-        loading_msg = bot.send_message(message.chat.id, "⏳")
-        stop_loading = threading.Event()
-        loading_thread = threading.Thread(
-            target=animate_loading,
-            args=(message.chat.id, loading_msg.message_id, stop_loading),
-            daemon=True
-        )
-        loading_thread.start()
+        # Gửi hiệu ứng loading
+loading_msg = bot.send_message(message.chat.id, "⏳")
+stop_loading = threading.Event()
+loading_thread = threading.Thread(
+    target=animate_loading,
+    args=(message.chat.id, loading_msg.message_id, stop_loading),
+    daemon=True
+)
+loading_thread.start()
 
-        time.sleep(2.5)
+time.sleep(2.5)
 
-        # 2. Gửi thông báo đang spam
-        noti = bot.send_message(message.chat.id, f"⌛ Đang spam cho @{username}...")
+# Gửi dòng đang spam
+noti = bot.send_message(message.chat.id, f"⌛ Đang spam cho @{username}...")
 
-        # 3. Đọc file dec.py và chạy subprocess
-        with open(script_filename, 'r', encoding='utf-8') as file:
-            script_content = file.read()
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            temp_file.write(script_content.encode('utf-8'))
-            temp_file_path = temp_file.name
+# Thực hiện xử lý spam subprocess
+with open(script_filename, 'r', encoding='utf-8') as file:
+    script_content = file.read()
+with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+    temp_file.write(script_content.encode('utf-8'))
+    temp_file_path = temp_file.name
 
-        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        active_processes[sdt] = process
+process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+active_processes[sdt] = process
 
-        # 4. Kết thúc loading và xóa tin nhắn gốc
-        stop_loading.set()
-        time.sleep(0.3)
-        try:
-            bot.delete_message(message.chat.id, loading_msg.message_id)      # Xóa đồng hồ cát
-            bot.delete_message(message.chat.id, message.message_id)          # Xóa lệnh spam gốc của user
-        except:
-            pass
+# Dừng loading và xóa đồng hồ cát
+stop_loading.set()
+time.sleep(0.5)
+try:
+    bot.delete_message(message.chat.id, loading_msg.message_id)
+    bot.delete_message(message.chat.id, message.message_id)
+except:
+    pass
 
-        # 5. Gửi kết quả
-        now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        masked_sdt = sdt[:3] + "***" + sdt[-3:]
-
-        spam_msg = f"""
+# Gửi kết quả
+now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
+masked_sdt = sdt[:3] + "***" + sdt[-3:]
+spam_msg = f"""
 <pre>
 │ 🚀 User: {name}
 │ 💳 Plan: {plan}
@@ -640,7 +640,8 @@ def spam(message):
 │ ❌ Stop: /stop {sdt}
 </pre>
 """
-        bot.reply_to(message, spam_msg, parse_mode="HTML")
+        bot.send_message(message.chat.id, spam_msg, parse_mode="HTML")
+
         last_usage[user_id] = current_time
 
     except Exception as e:
