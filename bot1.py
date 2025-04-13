@@ -508,7 +508,7 @@ def handle_id_command(message):
 
    
 from datetime import datetime
-import time, threading, subprocess, tempfile, os
+import time, threading, subprocess, tempfile, os, re
 
 def detect_carrier(phone_number: str) -> str:
     phone_number = phone_number.strip().replace("+84", "0")
@@ -523,6 +523,11 @@ def detect_carrier(phone_number: str) -> str:
         if any(phone_number.startswith(p) for p in prefix_list):
             return name
     return "Không xác định"
+
+def escape_md(text):
+    # Escape ký tự đặc biệt cho MarkdownV2
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
 
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
@@ -582,7 +587,6 @@ def spam(message):
     name = message.from_user.first_name or "Không rõ"
     plan = "Free"
 
-
     script_filename = "dec.py"
     try:
         if not os.path.isfile(script_filename):
@@ -623,24 +627,16 @@ def spam(message):
         except:
             pass
 
-        # Gửi thông báo kết quả
-        import re
+        # Chuẩn bị thông tin có spoiler
+        now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
+        masked_sdt = sdt[:3] + "***" + sdt[-3:]
+        escaped_name = escape_md(name)
+        escaped_plan = escape_md(plan)
+        escaped_username = escape_md(username)
+        escaped_time = escape_md(now)
+        escaped_sdt = escape_md(masked_sdt)
 
-def escape_md(text):
-    # Escape ký tự đặc biệt cho MarkdownV2
-    escape_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
-
-# Sau khi lấy thông tin
-now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-masked_sdt = sdt[:3] + "***" + sdt[-3:]
-escaped_name = escape_md(name)
-escaped_plan = escape_md(plan)
-escaped_username = escape_md(username)
-escaped_time = escape_md(now)
-escaped_sdt = escape_md(masked_sdt)
-
-spam_msg = f"""
+        spam_msg = f"""
 *🚀 User:* {escaped_name}
 *💳 Plan:* {escaped_plan}
 *📞 Phone:* ||{escaped_sdt}||
@@ -649,11 +645,11 @@ spam_msg = f"""
 *❌ Stop:* /stop {sdt}
 """
 
-bot.send_message(
-    chat_id=message.chat.id,
-    text=spam_msg,
-    parse_mode="MarkdownV2"
-)
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=spam_msg,
+            parse_mode="MarkdownV2"
+        )
 
         last_usage[user_id] = current_time
 
