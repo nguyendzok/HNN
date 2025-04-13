@@ -149,6 +149,10 @@ def fetch_data(user_id):
     url = f'https://scromnyimodz-444.vercel.app/api/player-info?id={user_id}'
     response = requests.get(url)
     return response.json()
+
+def safe_get(d, key, default="N/A"):
+    return d.get(key, default) if isinstance(d, dict) else default
+
 #pet
 @bot.message_handler(commands=['ff'])
 def handle_ff(message):
@@ -161,37 +165,45 @@ def handle_ff(message):
 
     try:
         data = fetch_data(user_id)
-
-        if data.get("status") != "success":
-            bot.reply_to(message, "❌ <i>Không tìm thấy thông tin người chơi.</i>", parse_mode="HTML")
+        if not data or data.get("status") != "success":
+            bot.reply_to(message, "❌ <i>Không tìm thấy người chơi hoặc API lỗi.</i>", parse_mode="HTML")
             return
 
-        basic = data["data"].get("basic_info", {})
-        clan = data["data"].get("clan", {})
+        d = data.get("data", {})
+        basic = d.get("basic_info", {})
+        clan = d.get("clan", {})
         leader = clan.get("leader", {})
-        pet = data["data"].get("animal", {}).get("name", "Không có")
+        pet = d.get("animal", {}).get("name", "Không có")
+
+        from html import escape
+
+        def safe(val):
+            return escape(str(val)) if val else "Không có"
 
         info = f"""
-<code>──── Free Fire Info ────</code>
-<i>👤 {basic.get('name', 'N/A')} | 🆔 {basic.get('id', 'N/A')}</i>
-<i>⭐ Cấp: {basic.get('level', 'N/A')} | ❤️ Like: {basic.get('likes', 'N/A')}</i>
-<i>🌍 Server: {basic.get('server', 'N/A')}</i>
-<i>📅 Tạo: {basic.get('account_created', 'N/A')}</i>
-<i>🎫 BP: {basic.get('booyah_pass_level', 'N/A')}</i>
-<i>📝 Bio: {basic.get('bio', 'Không có')}</i>
-<i>🐾 Pet: {pet}</i>
+<blockquote>
+👤 <b>{safe(basic.get('name'))}</b> | 🆔 <code>{basic.get('id', 'N/A')}</code>
+⭐ Cấp: <b>{basic.get('level', 'N/A')}</b> | ❤️ Like: {basic.get('likes', 'N/A')}
+🌍 Server: <code>{safe(basic.get('server'))}</code>
+📅 Tạo: {basic.get('account_created', 'N/A')}
+🎫 Booyah Pass: {basic.get('booyah_pass_level', 'N/A')}
+📝 Bio: <i>{safe(basic.get('bio'))}</i>
+🐾 Pet: <i>{safe(pet)}</i>
 
-<code>─── Quân Đoàn ───</code>
-<i>🛡️ {clan.get('name', 'Không có')} (Lv. {clan.get('level', 'N/A')})</i>
-<i>👥 Thành viên: {clan.get('members_count', 'N/A')}</i>
-<i>👑 Chủ: {leader.get('name', 'N/A')} (Lv. {leader.get('level', 'N/A')})</i>
+<b>─── Quân Đoàn ───</b>
+🛡️ {safe(clan.get('name'))} (Lv. {clan.get('level', 'N/A')})
+👥 Thành viên: {clan.get('members_count', 'N/A')}
+👑 Chủ: {safe(leader.get('name'))} (Lv. {leader.get('level', 'N/A')})
+</blockquote>
 """
 
         bot.send_message(message.chat.id, info, parse_mode="HTML")
 
+
     except Exception as e:
-        print(e)
+        print("Lỗi:", e)
         bot.reply_to(message, "⚠️ <i>Đã xảy ra lỗi khi xử lý yêu cầu.</i>", parse_mode="HTML")
+
 
 
 
