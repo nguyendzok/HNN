@@ -487,16 +487,15 @@ def detect_carrier(phone_number: str) -> str:
 
 
 def animate_loading(chat_id, message_id, stop_event):
-    dots = ""
+    symbols = ["⏳", "⌛"]
+    i = 0
     while not stop_event.is_set():
-        dots += "."
-        if len(dots) > 3:
-            dots = ""
         try:
-            bot.edit_message_text(f"⏳ Đang xử lý{dots}", chat_id, message_id)
+            bot.edit_message_text(symbols[i % len(symbols)], chat_id, message_id)
+            i += 1
         except:
             pass
-        time.sleep(0.5)
+        time.sleep(0.8)
         
     
 from datetime import datetime
@@ -504,11 +503,15 @@ from datetime import datetime
 @bot.message_handler(commands=['spam'])
 def spam(message):
     user_id = message.from_user.id
+    cooldown_time = 120# Thời gian chờ giữa mỗi lần sử dụng (giây)
     current_time = time.time()
 
-    if user_id in last_usage and current_time - last_usage[user_id] < 10:
-        bot.reply_to(message, f"⏳ Vui lòng đợi {10 - (current_time - last_usage[user_id]):.1f} giây trước khi dùng lại.")
-        return
+    if user_id in last_usage:
+        elapsed = current_time - last_usage[user_id]
+        if elapsed < cooldown_time:
+            remaining = cooldown_time - elapsed
+            bot.reply_to(message, f"⏳ Bạn phải chờ {remaining:.1f} giây trước khi sử dụng lại lệnh.")
+            return
 
     params = message.text.split()[1:]
     if len(params) != 2:
@@ -545,7 +548,7 @@ def spam(message):
             bot.reply_to(message, "Không tìm thấy file script.")
             return
 
-        loading_msg = bot.send_message(message.chat.id, "⏳ Đang xử lý...")
+        loading_msg = bot.send_message(message.chat.id, "⏳")
         stop_loading = threading.Event()
         loading_thread = threading.Thread(
             target=animate_loading,
