@@ -527,7 +527,7 @@ def detect_carrier(phone_number: str) -> str:
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
     max_cycles = 2
-    delay = 0.4
+    delay = 0.7
     total_frames = len(frames) * max_cycles
     i = 0
     while not stop_event.is_set() and i < total_frames:
@@ -537,6 +537,10 @@ def animate_loading(chat_id, message_id, stop_event):
         except:
             pass
         time.sleep(delay)
+
+def escape_md(text):
+    escape_chars = r"_*[]()~`>#+-=|{}.!\\"
+    return ''.join(['\\' + c if c in escape_chars else c for c in text])
 
 @bot.message_handler(commands=['spam'])
 def spam(message):
@@ -615,19 +619,19 @@ def spam(message):
 
         # Dừng loading và xóa đồng hồ cát + tin nhắn gốc
         stop_loading.set()
-        time.sleep(0.5)
+        time.sleep(0.8)
         try:
             bot.delete_message(message.chat.id, loading_msg.message_id)
             bot.delete_message(message.chat.id, message.message_id)
         except:
             pass
 
-        # Chuẩn bị kết quả hiển thị
+        # Chuẩn bị kết quả
         now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
 
         spam_msg = f"""
-┌──⭓ HÀO ESPORTS😘
+┌──⭓ SPAM SMS😘
 │ 🚀 Attack Sent Successfully
 │ 💳 Plan: {plan}
 │ 📞 Phone: ||{masked_sdt}||
@@ -639,16 +643,11 @@ def spam(message):
 └────────────⭓
 """
 
-# Thoát các ký tự đặc biệt cho MarkdownV2
-def escape_md(text):
-    escape_chars = r"_*[]()~`>#+-=|{}.!\\"
-    return ''.join(['\\' + c if c in escape_chars else c for c in text])
-
-bot.send_message(
-    chat_id=message.chat.id,
-    text=escape_md(spam_msg),
-    parse_mode="MarkdownV2"
-)
+        bot.send_message(
+            chat_id=message.chat.id,
+            text=escape_md(spam_msg),
+            parse_mode="MarkdownV2"
+        )
 
         last_usage[user_id] = current_time
 
