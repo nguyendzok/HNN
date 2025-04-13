@@ -629,7 +629,7 @@ def spam(message):
 │ ❌ Stop: /stop {sdt}
 </pre>
 """
-        bot.send_message(message.chat.id, spam_msg, parse_mode="HTML")
+        bot.reply_to(message, spam_msg, parse_mode="HTML")
 
         last_usage[user_id] = current_time
 
