@@ -508,7 +508,7 @@ def handle_id_command(message):
 
    
 from datetime import datetime
-import time, threading, subprocess, tempfile, os, re
+import time, threading, subprocess, tempfile, os
 
 def detect_carrier(phone_number: str) -> str:
     phone_number = phone_number.strip().replace("+84", "0")
@@ -523,11 +523,6 @@ def detect_carrier(phone_number: str) -> str:
         if any(phone_number.startswith(p) for p in prefix_list):
             return name
     return "Không xác định"
-
-def escape_md(text):
-    # Escape ký tự đặc biệt cho MarkdownV2
-    escape_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
 
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
@@ -627,28 +622,29 @@ def spam(message):
         except:
             pass
 
-        # Chuẩn bị thông tin có spoiler
+        # Chuẩn bị kết quả hiển thị
         now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
         masked_sdt = sdt[:3] + "***" + sdt[-3:]
-        escaped_name = escape_md(name)
-        escaped_plan = escape_md(plan)
-        escaped_username = escape_md(username)
-        escaped_time = escape_md(now)
-        escaped_sdt = escape_md(masked_sdt)
 
         spam_msg = f"""
-*🚀 User:* {escaped_name}
-*💳 Plan:* {escaped_plan}
-*📞 Phone:* ||{escaped_sdt}||
-*⚔️ Attack By:* ||@{escaped_username}||
-*⏰ Time:* {escaped_time}
-*❌ Stop:* /stop {sdt}
+<pre>
+┌──⭓ SPAM SMS😘
+│ 🚀 Attack Sent Successfully
+│ 💳 Plan: {plan}
+│ 📞 Phone: <spoiler>{masked_sdt}</spoiler>
+│ ⚔️ Attack By: <spoiler>@{username}</spoiler>
+│ 🔗 Api: 1x (MAX)
+│ ⏳ Delay: 20s
+│ 📎 Vòng Lặp: {count}
+│ ❌ Stop: /stop {sdt}
+└────────────⭓
+</pre>
 """
 
         bot.send_message(
             chat_id=message.chat.id,
             text=spam_msg,
-            parse_mode="MarkdownV2"
+            parse_mode="HTML"
         )
 
         last_usage[user_id] = current_time
@@ -657,6 +653,7 @@ def spam(message):
         bot.send_message(message.chat.id, "Không tìm thấy file.")
     except Exception as e:
         bot.send_message(message.chat.id, f"Lỗi xảy ra: {str(e)}")
+
 
 
 
