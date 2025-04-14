@@ -57,6 +57,7 @@ allowed_group_id = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
+user_last_command_time = {}
 
 last_command_timegg = 0
 
