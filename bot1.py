@@ -223,90 +223,28 @@ Ngày tạo: {g('account_created', leader)}
 
 
 
-
-start_time = time.time()
-
-# Biến để tính toán FPS
-last_time = time.time()
-frame_count = 0
-fps = 0
-# Hàm xử lý lệnh '/like'
-import threading
-
-# Hàm animation loading
-def animate_loading(chat_id, message_id, stop_event):
-    frames = ["⏳", "⌛"]
-    max_cycles = 2
-    delay = 0.8
-    total_frames = len(frames) * max_cycles
-    i = 0
-    while not stop_event.is_set() and i < total_frames:
-        try:
-            bot.edit_message_text(frames[i % len(frames)], chat_id, message_id)
-            i += 1
-        except:
-            pass
-        time.sleep(delay)
+import requests
 
 @bot.message_handler(commands=['uptime'])
-def uptime(message):
-    global last_time, frame_count, fps
-    
-    # Tính uptime
-    uptime_seconds = int(time.time() - start_time)
-    uptime_formatted = str(timedelta(seconds=uptime_seconds))
-    
-    # Tính FPS
-    current_time = time.time()
-    frame_count += 1
-    if current_time - last_time >= 1:
-        fps = frame_count
-        frame_count = 0
-        last_time = current_time
+def random_video(message):
+    if message.chat.type not in ["group", "supergroup"]:
+        bot.reply_to(message, "Lệnh này chỉ dùng được trong nhóm!")
+        return
 
-    # Gửi thông báo uptime
-    bot.send_message(message.chat.id, 
-        f"📊 ⏳ Bot đã hoạt động: {uptime_formatted}\n"
-        f"🎮 FPS trung bình: {fps} FPS\n"
-        "Không thể lấy thông tin cấu hình.\n"
-        "🎥 Video giải trí cho ae FA vibu đây!")
-
-    # Gửi tin nhắn initial loading
-    loading_msg = bot.send_message(message.chat.id, "⏳")
-
-    # Tạo sự kiện dừng animation
-    stop_event = threading.Event()
-
-    # Bắt đầu animation trong thread riêng
-    animation_thread = threading.Thread(
-        target=animate_loading,
-        args=(message.chat.id, loading_msg.message_id, stop_event)
-    )
-    animation_thread.start()
-
-    # Lấy video từ API
-    video_url = "https://api.ffcommunity.site/randomvideo.php"
     try:
-        video_response = requests.get(video_url)
-        video_data = video_response.json()
-        video_url = video_data.get('url', None)
-    except (ValueError, requests.RequestException):
-        video_url = None
+        res = requests.get("https://api.ffcommunity.site/randomvideo.php")
+        data = res.json()
+        video_url = data.get("url")
 
-    # Gửi video nếu có
-    if video_url:
-        try:
-            bot.send_video(message.chat.id, video_url)
-        except Exception as e:
-            bot.send_message(message.chat.id, f"Không gửi được video: {e}")
+        if video_url:
+            bot.send_chat_action(message.chat.id, "upload_video")
+            bot.send_video(message.chat.id, video=video_url, caption="Video gái xinh hôm nay nè!")
+        else:
+            bot.send_message(message.chat.id, "Không lấy được video, thử lại sau nhé!")
+    except Exception as e:
+        bot.send_message(message.chat.id, "Đã xảy ra lỗi khi lấy video.")
 
-    # Dừng animation và xoá tin nhắn loading
-    stop_event.set()
-    try:
-        bot.delete_message(message.chat.id, loading_msg.message_id)
-    except:
-        pass
-
+ 
 
 
 
