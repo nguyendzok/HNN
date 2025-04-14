@@ -507,156 +507,106 @@ def handle_id_command(message):
 
 
    
-from datetime import datetime
-import time, threading, subprocess, tempfile, os, re
-
-def detect_carrier(phone_number: str) -> str:
-    phone_number = phone_number.strip().replace("+84", "0")
-    prefixes = {
-        "Viettel": ["086", "096", "097", "098", "032", "033", "034", "035", "036", "037", "038", "039"],
-        "Mobifone": ["089", "090", "093", "070", "076", "077", "078", "079"],
-        "Vinaphone": ["088", "091", "094", "081", "082", "083", "084", "085"],
-        "Vietnamobile": ["092", "056", "058"],
-        "Gmobile": ["099", "059"],
-    }
-    for name, prefix_list in prefixes.items():
-        if any(phone_number.startswith(p) for p in prefix_list):
-            return name
-    return "Không xác định"
-
-def escape_md(text):
-    # Escape ký tự đặc biệt cho MarkdownV2
-    escape_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(r'([{}])'.format(re.escape(escape_chars)), r'\\\1', text)
-
-def animate_loading(chat_id, message_id, stop_event):
-    frames = ["⏳", "⌛"]
-    max_cycles = 2
-    delay = 0.7
-    total_frames = len(frames) * max_cycles
-    i = 0
-    while not stop_event.is_set() and i < total_frames:
-        try:
-            bot.edit_message_text(frames[i % len(frames)], chat_id, message_id)
-            i += 1
-        except:
-            pass
-        time.sleep(delay)
+import threading
 
 @bot.message_handler(commands=['spam'])
-def spam(message):
+def supersms(message):
     user_id = message.from_user.id
-    cooldown_time = 120  # giây
     current_time = time.time()
 
-    if user_id in last_usage:
-        elapsed = current_time - last_usage[user_id]
-        if elapsed < cooldown_time:
-            remaining = cooldown_time - elapsed
-            bot.reply_to(message, f"⏳ Bạn phải chờ {remaining:.1f} giây trước khi sử dụng lại lệnh.")
+    if user_id in user_last_command_time:
+        elapsed_time = current_time - user_last_command_time[user_id]
+        if elapsed_time < 100:
+            remaining_time = 100 - elapsed_time
+            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
             return
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        warn = bot.reply_to(message, "/spam sdt số_lần như này cơ mà")
-        time.sleep(5)
-        try:
-            bot.delete_message(message.chat.id, warn.message_id)
-            bot.delete_message(message.chat.id, message.message_id)
-        except:
-            pass
+        bot.reply_to(message, "/spam sdt số_lần (tối đa 1000)")
         return
 
     sdt, count = params
-    carrier = detect_carrier(sdt)
 
-    try:
-        count = int(count)
-        if count < 1 or count > 500:
-            raise ValueError
-    except ValueError:
-        bot.send_message(message.chat.id, "Số lần spam không hợp lệ. Chỉ chấp nhận từ 1 đến 500.")
+    if not count.isdigit():
+        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        return
+
+    count = int(count)
+
+    if count > 1000:
+        bot.reply_to(message, "/spam sdt số_lần tối đa là 1000")
         return
 
     if sdt in blacklist:
-        bot.send_message(message.chat.id, f"Số điện thoại {sdt} đã bị cấm spam.")
+        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
-    username = message.from_user.username if message.from_user.username else "None"
-    name = message.from_user.first_name or "Không rõ"
-    plan = "Free"
 
-    script_filename = "dec.py"
+    # Gửi loading ban đầu
+    loading_msg = bot.send_message(message.chat.id, "⏳")
+
+    # Tạo hiệu ứng loading động với 2 biểu tượng
+    loading_symbols = ["⏳", "⌛"]
+    stop_loading = threading.Event()
+
+    def animate_loading():
+        i = 0
+        while not stop_loading.is_set():
+            try:
+                bot.edit_message_text(
+                    loading_symbols[i % 2],
+                    message.chat.id,
+                    loading_msg.message_id
+                )
+                i += 1
+                time.sleep(0.5)
+            except:
+                break
+
+    loading_thread = threading.Thread(target=animate_loading)
+    loading_thread.start()
+
+    diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
+│ 🚀 Attack Sent Successfully
+│ 💳 Plan Vip: Min 1 | Max 1000
+│ 📞 Phone: {sdt}
+│ ⚔️ Attack By: @{message.from_user.username or "None"}
+│ 🔗 Api: 1x (MAX)
+│ ⏳ Delay: 20s
+│ 📎 Vòng Lặp: {count}
+└────────────⭓'''
+
+    script_filename = "sms.py"
+
     try:
         if not os.path.isfile(script_filename):
-            bot.send_message(message.chat.id, "Không tìm thấy file script.")
+            stop_loading.set()
+            bot.edit_message_text("Không tìm thấy file.", message.chat.id, loading_msg.message_id)
             return
 
-        # Gửi hiệu ứng loading
-        loading_msg = bot.send_message(message.chat.id, "⏳")
-        stop_loading = threading.Event()
-        loading_thread = threading.Thread(
-            target=animate_loading,
-            args=(message.chat.id, loading_msg.message_id, stop_loading),
-            daemon=True
-        )
-        loading_thread.start()
-
-        # Gửi dòng đang spam
-        time.sleep(2.5)
-        bot.send_message(message.chat.id, f"⌛ Đang spam cho @{username}...")
-
-        # Tạo file tạm từ dec.py
-        with open(script_filename, 'r', encoding='utf-8') as file:
-            script_content = file.read()
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            temp_file.write(script_content.encode('utf-8'))
+            with open(script_filename, 'r', encoding='utf-8') as file:
+                temp_file.write(file.read().encode('utf-8'))
             temp_file_path = temp_file.name
 
-        # Gọi subprocess spam
-        process = subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        active_processes[sdt] = process
+        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+        requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
+        user_last_command_time[user_id] = time.time()
 
-        # Dừng loading và xóa đồng hồ cát + tin nhắn gốc
         stop_loading.set()
-        time.sleep(0.5)
-        try:
-            bot.delete_message(message.chat.id, loading_msg.message_id)
-            bot.delete_message(message.chat.id, message.message_id)
-        except:
-            pass
-
-        # Chuẩn bị thông tin có spoiler
-        now = datetime.now().strftime("%H:%M:%S, %d/%m/%Y")
-        masked_sdt = sdt[:3] + "***" + sdt[-3:]
-        escaped_name = escape_md(name)
-        escaped_plan = escape_md(plan)
-        escaped_username = escape_md(username)
-        escaped_time = escape_md(now)
-        escaped_sdt = escape_md(masked_sdt)
-
-        spam_msg = f"""
-*🚀 User:* {escaped_name}
-*💳 Plan:* {escaped_plan}
-*📞 Phone:* ||{escaped_sdt}||
-*⚔️ Attack By:* ||@{escaped_username}||
-*⏰ Time:* {escaped_time}
-*❌ Stop:* /stop {sdt}
-"""
-
-        bot.send_message(
-            chat_id=message.chat.id,
-            text=spam_msg,
-            parse_mode="MarkdownV2"
+        bot.edit_message_text(
+            f'<blockquote>{diggory_chat3}</blockquote>',
+            message.chat.id,
+            loading_msg.message_id,
+            parse_mode='HTML'
         )
 
-        last_usage[user_id] = current_time
-
-    except FileNotFoundError:
-        bot.send_message(message.chat.id, "Không tìm thấy file.")
     except Exception as e:
-        bot.send_message(message.chat.id, f"Lỗi xảy ra: {str(e)}")
+        stop_loading.set()
+        bot.edit_message_text("Đã xảy ra lỗi trong quá trình xử lý.", message.chat.id, loading_msg.message_id)
+        print(f'Lỗi: {e}')
 
 
 
