@@ -184,14 +184,16 @@ def tiktok_info(message):
     loading_msg = bot.reply_to(message, "⏳ Đang lấy thông tin...")
 
     try:
-        res = requests.get(f"https://api.sumiproject.net/tiktok?info=@{username}")
+        # Fix lỗi 403 bằng User-Agent
+        headers = {"User-Agent": "Mozilla/5.0"}
+        res = requests.get(f"https://api.sumiproject.net/tiktok?info=@{username}", headers=headers)
         res.raise_for_status()
         result = res.json()
 
         if result.get("code") != 0 or "data" not in result:
             bot.edit_message_text("Không tìm thấy thông tin người dùng.",
-                chat_id=message.chat.id,
-                message_id=loading_msg.message_id)
+                                  chat_id=message.chat.id,
+                                  message_id=loading_msg.message_id)
             return
 
         user = result["data"]["user"]
@@ -223,11 +225,11 @@ def tiktok_info(message):
         bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
 
     except Exception as e:
-        bot.edit_message_text(
-            f"Đã xảy ra lỗi: {e}",
-            chat_id=message.chat.id,
-            message_id=loading_msg.message_id
-        )
+        bot.edit_message_text(f"Đã xảy ra lỗi:\n<code>{html_escape(str(e))}</code>",
+                              chat_id=message.chat.id,
+                              message_id=loading_msg.message_id,
+                              parse_mode="HTML")
+
 
 
 
