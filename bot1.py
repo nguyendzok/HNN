@@ -128,6 +128,7 @@ Người Gọi Lệnh : @{username}
 • /code - Lấy code web
 • /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
+• /taixiu - chơi game
 
 | Lệnh Admin |  
 • /thongbao - Thông báo đến nhóm  
@@ -165,6 +166,187 @@ def themvip(message: Message):
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
 
 
+registered_users = {}  # user_id: (username, balance)
+admins = set()
+FILE_PATH = "files.txt"
+
+if not os.path.exists(FILE_PATH):
+    open(FILE_PATH, "w").close()
+
+# /taixiu - giới thiệu
+@bot.message_handler(commands=['taixiu'])
+def send_taixiu(message):
+    bot.reply_to(message,
+        "<b>Chào mừng bạn đến với Telegram Bot!</b>\n"
+        "<blockquote>"
+        "• /dangky &lt;tên&gt; &lt;mật khẩu&gt; – Đăng ký tài khoản và nhận 500k.<br>"
+        "• /dangnhap &lt;tên&gt; &lt;mật khẩu&gt; – Đăng nhập tài khoản.<br>"
+        "• /game &lt;T/X/C/L&gt; &lt;số tiền&gt; – Chơi tài/xỉu/chẵn/lẻ.<br>"
+        "• /sodu – Xem số dư tài khoản.<br>"
+        "• /admin &lt;key&gt; – Trở thành admin.<br>"
+        "• /buff &lt;tên&gt; – Buff tiền cho người chơi (admin)."
+        "</blockquote>"
+    )
+
+# /dangky
+@bot.message_handler(commands=['dangky'])
+def register(message):
+    args = message.text.split()
+    if len(args) < 3:
+        bot.reply_to(message, "🚫 Vui lòng nhập đúng cú pháp: /dangky <tên> <mật khẩu>")
+        return
+
+    username, password = args[1], args[2]
+    with open(FILE_PATH, "r") as f:
+        for line in f:
+            if line.split()[0] == username:
+                bot.reply_to(message, f"🚫 Tên đăng nhập <b>{username}</b> đã tồn tại!", parse_mode="HTML")
+                return
+
+    with open(FILE_PATH, "a") as f:
+        f.write(f"{username} {password} 500000\n")
+
+    bot.reply_to(message, f"<b>✅ Đăng ký thành công!</b>\n<blockquote>Xin chào {username}, bạn nhận được 500.000.</blockquote>")
+
+# /dangnhap
+@bot.message_handler(commands=['dangnhap'])
+def login(message):
+    args = message.text.split()
+    if len(args) < 3:
+        bot.reply_to(message, "🚫 Vui lòng nhập đúng cú pháp: /dangnhap <tên> <mật khẩu>")
+        return
+
+    username, password = args[1], args[2]
+    with open(FILE_PATH, "r") as f:
+        for line in f:
+            u, p, b = line.strip().split()
+            if username == u and password == p:
+                registered_users[message.from_user.id] = (u, int(b))
+                bot.reply_to(message, f"<b>✅ Đăng nhập thành công!</b>\n<blockquote>Xin chào {username}.</blockquote>")
+                return
+
+    bot.reply_to(message, "🚫 Tên đăng nhập hoặc mật khẩu không đúng!")
+
+# /sodu
+@bot.message_handler(commands=['sodu'])
+def balance(message):
+    user_id = message.from_user.id
+    if user_id not in registered_users:
+        bot.reply_to(message, "🚫 Bạn chưa đăng nhập!")
+        return
+
+    username = registered_users[user_id][0]
+    with open(FILE_PATH, "r") as f:
+        for line in f:
+            u, _, b = line.strip().split()
+            if u == username:
+                bot.reply_to(message, f"<b>💰 Số dư của bạn:</b>\n<blockquote>{b} VND</blockquote>")
+                return
+
+    bot.reply_to(message, "🚫 Không tìm thấy thông tin tài khoản!")
+
+# /game
+@bot.message_handler(commands=['game'])
+def game(message):
+    args = message.text.split()
+    if len(args) != 3:
+        bot.reply_to(message, "🚫 Cú pháp đúng: /game <T/X/C/L> <số tiền>")
+        return
+
+    user_id = message.from_user.id
+    if user_id not in registered_users:
+        bot.reply_to(message, "🚫 Bạn cần đăng nhập trước!")
+        return
+
+    bet_type, bet_amount = args[1].upper(), args[2]
+    try:
+        bet_amount = int(bet_amount)
+    except:
+        bot.reply_to(message, "🚫 Số tiền cược không hợp lệ!")
+        return
+
+    username, balance = registered_users[user_id]
+    if balance < bet_amount:
+        bot.reply_to(message, "🚫 Bạn không đủ tiền để cược!")
+        return
+
+    dice = [random.randint(1, 6) for _ in range(3)]
+    total = sum(dice)
+    is_even = total % 2 == 0
+    win = False
+
+    if (bet_type == "T" and total > 10) or \
+       (bet_type == "X" and total <= 10) or \
+       (bet_type == "C" and is_even) or \
+       (bet_type == "L" and not is_even):
+        win = True
+
+    if win:
+        new_balance = balance + bet_amount
+        result = f"🎉 <b>Bạn thắng!</b>\n<blockquote>Kết quả: {dice} = {total} ({'chẵn' if is_even else 'lẻ'})<br>Nhận được: {bet_amount}</blockquote>"
+    else:
+        new_balance = balance - bet_amount
+        result = f"😢 <b>Bạn thua!</b>\n<blockquote>Kết quả: {dice} = {total} ({'chẵn' if is_even else 'lẻ'})<br>Mất: {bet_amount}</blockquote>"
+
+    registered_users[user_id] = (username, new_balance)
+    update_balance(username, new_balance)
+    bot.reply_to(message, result)
+
+# /admin
+@bot.message_handler(commands=['admin'])
+def admin_cmd(message):
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "🚫 Dùng: /admin <key>")
+        return
+
+    if args[1] == "22062012":
+        admins.add(message.from_user.id)
+        bot.reply_to(message, "<b>✅ Xác thực thành công!</b>\n<blockquote>Bạn đã trở thành admin.</blockquote>")
+    else:
+        bot.reply_to(message, "🚫 Key không hợp lệ!")
+
+# /buff
+@bot.message_handler(commands=['buff'])
+def buff_money(message):
+    if message.from_user.id not in admins:
+        bot.reply_to(message, "🚫 Bạn không có quyền sử dụng lệnh này!")
+        return
+
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "🚫 Dùng: /buff <username>")
+        return
+
+    target = args[1]
+    for uid, (username, balance) in registered_users.items():
+        if username.lower() == target.lower():
+            new_balance = balance + 900000000000000
+            registered_users[uid] = (username, new_balance)
+            update_balance(username, new_balance)
+            bot.reply_to(message, f"<b>✅ Buff thành công!</b>\n<blockquote>Đã cộng tiền cho {username}.</blockquote>")
+            return
+
+    bot.reply_to(message, f"🚫 Không tìm thấy người dùng {target}!")
+
+# Cập nhật số dư trong file
+def update_balance(username, new_balance):
+    lines = []
+    with open(FILE_PATH, "r") as f:
+        for line in f:
+            u, p, _ = line.strip().split()
+            if u == username:
+                lines.append(f"{u} {p} {new_balance}\n")
+            else:
+                lines.append(line)
+
+    with open(FILE_PATH, "w") as f:
+        f.writelines(lines)
+
+
+
+
+
 def html_escape(text):
     return (text
         .replace("&", "&amp;")
@@ -172,7 +354,6 @@ def html_escape(text):
         .replace(">", "&gt;")
         .replace('"', "&quot;")
     )
-
 @bot.message_handler(commands=['tiktok'])
 def tiktok_info(message):
     args = message.text.split()
