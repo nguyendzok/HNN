@@ -578,7 +578,7 @@ def supersms(message):
 │ 📎 Vòng Lặp: {count}
 └────────────⭓'''
 
-    script_filename = "sms.py"
+    script_filename = "dec.py"
 
     try:
         if not os.path.isfile(script_filename):
