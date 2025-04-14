@@ -127,6 +127,7 @@ Người Gọi Lệnh : @{username}
 • /id - Lấy id bản thân
 • /code - Lấy code web
 • /ngl - spam ngl
+• /tiktok - xem thông tin tiktok
 
 | Lệnh Admin |  
 • /thongbao - Thông báo đến nhóm  
@@ -162,6 +163,73 @@ def themvip(message: Message):
     user_id_to_add = int(parts[1])
     save_vip_user(user_id_to_add)
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
+
+
+def html_escape(text):
+    return (text
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
+
+@bot.message_handler(commands=['tiktok'])
+def tiktok_info(message):
+    args = message.text.split()
+    if len(args) < 2:
+        bot.reply_to(message, "Vui lòng nhập username TikTok. Ví dụ: /tiktok @ho.esports")
+        return
+
+    username = args[1].lstrip('@')
+    loading_msg = bot.reply_to(message, "⏳ Đang lấy thông tin...")
+
+    try:
+        res = requests.get(f"https://api.sumiproject.net/tiktok?info=@{username}")
+        res.raise_for_status()
+        result = res.json()
+
+        if result.get("code") != 0 or "data" not in result:
+            bot.edit_message_text("Không tìm thấy thông tin người dùng.",
+                chat_id=message.chat.id,
+                message_id=loading_msg.message_id)
+            return
+
+        user = result["data"]["user"]
+        stats = result["data"]["stats"]
+
+        caption = f"""
+<b>TikTok Info</b>
+<blockquote>
+<b>Username:</b> @{html_escape(user.get('uniqueId', ''))}<br/>
+<b>Tên hiển thị:</b> {html_escape(user.get('nickname', ''))}<br/>
+<b>Bio:</b> {html_escape(user.get('signature', ''))}<br/>
+<b>Followers:</b> {stats.get('followerCount', 0)}<br/>
+<b>Following:</b> {stats.get('followingCount', 0)}<br/>
+<b>Videos:</b> {stats.get('videoCount', 0)}<br/>
+<b>Tổng lượt thích:</b> {stats.get('heartCount', 0)}<br/>
+<b>Đã xác minh:</b> {"✅" if user.get('verified') else "❌"}
+</blockquote>
+"""
+
+        avatar_url = user.get("avatarLarger") or user.get("avatarMedium") or user.get("avatarThumb")
+
+        bot.send_photo(
+            chat_id=message.chat.id,
+            photo=avatar_url,
+            caption=caption,
+            parse_mode="HTML"
+        )
+
+        bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
+
+    except Exception as e:
+        bot.edit_message_text(
+            f"Đã xảy ra lỗi: {e}",
+            chat_id=message.chat.id,
+            message_id=loading_msg.message_id
+        )
+
+
 
 @bot.message_handler(commands=['ngl'])
 def ngl(message):
