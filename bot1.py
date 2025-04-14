@@ -95,9 +95,11 @@ from datetime import datetime, timedelta
 
 @bot.message_handler(commands=['bot', 'start'])
 def send_help(message):
-    username = message.from_user.username or "None"
+    if message.chat.type not in ["group", "supergroup"]:
+        bot.reply_to(message, "Lệnh này chỉ sử dụng được trong nhóm!")
+        return
 
-    # Lấy thời gian hiện tại theo múi giờ Việt Nam (UTC+7)
+    username = message.from_user.username or "None"
     now = datetime.utcnow() + timedelta(hours=7)
     current_time = now.strftime("%H:%M:%S")
     current_date = now.strftime("%d/%m/%Y")
