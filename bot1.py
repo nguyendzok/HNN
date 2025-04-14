@@ -88,30 +88,44 @@ def TimeStamp():
 #vLong zz#v
 
 
-start_time = time.time()
 
 
 
-@bot.message_handler(commands=['bot','start'])
+from datetime import datetime, timedelta
+
+@bot.message_handler(commands=['bot', 'start'])
 def send_help(message):
-    bot.reply_to(message, """<blockquote>
-┌───⭓ Trần Hào
-➤ /spam : Spam FREE
-➤ /tv : Tiếng việt cho telegram
-➤ /id : Lấy id bản thân
-➤ /checkban : Kiểm tra tk có khoá không
-➤ /searchff : Tìm tk ff bằng tên
-└───Tiện Ích Khác
-➤ /ff : check info
-➤ /uptime : Xem Thời gian bot hoạt động
-➤ /voice : Chuyển văn bản thành giọng nói 
-➤ /hoi : hỏi gamini 
-└───Contact
-➤ /admin : Liên Hệ admin
-➤ /themvip : Thêm Vip
-└───
+    username = message.from_user.username or "None"
+
+    # Lấy thời gian hiện tại theo múi giờ Việt Nam (UTC+7)
+    now = datetime.utcnow() + timedelta(hours=7)
+    current_time = now.strftime("%H:%M:%S")
+    current_date = now.strftime("%d/%m/%Y")
+
+    bot.reply_to(message, f"""<blockquote>
+📑 List Command  
+Thời Gian : {current_time}  
+Ngày : {current_date}  
+Người Gọi Lệnh : @{username}  
+
+| Lệnh Free Fire |  
+• /start or /bot - Hiển thị danh sách lệnh và hướng dẫn sử dụng.  
+• /ff - Check Info  
+• /checkban - Kiểm tra tk có khoá không  
+• /searchff - Tìm tk bằng tên  
+
+| Lệnh Spam Sms |  
+• /spam - spam sms max 1000  
+• /sms - spam max 5  
+
+| Lệnh Cơ Bản |  
+• /voice - Chuyển đổi văn bản thành giọng nói  
+• /uptime - Random video gái xinh  
+• /tv - Dịch tiếng Anh qua tiếng Việt  
+
+| Lệnh Admin |  
+• /thongbao - Thông báo đến nhóm  
 </blockquote>""", parse_mode="HTML")
-### /like
 
 VIP_FILE = "vip_users.txt"
 
