@@ -221,7 +221,7 @@ import threading
 def animate_loading(chat_id, message_id, stop_event):
     frames = ["⏳", "⌛"]
     max_cycles = 2
-    delay = 0.7
+    delay = 0.8
     total_frames = len(frames) * max_cycles
     i = 0
     while not stop_event.is_set() and i < total_frames:
@@ -524,7 +524,12 @@ def supersms(message):
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "/spam sdt số_lần (tối đa 1000)")
+        bot.reply_to(message, "» SAI ĐỊNH DẠNG!!!
+
+» Vui Lòng Nhập Đúng Định Dạng Bên Dưới
+
+» /spam + SĐT
+» VD: /spam 0987654321")
         return
 
     sdt, count = params
