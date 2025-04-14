@@ -524,12 +524,13 @@ def supersms(message):
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, "» SAI ĐỊNH DẠNG!!!
+        bot.reply_to(message, """» SAI ĐỊNH DẠNG!!!
 
 » Vui Lòng Nhập Đúng Định Dạng Bên Dưới
 
 » /spam + SĐT
-» VD: /spam 0987654321")
+» VD: /spam 0987654321""")
+
         return
 
     sdt, count = params
