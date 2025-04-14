@@ -508,7 +508,14 @@ def handle_id_command(message):
 
 
    
+import os
+import time
+import tempfile
+import subprocess
 import threading
+import requests
+
+blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -545,10 +552,10 @@ def supersms(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
-    # Gửi loading ban đầu
+    # Gửi tin nhắn loading ban đầu
     loading_msg = bot.send_message(message.chat.id, "⏳")
 
-    # Tạo hiệu ứng loading động với 2 biểu tượng
+    # Hiệu ứng đồng hồ cát
     loading_symbols = ["⏳", "⌛"]
     stop_loading = threading.Event()
 
@@ -592,22 +599,32 @@ def supersms(message):
                 temp_file.write(file.read().encode('utf-8'))
             temp_file_path = temp_file.name
 
-        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+        # Chạy script spam và đợi hoàn tất
+        subprocess.run(["python", temp_file_path, sdt, str(count)])
+
+        # Gọi API phụ thêm
         requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
         user_last_command_time[user_id] = time.time()
 
+        # Dừng hiệu ứng loading
         stop_loading.set()
-        bot.edit_message_text(
-            f'<blockquote>{diggory_chat3}</blockquote>',
+
+        # Gửi kết quả bằng tin nhắn mới
+        bot.send_message(
             message.chat.id,
-            loading_msg.message_id,
+            f'<blockquote>{diggory_chat3}</blockquote>',
             parse_mode='HTML'
         )
+
+        # Xoá tin nhắn loading
+        time.sleep(1)
+        bot.delete_message(message.chat.id, loading_msg.message_id)
 
     except Exception as e:
         stop_loading.set()
         bot.edit_message_text("Đã xảy ra lỗi trong quá trình xử lý.", message.chat.id, loading_msg.message_id)
         print(f'Lỗi: {e}')
+
 
 
 
