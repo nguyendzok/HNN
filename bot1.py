@@ -514,7 +514,6 @@ import tempfile
 import subprocess
 import threading
 import requests
-
 blacklist = ["112", "113", "114", "115", "116", "117", "118", "119", "0", "1", "2", "3", "4", "078901631"]
 
 @bot.message_handler(commands=['spam'])
@@ -599,24 +598,22 @@ def supersms(message):
                 temp_file.write(file.read().encode('utf-8'))
             temp_file_path = temp_file.name
 
-        # Chạy script spam và đợi hoàn tất
-        subprocess.run(["python", temp_file_path, sdt, str(count)])
+        # CHẠY script không chờ kết thúc
+        subprocess.Popen(["python", temp_file_path, sdt, str(count)])
 
-        # Gọi API phụ thêm
+        # Gọi API phụ
         requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}')
         user_last_command_time[user_id] = time.time()
 
-        # Dừng hiệu ứng loading
+        # Dừng loading và hiển thị kết quả
         stop_loading.set()
-
-        # Gửi kết quả bằng tin nhắn mới
         bot.send_message(
             message.chat.id,
             f'<blockquote>{diggory_chat3}</blockquote>',
             parse_mode='HTML'
         )
 
-        # Xoá tin nhắn loading
+        # Xoá tin nhắn đồng hồ cát
         time.sleep(1)
         bot.delete_message(message.chat.id, loading_msg.message_id)
 
@@ -624,6 +621,7 @@ def supersms(message):
         stop_loading.set()
         bot.edit_message_text("Đã xảy ra lỗi trong quá trình xử lý.", message.chat.id, loading_msg.message_id)
         print(f'Lỗi: {e}')
+
 
 
 
