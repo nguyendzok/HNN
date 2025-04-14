@@ -124,6 +124,9 @@ Người Gọi Lệnh : @{username}
 • /voice - Chuyển đổi văn bản thành giọng nói  
 • /uptime - Random video gái xinh  
 • /tv - Dịch tiếng Anh qua tiếng Việt  
+• /id - Lấy id bản thân
+• /code - Lấy code web
+• /ngl - spam ngl
 
 | Lệnh Admin |  
 • /thongbao - Thông báo đến nhóm  
@@ -159,6 +162,98 @@ def themvip(message: Message):
     user_id_to_add = int(parts[1])
     save_vip_user(user_id_to_add)
     bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
+
+@bot.message_handler(commands=['ngl'])
+def ngl(message):
+    args = message.text.split()
+    if len(args) != 3:
+        bot.reply_to(message, "<blockquote>Ví dụ: /ngl username 10 (tối đa 20)</blockquote>", parse_mode="HTML")
+        return
+
+    username = args[1]
+    try:
+        count = min(20, int(args[2]))
+    except ValueError:
+        bot.reply_to(message, "<blockquote>Vui lòng nhập một số hợp lệ!</blockquote>", parse_mode="HTML")
+        return
+
+    url = "https://ngl.link/api/submit"
+    headers = {
+        'Host': 'ngl.link',
+        'accept': '*/*',
+        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'x-requested-with': 'XMLHttpRequest',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
+        'origin': 'https://ngl.link',
+        'referer': f'https://ngl.link/{username}',
+    }
+
+    data = {
+        'username': username,
+        'question': 'Tin nhắn spam từ bot vLong https://t.me/spamsmsvlong',
+        'deviceId': '0',
+        'gameSlug': '',
+        'referrer': '',
+    }
+
+    success_count = 0
+    for _ in range(count):
+        try:
+            response = requests.post(url, headers=headers, data=data, timeout=10)
+            response.raise_for_status()
+            success_count += 1
+        except requests.exceptions.RequestException:
+            pass
+
+    sender = message.from_user.username or "Không rõ"
+
+    reply_text = (
+        f"<blockquote>"
+        f"✅ Thành công!\n"
+        f"👤 Người gửi: @{sender}\n"
+        f"📨 Đã gửi: {success_count}/{count} tin nhắn\n"
+        f"🎯 Người nhận: @{username}"
+        f"</blockquote>"
+    )
+
+    bot.reply_to(message, reply_text, parse_mode="HTML")
+
+
+
+@bot.message_handler(commands=['code'])
+def handle_code_command(message):
+    command_args = message.text.split(maxsplit=1)
+    if len(command_args) < 2:
+        bot.reply_to(message, "Ví dụ: /code Https://linkwebcuaban")
+        return
+
+    url = command_args[1]
+    domain = urlparse(url).netloc
+    file_name = f"{domain}.txt"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  
+
+        with open(file_name, 'w', encoding='utf-8') as file:
+            file.write(response.text)
+        with open(file_name, 'rb') as file:
+            bot.send_document(message.chat.id, file, caption=f"HTML của trang web {url}")
+        bot.reply_to(message, "Đã gửi mã nguồn HTML của trang web cho bạn.")
+
+    except requests.RequestException as e:
+        bot.reply_to(message, f"Đã xảy ra lỗi khi tải trang web: {e}")
+
+    finally:
+        if os.path.exists(file_name):
+            try:
+                os.remove(file_name)
+            except Exception as e:
+                bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
+
+
+
+
 
 
 import requests
