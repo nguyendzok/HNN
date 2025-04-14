@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: my-telegram-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: ./start.sh
+    autoDeploy: true
+    envVars:
+      - key: TOKEN
+        value: your_bot_token_here
+
