@@ -350,16 +350,17 @@ def get_tiktok_info(message):
 
         data = response.json()
 
-        # Escape an toàn HTML
+        # Escape toàn bộ nội dung để tránh lỗi HTML
         name = html.escape(data.get('name', 'Không rõ'))
         followers = f"{data.get('followers', 0):,}"
         following = f"{data.get('following', 0):,}"
         hearts = f"{data.get('hearts', 0):,}"
         videos = f"{data.get('videos', 0):,}"
-        bio = html.escape(data.get('signature', 'Không có')).replace("\n", "<br>")
+        bio = html.escape(data.get('signature', 'Không có')).replace("\n", "\n")
         profile_pic = data.get('profile_picture', '')
         link = f"https://www.tiktok.com/@{username}"
 
+        # Dùng blockquote an toàn, không dùng <br>
         caption = (
             f"<b>📱 TikTok Profile</b>\n\n"
             f"<b>• Tên:</b> {name}\n"
@@ -379,7 +380,6 @@ def get_tiktok_info(message):
 
     except Exception as e:
         bot.reply_to(message, f"Đã xảy ra lỗi: {html.escape(str(e))}", parse_mode="HTML")
-
 
 
 @bot.message_handler(commands=['ngl'])
