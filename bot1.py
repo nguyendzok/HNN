@@ -593,8 +593,7 @@ def random_video(message):
 
 
 
-
- GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
     if message.chat.id not in GROUP_CHAT_IDS:
