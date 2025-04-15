@@ -116,7 +116,8 @@ Người Gọi Lệnh : @{username}
 
 | LỆNH CƠ BẢN |  
 • /voice - Chuyển đổi văn bản thành giọng nói  
-• /uptime - Random video gái xinh  
+• /uptime - Random video gái xinh
+• /anhgai - Random ảnh gái xinh
 • /tv - Dịch tiếng Anh qua tiếng Việt  
 • /id - Lấy id bản thân
 • /code - Lấy code web
@@ -409,6 +410,21 @@ def copy_username_callback(call):
     bot.answer_callback_query(call.id, text="Đã sao chép!")
     bot.send_message(call.message.chat.id, f"📋 Username: @{username}")
 
+
+
+@bot.message_handler(commands=['anhgai'])
+def send_random_image(message):
+    try:
+        response = requests.get("https://freerose.onrender.com/random-image")
+        data = response.json()
+        image_url = data.get("image_url")
+
+        if image_url:
+            bot.send_photo(message.chat.id, image_url, caption="Ảnh ngẫu nhiên nè!")
+        else:
+            bot.reply_to(message, "Không tìm được ảnh nào cả.")
+    except Exception as e:
+        bot.reply_to(message, f"Đã xảy ra lỗi: {e}")
 
 
 @bot.message_handler(commands=['ngl'])
