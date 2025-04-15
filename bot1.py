@@ -92,11 +92,11 @@ def TimeStamp():
 
 
 from datetime import datetime, timedelta
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['bot', 'start'])
 def send_help(message):
-    if message.chat.type not in ["group", "supergroup"]:
-        bot.reply_to(message, "Lệnh này chỉ sử dụng được trong nhóm!")
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
         return
 
     username = message.from_user.username or "None"
@@ -177,6 +177,8 @@ registered_users = {}  # user_id: (username, balance)
 admins = set()
 @bot.message_handler(commands=["dangky"])
 def register(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
     try:
         args = message.text.split()
         if len(args) < 3:
@@ -198,6 +200,8 @@ def register(message):
 # Đăng nhập
 @bot.message_handler(commands=["dangnhap"])
 def login(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
     try:
         args = message.text.split()
         if len(args) < 3:
@@ -253,6 +257,8 @@ def update_balance(username, new_balance):
 # Game tài xỉu
 @bot.message_handler(commands=["game"])
 def play_game(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
     try:
         args = message.text.split()
         if len(args) != 3:
@@ -397,9 +403,12 @@ def tiktok_info(message):
 
 
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['ngl'])
 def ngl(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     args = message.text.split()
     if len(args) != 3:
         bot.reply_to(message, "<blockquote>Ví dụ: /ngl username 10 (tối đa 20)</blockquote>", parse_mode="HTML")
@@ -454,9 +463,12 @@ def ngl(message):
     bot.reply_to(message, reply_text, parse_mode="HTML")
 
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['code'])
 def handle_code_command(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     command_args = message.text.split(maxsplit=1)
     if len(command_args) < 2:
         bot.reply_to(message, "Ví dụ: /code Https://linkwebcuaban")
@@ -492,7 +504,7 @@ def handle_code_command(message):
 
 
 import requests
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 def fetch_data(user_id):
     url = f'https://scromnyimodz-444.vercel.app/api/player-info?id={user_id}'
     response = requests.get(url)
@@ -502,6 +514,9 @@ def fetch_data(user_id):
 
 @bot.message_handler(commands=['ff'])
 def handle_command(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     parts = message.text.split()
     if len(parts) != 2:
         bot.reply_to(message, "<blockquote>❌ Sai cú pháp!\nVí dụ: /ff 12345678</blockquote>", parse_mode="HTML")
@@ -554,11 +569,11 @@ Ngày tạo: {g('account_created', leader)}
 
 
 import requests
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['uptime'])
 def random_video(message):
-    if message.chat.type not in ["group", "supergroup"]:
-        bot.reply_to(message, "Lệnh này chỉ dùng được trong nhóm!")
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
         return
 
     try:
@@ -579,9 +594,12 @@ def random_video(message):
 
 
 
- 
+ GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     text = message.text[7:].strip()  
   
     
@@ -607,7 +625,7 @@ def text_to_voice(message):
 
 
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 def format_timestamp(timestamp):
     try:
         if not timestamp:
@@ -625,6 +643,8 @@ def escape_html(text):
 
 @bot.message_handler(commands=['searchff'])
 def search_ff(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
     try:
         args = message.text.split(maxsplit=1)
         if len(args) < 2:
@@ -742,9 +762,12 @@ def check_ban(message):
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     text = message.text[len('/hoi '):].strip()
     
 
@@ -764,18 +787,24 @@ def handle_hoi(message):
 
 
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['time'])
 def handle_time(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     uptime_seconds = int(time.time() - start_time)
     
     uptime_minutes, uptime_seconds = divmod(uptime_seconds, 60)
     bot.reply_to(message, f'Bot đã hoạt động được: {uptime_minutes} phút, {uptime_seconds} giây')
 
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['id', 'ID'])
 def handle_id_command(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     if message.reply_to_message:  
         user_id = message.reply_to_message.from_user.id
         first_name = message.reply_to_message.from_user.first_name
@@ -793,9 +822,13 @@ def handle_id_command(message):
 
    
 import threading
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     user_id = message.from_user.id
     current_time = time.time()
 
@@ -873,9 +906,12 @@ def supersms(message):
 
 
 
-
+GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['tv'])
 def tieng_viet(message):
+    if message.chat.id not in GROUP_CHAT_IDS:
+        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
+        return
     chat_id = message.chat.id
     keyboard = types.InlineKeyboardMarkup()
     url_button = types.InlineKeyboardButton("Tiếng Việt 🇻🇳", url='https://t.me/setlanguage/vi')
