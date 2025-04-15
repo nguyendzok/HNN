@@ -99,22 +99,22 @@ def send_help(message):
     current_date = now.strftime("%d/%m/%Y")
 
     bot.reply_to(message, f"""<blockquote>
-📑 List Command  
+📑 LIST COMMAND  
 Thời Gian : {current_time}  
 Ngày : {current_date}  
 Người Gọi Lệnh : @{username}  
 
-| Lệnh Free Fire |  
+| LỆNH FREE FIRE |  
 • /start or /bot - Hiển thị danh sách lệnh và hướng dẫn sử dụng.  
 • /ff - Check Info  
 • /checkban - Kiểm tra tk có khoá không  
 • /searchff - Tìm tk bằng tên  
 
-| Lệnh Spam Sms |  
+| LỆNH SPAM SMS |  
 • /spam - spam sms max 1000  
 • /sms - spam max 5  
 
-| Lệnh Cơ Bản |  
+| LỆNH CƠ BẢN |  
 • /voice - Chuyển đổi văn bản thành giọng nói  
 • /uptime - Random video gái xinh  
 • /tv - Dịch tiếng Anh qua tiếng Việt  
@@ -123,7 +123,7 @@ Người Gọi Lệnh : @{username}
 • /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
 
-| Lệnh Game |
+| LỆNH GAME |
 • /dangky - Đăng ký tài khoản và nhận 500k
 • /dangnhap - Đăng nhập tài khoản
 • /game - Chơi tài/xỉu/chẵn/lẻ
@@ -131,7 +131,7 @@ Người Gọi Lệnh : @{username}
 • /admin - Trở thành admin
 • /buff - Buff tiền cho người chơi (admin)
 
-| Lệnh Admin |  
+| LỆNH ADMIN |  
 • /thongbao - Thông báo đến nhóm  
 </blockquote>""", parse_mode="HTML")
 
@@ -883,6 +883,15 @@ def tieng_viet(message):
     keyboard.add(url_button)
     bot.send_message(chat_id, '<blockquote>Click vào nút "<b>Tiếng Việt</b>" để đổi ngôn ngữ sang Tiếng Việt 🇻🇳</blockquote>', reply_markup=keyboard, parse_mode='HTML')
 ######
+@bot.message_handler(func=lambda message: message.text and message.text.startswith("/"))
+def unknown_command(message):
+    known_commands = ['start', 'bot', 'spam', 'uptime', 'voice', 'ngl', 'ff', 'tv', 'checkban', 'tiktok']  # Thêm các lệnh hợp lệ bạn có
+
+    command = message.text.split()[0][1:].split('@')[0]  # Lấy tên lệnh, bỏ dấu "/" và @botname nếu có
+
+    if command not in known_commands:
+        bot.reply_to(message, "Lệnh này không tồn tại vui lòng sử dụng lệnh /bot để xem.")
+
 
 # Hàm gọi API T
 def react_to_message(chat_id, message_id, emoji="❤️"):
