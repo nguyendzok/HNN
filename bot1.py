@@ -53,7 +53,6 @@ allowed_users = []
 processes = []
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
-allowed_group_id = -1002639856138
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
@@ -92,13 +91,8 @@ def TimeStamp():
 
 
 from datetime import datetime, timedelta
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['bot', 'start'])
 def send_help(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
-
     username = message.from_user.username or "None"
     now = datetime.utcnow() + timedelta(hours=7)
     current_time = now.strftime("%H:%M:%S")
