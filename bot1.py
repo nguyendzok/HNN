@@ -397,12 +397,8 @@ def tiktok_info(message):
 
 
 
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['ngl'])
 def ngl(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     args = message.text.split()
     if len(args) != 3:
         bot.reply_to(message, "<blockquote>Ví dụ: /ngl username 10 (tối đa 20)</blockquote>", parse_mode="HTML")
@@ -457,12 +453,9 @@ def ngl(message):
     bot.reply_to(message, reply_text, parse_mode="HTML")
 
 
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
+
 @bot.message_handler(commands=['code'])
 def handle_code_command(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     command_args = message.text.split(maxsplit=1)
     if len(command_args) < 2:
         bot.reply_to(message, "Ví dụ: /code Https://linkwebcuaban")
@@ -498,7 +491,6 @@ def handle_code_command(message):
 
 
 import requests
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 def fetch_data(user_id):
     url = f'https://scromnyimodz-444.vercel.app/api/player-info?id={user_id}'
     response = requests.get(url)
@@ -508,9 +500,6 @@ def fetch_data(user_id):
 
 @bot.message_handler(commands=['ff'])
 def handle_command(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     parts = message.text.split()
     if len(parts) != 2:
         bot.reply_to(message, "<blockquote>❌ Sai cú pháp!\nVí dụ: /ff 12345678</blockquote>", parse_mode="HTML")
@@ -563,13 +552,9 @@ Ngày tạo: {g('account_created', leader)}
 
 
 import requests
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['uptime'])
 def random_video(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
-
+    
     try:
         res = requests.get("https://api.ffcommunity.site/randomvideo.php")
         data = res.json()
@@ -587,12 +572,8 @@ def random_video(message):
 
 
 
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     text = message.text[7:].strip()  
   
     
@@ -755,12 +736,10 @@ def check_ban(message):
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
 
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
+
+
 @bot.message_handler(commands=['hoi'])
 def handle_hoi(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     text = message.text[len('/hoi '):].strip()
     
 
@@ -792,12 +771,9 @@ def handle_time(message):
     bot.reply_to(message, f'Bot đã hoạt động được: {uptime_minutes} phút, {uptime_seconds} giây')
 
 
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
+
 @bot.message_handler(commands=['id', 'ID'])
 def handle_id_command(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     if message.reply_to_message:  
         user_id = message.reply_to_message.from_user.id
         first_name = message.reply_to_message.from_user.first_name
@@ -815,13 +791,9 @@ def handle_id_command(message):
 
    
 import threading
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-        return
     user_id = message.from_user.id
     current_time = time.time()
 
