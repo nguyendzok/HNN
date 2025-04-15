@@ -797,6 +797,10 @@ import subprocess
 import tempfile
 import requests
 
+user_last_command_time = {}
+#anh sách số bị cấm, bạn có thể cập nhật thêm
+# users = {}  # Nếu bạn dùng để lấy plan, username...
+
 @bot.message_handler(commands=['spam'])
 def supersms(message):
     user_id = message.from_user.id
@@ -811,12 +815,13 @@ def supersms(message):
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, """» SAI ĐỊNH DẠNG!!!
-
-» Vui Lòng Nhập Đúng Định Dạng Bên Dưới
-
-» /spam + SĐT
-» VD: /spam 0987654321""")
+        bot.reply_to(message, 
+            "<blockquote>» SAI ĐỊNH DẠNG!!!\n\n"
+            "» Vui Lòng Nhập Đúng Định Dạng Bên Dưới\n\n"
+            "» /spam + SĐT + SỐ_LẦN\n"
+            "» VD: /spam 0987654321 10</blockquote>",
+            parse_mode="HTML"
+        )
         return
 
     sdt, count = params
@@ -843,7 +848,6 @@ def supersms(message):
     bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
     time.sleep(1.3)
 
-    # Tạo kết quả phản hồi
     diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
 │ 🚀 Attack Sent Successfully
 │ 💳 Plan Vip: Min 1 | Max 1000
@@ -863,11 +867,11 @@ def supersms(message):
 
     user_last_command_time[user_id] = time.time()
 
-    # Chạy spam và API call trong thread nền
     def spam_thread():
         try:
             script_filename = "dec.py"
-            if not os.path.isfile(script_filename):
+            if not os.path.isfile(script_filename) or os.path.getsize(script_filename) == 0:
+                bot.send_message(message.chat.id, "File dec.py không tồn tại hoặc trống.")
                 return
 
             with tempfile.NamedTemporaryFile(delete=False, suffix=".py") as temp_file:
@@ -875,7 +879,12 @@ def supersms(message):
                     temp_file.write(file.read().encode('utf-8'))
                 temp_file_path = temp_file.name
 
-            subprocess.Popen(["python", temp_file_path, sdt, str(count)])
+            subprocess.Popen(
+                ["python", temp_file_path, sdt, str(count)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL
+            )
+
             requests.get(f'https://dichvukey.site/apivl/call1.php?sdt={sdt_request}', timeout=5)
         except Exception as e:
             print(f"Lỗi spam: {e}")
