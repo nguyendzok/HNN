@@ -329,6 +329,8 @@ def buff_money(message):
 
 
 def escape_md(text: str) -> str:
+    if not isinstance(text, str):
+        text = str(text)
     escape_chars = r'\_*[]()~`>#+-=|{}.!'
     return ''.join(f'\\{c}' if c in escape_chars else c for c in text)
 
@@ -341,13 +343,22 @@ def fltt_handler(message):
 
     username = args[1]
     url = f"http://phucesigncode.infinityfreeapp.com/fltt.php?username={username}&key=phucesign&i=1"
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+    }
 
     try:
-        res = requests.get(url)
+        res = requests.get(url, headers=headers, timeout=10)
         data = res.json()
 
+        if not data.get("success"):
+            msg = escape_md(data.get("message", "Không xác định"))
+            bot.reply_to(message, f"*Lỗi:* {msg}", parse_mode="MarkdownV2")
+            return
+
         if data.get("buff_data", {}).get("success") is False:
-            bot.reply_to(message, f"*Lỗi:* {escape_md(data['buff_data']['message'])}", parse_mode="MarkdownV2")
+            msg = escape_md(data["buff_data"].get("message", "Key đã hết hạn"))
+            bot.reply_to(message, f"*Lỗi:* {msg}", parse_mode="MarkdownV2")
             return
 
         user = data["info_data"]["data"]["user"]
@@ -355,19 +366,20 @@ def fltt_handler(message):
 
         result = (
             f"👤 *TikTok Info*\n"
-            f"> *Username:* `{escape_md(user['uniqueId'])}`\n"
-            f"> *Tên hiển thị:* {escape_md(user['nickname']) or 'Không có'}\n"
-            f"> ❤️ *Tim:* `{stats['heart']}`\n"
-            f"> 👥 *Followers:* `{stats['followerCount']}`\n"
-            f"> 🔄 *Following:* `{stats['followingCount']}`\n"
-            f"> 🎥 *Videos:* `{stats['videoCount']}`\n\n"
-            f"[📸 Ảnh đại diện]({user['avatarLarger']})"
+            f"> *Username:* `{escape_md(user.get('uniqueId', ''))}`\n"
+            f"> *Tên hiển thị:* {escape_md(user.get('nickname', 'Không có'))}\n"
+            f"> ❤️ *Tim:* `{escape_md(stats.get('heart', 0))}`\n"
+            f"> 👥 *Followers:* `{escape_md(stats.get('followerCount', 0))}`\n"
+            f"> 🔄 *Following:* `{escape_md(stats.get('followingCount', 0))}`\n"
+            f"> 🎥 *Videos:* `{escape_md(stats.get('videoCount', 0))}`\n\n"
+            f"[📸 Ảnh đại diện]({user.get('avatarLarger')})"
         )
 
         bot.reply_to(message, result, parse_mode="MarkdownV2", disable_web_page_preview=False)
 
     except Exception as e:
-        bot.reply_to(message, f"Đã xảy ra lỗi: `{escape_md(str(e))}`", parse_mode="MarkdownV2")
+        error_text = escape_md(str(e))
+        bot.reply_to(message, f"Đã xảy ra lỗi: `{error_text}`", parse_mode="MarkdownV2")
 
 
 
