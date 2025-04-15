@@ -123,6 +123,7 @@ Người Gọi Lệnh : @{username}
 • /code - Lấy code web
 • /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
+• /fltt - buff follow tiktok
 
 | LỆNH GAME |
 • /dangky - Đăng ký tài khoản và nhận 500k
@@ -324,6 +325,49 @@ def buff_money(message):
             return bot.reply_to(message, f"✅ Đã buff {big_money} cho {username}.")
 
     bot.reply_to(message, f"❌ Không tìm thấy người dùng {target_username}.")
+
+
+
+def escape_md(text: str) -> str:
+    escape_chars = r'\_*[]()~`>#+-=|{}.!'
+    return ''.join(f'\\{c}' if c in escape_chars else c for c in text)
+
+@bot.message_handler(commands=['fltt'])
+def fltt_handler(message):
+    args = message.text.split()
+    if len(args) < 2:
+        bot.reply_to(message, "Vui lòng nhập username TikTok.\nVí dụ: `/fltt ntv23122008`", parse_mode="MarkdownV2")
+        return
+
+    username = args[1]
+    url = f"http://phucesigncode.infinityfreeapp.com/fltt.php?username={username}&key=phucesign&i=1"
+
+    try:
+        res = requests.get(url)
+        data = res.json()
+
+        if data.get("buff_data", {}).get("success") is False:
+            bot.reply_to(message, f"*Lỗi:* {escape_md(data['buff_data']['message'])}", parse_mode="MarkdownV2")
+            return
+
+        user = data["info_data"]["data"]["user"]
+        stats = data["info_data"]["data"]["stats"]
+
+        result = (
+            f"👤 *TikTok Info*\n"
+            f"> *Username:* `{escape_md(user['uniqueId'])}`\n"
+            f"> *Tên hiển thị:* {escape_md(user['nickname']) or 'Không có'}\n"
+            f"> ❤️ *Tim:* `{stats['heart']}`\n"
+            f"> 👥 *Followers:* `{stats['followerCount']}`\n"
+            f"> 🔄 *Following:* `{stats['followingCount']}`\n"
+            f"> 🎥 *Videos:* `{stats['videoCount']}`\n\n"
+            f"[📸 Ảnh đại diện]({user['avatarLarger']})"
+        )
+
+        bot.reply_to(message, result, parse_mode="MarkdownV2", disable_web_page_preview=False)
+
+    except Exception as e:
+        bot.reply_to(message, f"Đã xảy ra lỗi: `{escape_md(str(e))}`", parse_mode="MarkdownV2")
 
 
 
