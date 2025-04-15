@@ -790,20 +790,12 @@ def handle_id_command(message):
 
 
    
-import os
-import re
-import time
 import threading
-import tempfile
+import time
+import os
 import subprocess
+import tempfile
 import requests
-
-user_last_command_time = {}
-blacklist = ["113", "911", "999"]
-
-def escape_md(text):
-    escape_chars = r'_*[]()~`>#+-=|{}.!'
-    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -819,13 +811,12 @@ def supersms(message):
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        wrong_format = """
-> » *SAI ĐỊNH DẠNG!!!*
-> 
-> » /spam + SĐT + số_lần
-> » VD: /spam 0987654321 100
-"""
-        bot.reply_to(message, wrong_format, parse_mode="MarkdownV2")
+        bot.reply_to(message, """» SAI ĐỊNH DẠNG!!!
+
+» Vui Lòng Nhập Đúng Định Dạng Bên Dưới
+
+» /spam + SĐT
+» VD: /spam 0987654321""")
         return
 
     sdt, count = params
@@ -846,35 +837,33 @@ def supersms(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
-    # Gửi loading ⏳⌛
-    loading_msg = bot.reply_to(message, "⏳⌛", parse_mode="MarkdownV2")
+    # Gửi hiệu ứng đồng hồ cát
+    loading_msg = bot.reply_to(message, "⏳")
+    time.sleep(1.3)
+    bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
+    time.sleep(1.3)
 
-    # Tạo message kết quả spam
-    username = message.from_user.username or "None"
-    escaped_username = escape_md(username)
+    # Tạo kết quả phản hồi
+    diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
+│ 🚀 Attack Sent Successfully
+│ 💳 Plan Vip: Min 1 | Max 1000
+│ 📞 Phone: {sdt}
+│ ⚔️ Attack By: @{message.from_user.username or "None"}
+│ 🔗 Api: 1x (MAX)
+│ ⏳ Delay: 20s
+│ 📎 Vòng Lặp: {count}
+└────────────⭓'''
 
-    result = f"""
-> ⬜ SPAM SMS😘
-> 🚀 *Attack Sent Successfully*
-> 💳 *Plan Vip:* Min 1 | Max 1000
-> ☎️ *Phone:* ||{sdt}||
-> ⚔️ *Attack By:* @{escaped_username}
-> 🔗 *Api:* 1x \\(MAX\\)
-> ⏳ *Delay:* 20s
-> 📎 *Vòng Lặp:* {count}
-"""
-
-    # Gửi kết quả
     bot.edit_message_text(
         chat_id=loading_msg.chat.id,
         message_id=loading_msg.message_id,
-        text=result,
-        parse_mode="MarkdownV2"
+        text=f"<blockquote>{diggory_chat3}</blockquote>",
+        parse_mode="HTML"
     )
 
     user_last_command_time[user_id] = time.time()
 
-    # Chạy spam trong luồng nền
+    # Chạy spam và API call trong thread nền
     def spam_thread():
         try:
             script_filename = "dec.py"
@@ -892,6 +881,7 @@ def supersms(message):
             print(f"Lỗi spam: {e}")
 
     threading.Thread(target=spam_thread).start()
+
 
 
 
