@@ -331,69 +331,53 @@ def buff_money(message):
 
 
 
-def html_escape(text):
-    return (text
-        .replace("&", "&amp;")
-        .replace("<", "&lt;")
-        .replace(">", "&gt;")
-        .replace('"', "&quot;")
-    )
 @bot.message_handler(commands=['tiktok'])
-def tiktok_info(message):
-    args = message.text.split()
-    if len(args) < 2:
-        bot.reply_to(message, "Vui lòng nhập username TikTok. Ví dụ: /tiktok @ho.esports")
-        return
-
-    username = args[1].lstrip('@')
-    loading_msg = bot.reply_to(message, "⏳ Đang lấy thông tin...")
-
+def get_tiktok_info(message):
     try:
-        # Fix lỗi 403 bằng User-Agent
-        headers = {"User-Agent": "Mozilla/5.0"}
-        res = requests.get(f"https://api.sumiproject.net/tiktok?info=@{username}", headers=headers)
-        res.raise_for_status()
-        result = res.json()
-
-        if result.get("code") != 0 or "data" not in result:
-            bot.edit_message_text("Không tìm thấy thông tin người dùng.",
-                                  chat_id=message.chat.id,
-                                  message_id=loading_msg.message_id)
+        args = message.text.split()
+        if len(args) != 2:
+            bot.reply_to(message, "❗ Vui lòng dùng đúng cú pháp:\n<b>/tiktok &lt;username&gt;</b>", parse_mode="HTML")
             return
 
-        user = result["data"]["user"]
-        stats = result["data"]["stats"]
+        username = args[1]
+        url = f"http://145.223.80.56:5009/info_tiktok?username={username}"
+        response = requests.get(url)
 
-        caption = f"""
-<b>TikTok Info</b>
-<blockquote>
-<b>Username:</b> @{html_escape(user.get('uniqueId', ''))}<br/>
-<b>Tên hiển thị:</b> {html_escape(user.get('nickname', ''))}<br/>
-<b>Bio:</b> {html_escape(user.get('signature', ''))}<br/>
-<b>Followers:</b> {stats.get('followerCount', 0)}<br/>
-<b>Following:</b> {stats.get('followingCount', 0)}<br/>
-<b>Videos:</b> {stats.get('videoCount', 0)}<br/>
-<b>Tổng lượt thích:</b> {stats.get('heartCount', 0)}<br/>
-<b>Đã xác minh:</b> {"✅" if user.get('verified') else "❌"}
-</blockquote>
-"""
+        if response.status_code != 200:
+            bot.reply_to(message, "Không thể lấy thông tin từ API.", parse_mode="HTML")
+            return
 
-        avatar_url = user.get("avatarLarger") or user.get("avatarMedium") or user.get("avatarThumb")
+        data = response.json()
 
-        bot.send_photo(
-            chat_id=message.chat.id,
-            photo=avatar_url,
-            caption=caption,
-            parse_mode="HTML"
+        # Escape an toàn HTML
+        name = html.escape(data.get('name', 'Không rõ'))
+        followers = f"{data.get('followers', 0):,}"
+        following = f"{data.get('following', 0):,}"
+        hearts = f"{data.get('hearts', 0):,}"
+        videos = f"{data.get('videos', 0):,}"
+        bio = html.escape(data.get('signature', 'Không có')).replace("\n", "<br>")
+        profile_pic = data.get('profile_picture', '')
+        link = f"https://www.tiktok.com/@{username}"
+
+        caption = (
+            f"<b>📱 TikTok Profile</b>\n\n"
+            f"<b>• Tên:</b> {name}\n"
+            f"<b>• Username:</b> @{username}\n"
+            f"<b>• Followers:</b> {followers}\n"
+            f"<b>• Following:</b> {following}\n"
+            f"<b>• Tổng tim:</b> {hearts}\n"
+            f"<b>• Số video:</b> {videos}\n\n"
+            f"<b>• Bio:</b>\n<blockquote>{bio}</blockquote>\n"
+            f"<a href='{link}'>🔗 Xem trên TikTok</a>"
         )
 
-        bot.delete_message(chat_id=message.chat.id, message_id=loading_msg.message_id)
+        if profile_pic:
+            bot.send_photo(message.chat.id, photo=profile_pic, caption=caption, parse_mode='HTML')
+        else:
+            bot.send_message(message.chat.id, caption, parse_mode='HTML')
 
     except Exception as e:
-        bot.edit_message_text(f"Đã xảy ra lỗi:\n<code>{html_escape(str(e))}</code>",
-                              chat_id=message.chat.id,
-                              message_id=loading_msg.message_id,
-                              parse_mode="HTML")
+        bot.reply_to(message, f"Đã xảy ra lỗi: {html.escape(str(e))}", parse_mode="HTML")
 
 
 
