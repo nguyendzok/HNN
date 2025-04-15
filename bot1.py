@@ -332,6 +332,9 @@ def buff_money(message):
 
 import requests
 import html
+def yes_no_icon(value, yes="Có ✅", no="Không ❌"):
+    return yes if value else no
+
 @bot.message_handler(commands=['tiktok'])
 def get_tiktok_info(message):
     try:
@@ -350,36 +353,62 @@ def get_tiktok_info(message):
 
         data = response.json()
 
-        # Escape toàn bộ nội dung để tránh lỗi HTML
+        # Escape toàn bộ để an toàn
         name = html.escape(data.get('name', 'Không rõ'))
+        user_id = data.get('user_id', 'Không rõ')
         followers = f"{data.get('followers', 0):,}"
         following = f"{data.get('following', 0):,}"
         hearts = f"{data.get('hearts', 0):,}"
         videos = f"{data.get('videos', 0):,}"
-        bio = html.escape(data.get('signature', 'Không có')).replace("\n", "\n")
+        likes = f"{data.get('digg_count', 0):,}"
+        bio = html.escape(data.get('signature', 'Không có'))
+        is_private = yes_no_icon(data.get('is_private', False), "Có 🔒", "Không 🔓")
+        open_favorite = yes_no_icon(data.get('open_favorite', False), "Có ⭐", "Không ❌")
         profile_pic = data.get('profile_picture', '')
         link = f"https://www.tiktok.com/@{username}"
 
-        # Dùng blockquote an toàn, không dùng <br>
-        caption = (
-            f"<b>📱 TikTok Profile</b>\n\n"
-            f"<b>• Tên:</b> {name}\n"
-            f"<b>• Username:</b> @{username}\n"
-            f"<b>• Followers:</b> {followers}\n"
-            f"<b>• Following:</b> {following}\n"
-            f"<b>• Tổng tim:</b> {hearts}\n"
-            f"<b>• Số video:</b> {videos}\n\n"
-            f"<b>• Bio:</b>\n<blockquote>{bio}</blockquote>\n"
-            f"<a href='{link}'>🔗 Xem trên TikTok</a>"
+        # Tạo nội dung blockquote
+        blockquote = (
+            f"📊 Thông Tin Tài Khoản TikTok\n\n"
+            f"✨ Thống Kê:\n"
+            f"👍 Lượt thích: {likes}\n"
+            f"👥 Người theo dõi: {followers}\n"
+            f"👤 Đang theo dõi: {following}\n"
+            f"❤️ Lượt tim: {hearts}\n"
+            f"🎬 Số video: {videos}\n\n"
+            f"🔒 Chi Tiết Tài Khoản:\n"
+            f"📛 Tên: {name}\n"
+            f"👤 Tên người dùng: @{username}\n"
+            f"🆔 ID người dùng: {user_id}\n"
+            f"🔒 Tài khoản riêng tư: {is_private}\n"
+            f"⭐ Mở mục yêu thích: {open_favorite}\n\n"
+            f"📝 Tiểu sử:\n{bio}"
+        )
+
+        caption = f"<blockquote>{blockquote}</blockquote>"
+
+        # Nút inline
+        markup = telebot.types.InlineKeyboardMarkup()
+        markup.add(
+            telebot.types.InlineKeyboardButton("🔗 Mở TikTok", url=link),
+            telebot.types.InlineKeyboardButton("📋 Copy Username", callback_data=f"copy_{username}")
         )
 
         if profile_pic:
-            bot.send_photo(message.chat.id, photo=profile_pic, caption=caption, parse_mode='HTML')
+            bot.send_photo(message.chat.id, photo=profile_pic, caption=caption, parse_mode='HTML', reply_markup=markup)
         else:
-            bot.send_message(message.chat.id, caption, parse_mode='HTML')
+            bot.send_message(message.chat.id, caption, parse_mode='HTML', reply_markup=markup)
 
     except Exception as e:
         bot.reply_to(message, f"Đã xảy ra lỗi: {html.escape(str(e))}", parse_mode="HTML")
+
+# Xử lý callback khi bấm "Copy Username"
+@bot.callback_query_handler(func=lambda call: call.data.startswith("copy_"))
+def copy_username_callback(call):
+    username = call.data.replace("copy_", "")
+    bot.answer_callback_query(call.id, text="Đã sao chép!")
+    bot.send_message(call.message.chat.id, f"📋 Username: @{username}")
+
 
 
 @bot.message_handler(commands=['ngl'])
