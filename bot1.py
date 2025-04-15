@@ -790,12 +790,20 @@ def handle_id_command(message):
 
 
    
-import threading
-import time
 import os
-import subprocess
+import re
+import time
+import threading
 import tempfile
+import subprocess
 import requests
+
+user_last_command_time = {}
+blacklist = ["113", "911", "999"]
+
+def escape_md(text):
+    escape_chars = r'_*[]()~`>#+-=|{}.!'
+    return re.sub(f'([{re.escape(escape_chars)}])', r'\\\1', text)
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -806,85 +814,67 @@ def supersms(message):
         elapsed_time = current_time - user_last_command_time[user_id]
         if elapsed_time < 100:
             remaining_time = 100 - elapsed_time
-            bot.reply_to(
-                message,
-                f"<blockquote>⏳ Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.</blockquote>",
-                parse_mode="HTML"
-            )
+            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
             return
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        msg = """<blockquote>
-» SAI ĐỊNH DẠNG!!!
-
-» Vui Lòng Nhập Đúng Định Dạng Bên Dưới
-
-» /spam + SĐT  
-» VD: /spam 0987654321
-</blockquote>"""
-        bot.reply_to(message, msg, parse_mode="HTML")
+        wrong_format = """
+> » *SAI ĐỊNH DẠNG!!!*
+> 
+> » /spam + SĐT + số_lần
+> » VD: /spam 0987654321 100
+"""
+        bot.reply_to(message, wrong_format, parse_mode="MarkdownV2")
         return
 
     sdt, count = params
 
     if not count.isdigit():
-        bot.reply_to(
-            message,
-            "<blockquote>Số lần spam không hợp lệ. Vui lòng chỉ nhập số.</blockquote>",
-            parse_mode="HTML"
-        )
+        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
         return
 
     count = int(count)
 
     if count > 1000:
-        bot.reply_to(
-            message,
-            "<blockquote>/spam sdt số_lần tối đa là 1000</blockquote>",
-            parse_mode="HTML"
-        )
+        bot.reply_to(message, "/spam sdt số_lần tối đa là 1000")
         return
 
     if sdt in blacklist:
-        bot.reply_to(
-            message,
-            f"<blockquote>Số điện thoại {sdt} đã bị cấm spam.</blockquote>",
-            parse_mode="HTML"
-        )
+        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
-    # Gửi hiệu ứng đồng hồ cát
-    loading_msg = bot.reply_to(message, "⏳")
-    time.sleep(1.5)
-    bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
-    time.sleep(1.5)
+    # Gửi loading ⏳⌛
+    loading_msg = bot.reply_to(message, "⏳⌛", parse_mode="MarkdownV2")
 
-    # Tạo nội dung kết quả
-    diggory_chat3 = f"""<blockquote>
-┌──⭓ Bot Hào Vip 
-│ 🚀 Attack Sent Successfully
-│ 💳 Plan Vip: Min 1 | Max 1000
-│ 📞 Phone: {sdt}
-│ ⚔️ Attack By: @{message.from_user.username or "None"}
-│ 🔗 Api: 1x (MAX)
-│ ⏳ Delay: 20s
-│ 📎 Vòng Lặp: {count}
-└─────────⭓
-</blockquote>"""
+    # Tạo message kết quả spam
+    username = message.from_user.username or "None"
+    escaped_username = escape_md(username)
 
+    result = f"""
+> ⬜ SPAM SMS😘
+> 🚀 *Attack Sent Successfully*
+> 💳 *Plan Vip:* Min 1 | Max 1000
+> ☎️ *Phone:* ||{sdt}||
+> ⚔️ *Attack By:* @{escaped_username}
+> 🔗 *Api:* 1x \\(MAX\\)
+> ⏳ *Delay:* 20s
+> 📎 *Vòng Lặp:* {count}
+"""
+
+    # Gửi kết quả
     bot.edit_message_text(
         chat_id=loading_msg.chat.id,
         message_id=loading_msg.message_id,
-        text=diggory_chat3,
-        parse_mode="HTML"
+        text=result,
+        parse_mode="MarkdownV2"
     )
 
     user_last_command_time[user_id] = time.time()
 
-    # Chạy spam và API call trong thread nền
+    # Chạy spam trong luồng nền
     def spam_thread():
         try:
             script_filename = "dec.py"
