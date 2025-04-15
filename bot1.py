@@ -791,6 +791,11 @@ def handle_id_command(message):
 
    
 import threading
+import time
+import os
+import subprocess
+import tempfile
+import requests
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -801,40 +806,65 @@ def supersms(message):
         elapsed_time = current_time - user_last_command_time[user_id]
         if elapsed_time < 100:
             remaining_time = 100 - elapsed_time
-            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
+            bot.reply_to(
+                message,
+                f"<blockquote>⏳ Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.</blockquote>",
+                parse_mode="HTML"
+            )
             return
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, """» SAI ĐỊNH DẠNG!!!
+        msg = """<blockquote>
+» SAI ĐỊNH DẠNG!!!
 
 » Vui Lòng Nhập Đúng Định Dạng Bên Dưới
 
-» /spam + SĐT
-» VD: /spam 0987654321""")
-
+» /spam + SĐT  
+» VD: /spam 0987654321
+</blockquote>"""
+        bot.reply_to(message, msg, parse_mode="HTML")
         return
 
     sdt, count = params
 
     if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        bot.reply_to(
+            message,
+            "<blockquote>Số lần spam không hợp lệ. Vui lòng chỉ nhập số.</blockquote>",
+            parse_mode="HTML"
+        )
         return
 
     count = int(count)
 
     if count > 1000:
-        bot.reply_to(message, "/spam sdt số_lần tối đa là 1000")
+        bot.reply_to(
+            message,
+            "<blockquote>/spam sdt số_lần tối đa là 1000</blockquote>",
+            parse_mode="HTML"
+        )
         return
 
     if sdt in blacklist:
-        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        bot.reply_to(
+            message,
+            f"<blockquote>Số điện thoại {sdt} đã bị cấm spam.</blockquote>",
+            parse_mode="HTML"
+        )
         return
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
-    # Gửi kết quả ngay lập tức
-    diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
+    # Gửi hiệu ứng đồng hồ cát
+    loading_msg = bot.reply_to(message, "⏳")
+    time.sleep(1.5)
+    bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
+    time.sleep(1.5)
+
+    # Tạo nội dung kết quả
+    diggory_chat3 = f"""<blockquote>
+┌──⭓ Bot Hào Vip 
 │ 🚀 Attack Sent Successfully
 │ 💳 Plan Vip: Min 1 | Max 1000
 │ 📞 Phone: {sdt}
@@ -842,9 +872,16 @@ def supersms(message):
 │ 🔗 Api: 1x (MAX)
 │ ⏳ Delay: 20s
 │ 📎 Vòng Lặp: {count}
-└────────────⭓'''
+└─────────⭓
+</blockquote>"""
 
-    bot.reply_to(message, f"<blockquote>{diggory_chat3}</blockquote>", parse_mode="HTML")
+    bot.edit_message_text(
+        chat_id=loading_msg.chat.id,
+        message_id=loading_msg.message_id,
+        text=diggory_chat3,
+        parse_mode="HTML"
+    )
+
     user_last_command_time[user_id] = time.time()
 
     # Chạy spam và API call trong thread nền
@@ -865,7 +902,6 @@ def supersms(message):
             print(f"Lỗi spam: {e}")
 
     threading.Thread(target=spam_thread).start()
-
 
 
 
