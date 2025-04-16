@@ -344,11 +344,17 @@ def fltt_handler(message):
     username = args[1]
     url = f"http://phucesigncode.infinityfreeapp.com/fltt.php?username={username}&key=phucesign&i=1"
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
+        "User-Agent": "Mozilla/5.0"
     }
 
     try:
         res = requests.get(url, headers=headers, timeout=10)
+
+        # Kiểm tra phản hồi có phải JSON không
+        if "application/json" not in res.headers.get("Content-Type", ""):
+            bot.reply_to(message, "⚠️ *Server không trả về JSON.* Có thể server đang bị lỗi hoặc quá tải.", parse_mode="MarkdownV2")
+            return
+
         data = res.json()
 
         if not data.get("success"):
@@ -377,9 +383,12 @@ def fltt_handler(message):
 
         bot.reply_to(message, result, parse_mode="MarkdownV2", disable_web_page_preview=False)
 
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
         error_text = escape_md(str(e))
-        bot.reply_to(message, f"Đã xảy ra lỗi: `{error_text}`", parse_mode="MarkdownV2")
+        bot.reply_to(message, f"Đã xảy ra lỗi khi kết nối: `{error_text}`", parse_mode="MarkdownV2")
+
+    except ValueError as e:
+        bot.reply_to(message, "⚠️ *Không thể phân tích JSON từ phản hồi.* Có thể server trả về HTML hoặc lỗi định dạng.", parse_mode="MarkdownV2")
 
 
 
