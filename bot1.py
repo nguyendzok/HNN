@@ -675,7 +675,7 @@ user_warnings = {}
 def text_to_voice(message):
     text = message.text[7:].strip()
     if not text:
-        bot.reply_to(message, 'Nhập nội dung đi VD: /voice vờ long zét zét')
+        bot.send_message(message.chat.id, 'Nhập nội dung đi VD: /voice vờ long zét zét')
         return
 
     try:
@@ -685,7 +685,7 @@ def text_to_voice(message):
             temp_file_path = temp_file.name
 
         with open(temp_file_path, 'rb') as f:
-            bot.send_voice(message.chat.id, f, reply_to_message_id=message.message_id)
+            bot.send_voice(message.chat.id, f)
 
         if any(word in text.lower() for word in voicebuoidau):
             user_id = message.from_user.id
@@ -693,24 +693,23 @@ def text_to_voice(message):
             user_warnings[user_id] = warning_count
 
             if warning_count >= 2:
-                until_date = int(time.time()) + 86400  # Mute 1 ngày
+                until_date = int(time.time()) + 86400  # 1 ngày
                 bot.restrict_chat_member(
                     chat_id=message.chat.id,
                     user_id=user_id,
                     permissions=types.ChatPermissions(can_send_messages=False),
                     until_date=until_date
                 )
-                bot.reply_to(message, f"Bạn đã bị mute 1 ngày vì tiếp tục sử dụng từ cấm.")
+                bot.send_message(message.chat.id, f"Bạn đã bị mute 1 ngày vì tiếp tục sử dụng từ cấm.")
             else:
-                bot.reply_to(message, f"⚠️ Cảnh báo: Không được dùng từ ngữ không phù hợp. Lần sau sẽ bị mute.")
+                bot.send_message(message.chat.id, f"⚠️ Cảnh báo: Không được dùng từ ngữ không phù hợp. Lần sau sẽ bị mute.")
 
     except Exception as e:
-        bot.reply_to(message, f'Đã xảy ra lỗi: {e}')
+        bot.send_message(message.chat.id, f'Đã xảy ra lỗi: {e}')
     
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
 
 GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 def format_timestamp(timestamp):
