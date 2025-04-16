@@ -667,11 +667,7 @@ def random_video(message):
  
 
 
-from gtts import gTTS
-import tempfile
-import os
-import time
-from telebot import types
+
 voicebuoidau = ["lồn", "đong", "hào", "bú", "bot", "buồi", "cặc"]
 user_warnings = {}
 
