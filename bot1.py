@@ -680,7 +680,11 @@ def welcome_new_member(message):
         markup.add(btn)
 
         caption = f"""
-Chào mừng con ghệ *{name}* ({username}) đến với nhóm!
+🌟 Xin chào con vợ {username} 🌟
+Chào mừng bạn đến với Nhóm - Nơi để share Api FF & Hack FF 
+🚫 Luật Box 🚫
+📌 Cấm buôn bán , quãng cáo dưới mọi hình thức 
+📌 Chat séc = Ban 🗣
 
 Vui lòng đọc nội quy trước khi thảo luận nhé.
 """
