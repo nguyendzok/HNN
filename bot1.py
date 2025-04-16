@@ -664,55 +664,47 @@ def random_video(message):
     except Exception as e:
         bot.send_message(message.chat.id, "Đã xảy ra lỗi khi lấy video.")
 
- 
 
+import time
+import threading
+@bot.message_handler(content_types=['new_chat_members'])
+def welcome_new_member(message):
+    for member in message.new_chat_members:
+        name = member.first_name
+        username = f"@{member.username}" if member.username else "Không có username"
+        chat_id = message.chat.id
 
+        # Nút URL
+        markup = types.InlineKeyboardMarkup()
+        btn = types.InlineKeyboardButton("Liên Hệ Admin", url="https://t.me/@HaoEsports05")
+        markup.add(btn)
 
-voicebuoidau = ["lồn", "đong", "hào", "bú", "vlong", "buồi", "cặc"]
+        caption = f"""
+Chào mừng con ghệ *{name}* ({username}) đến với nhóm!
 
-@bot.message_handler(commands=['voice'])
-def text_to_voice(message):
-    text = message.text[7:].strip()  
-    if not text:
-        bot.reply_to(message, 'Nhập nội dung đi VD: /voice abc')
-        return
+Vui lòng đọc nội quy trước khi thảo luận nhé.
+"""
 
+        # Gửi video và lưu message
+        sent_msg = bot.send_video(
+            chat_id,
+            video="https://i.imgur.com/8jtefrx.mp4",
+            caption=caption,
+            reply_markup=markup,
+            parse_mode="Markdown"
+        )
+
+        # Tạo thread để xóa tin nhắn sau 60 giây
+        threading.Thread(target=delete_after_delay, args=(chat_id, sent_msg.message_id, 60)).start()
+
+def delete_after_delay(chat_id, message_id, delay):
+    time.sleep(delay)
     try:
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
-            tts = gTTS(text, lang='vi')
-            tts.save(temp_file.name)
-            temp_file_path = temp_file.name  
-       
-        with open(temp_file_path, 'rb') as f:
-            bot.send_voice(message.chat.id, f, reply_to_message_id=message.message_id)
-        if any(word in text.lower() for word in voicebuoidau):
-            user_id = message.from_user.id
-            bot.reply_to(message, f"ID {user_id} Coi Chừng !")
-
+        bot.delete_message(chat_id, message_id)
     except Exception as e:
-        bot.reply_to(message, f'Đã xảy ra lỗi')
-    
-    finally:
-        if os.path.exists(temp_file_path):
-            os.remove(temp_file_path)
+        print(f"Lỗi xoá message: {e}")
 
 
-
-GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
-def format_timestamp(timestamp):
-    try:
-        if not timestamp:
-            return "Không rõ"
-        dt = datetime.fromtimestamp(timestamp)
-        return dt.strftime("%H:%M:%S %d-%m-%Y")
-    except:
-        return "Không xác định"
-
-def escape_html(text):
-    """
-    Escape các ký tự đặc biệt để tránh lỗi khi dùng HTML parse mode.
-    """
-    return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 @bot.message_handler(commands=['searchff'])
 def search_ff(message):
