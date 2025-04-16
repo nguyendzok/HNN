@@ -668,48 +668,35 @@ def random_video(message):
 
 
 
-voicebuoidau = ["lồn", "đong", "hào", "bú", "bot", "buồi", "cặc"]
-user_warnings = {}
+voicebuoidau = ["lồn", "đong", "hào", "bú", "vlong", "buồi", "cặc"]
 
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
-    text = message.text[7:].strip()
+    text = message.text[7:].strip()  
     if not text:
-        bot.send_message(message.chat.id, 'Nhập nội dung đi VD: /voice vờ long zét zét')
+        bot.reply_to(message, 'Nhập nội dung đi VD: /voice abc')
         return
 
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
             tts = gTTS(text, lang='vi')
             tts.save(temp_file.name)
-            temp_file_path = temp_file.name
-
+            temp_file_path = temp_file.name  
+       
         with open(temp_file_path, 'rb') as f:
-            bot.send_voice(message.chat.id, f)
-
+            bot.send_voice(message.chat.id, f, reply_to_message_id=message.message_id)
         if any(word in text.lower() for word in voicebuoidau):
             user_id = message.from_user.id
-            warning_count = user_warnings.get(user_id, 0) + 1
-            user_warnings[user_id] = warning_count
-
-            if warning_count >= 2:
-                until_date = int(time.time()) + 86400  # 1 ngày
-                bot.restrict_chat_member(
-                    chat_id=message.chat.id,
-                    user_id=user_id,
-                    permissions=types.ChatPermissions(can_send_messages=False),
-                    until_date=until_date
-                )
-                bot.send_message(message.chat.id, f"Bạn đã bị mute 1 ngày vì tiếp tục sử dụng từ cấm.")
-            else:
-                bot.send_message(message.chat.id, f"⚠️ Cảnh báo: Không được dùng từ ngữ không phù hợp. Lần sau sẽ bị mute.")
+            bot.reply_to(message, f"ID {user_id} Coi Chừng !")
 
     except Exception as e:
-        bot.send_message(message.chat.id, f'Đã xảy ra lỗi: {e}')
+        bot.reply_to(message, f'Đã xảy ra lỗi')
     
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
+
+
 
 GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
 def format_timestamp(timestamp):
