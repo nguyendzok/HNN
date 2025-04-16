@@ -51,6 +51,7 @@ last_sms_time = {}
 global_lock = Lock()
 allowed_users = []
 processes = []
+user_warnings = {}
 admin_mode = False
 ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
 connection = sqlite3.connect('user_data.db')
@@ -666,32 +667,53 @@ def random_video(message):
  
 
 
+from gtts import gTTS
+import tempfile
+import os
+import time
+from telebot import types
+voicebuoidau = ["lồn", "đong", "hào", "bú", "bot", "buồi", "cặc"]
+user_warnings = {}
 
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
-    text = message.text[7:].strip()  
-  
-    
+    text = message.text[7:].strip()
     if not text:
-        bot.reply_to(message, 'Nhập nội dung đi VD : /voice Tôi là bot')
+        bot.reply_to(message, 'Nhập nội dung đi VD: /voice vờ long zét zét')
         return
 
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
             tts = gTTS(text, lang='vi')
             tts.save(temp_file.name)
-            temp_file_path = temp_file.name  
-       
+            temp_file_path = temp_file.name
+
         with open(temp_file_path, 'rb') as f:
             bot.send_voice(message.chat.id, f, reply_to_message_id=message.message_id)
-    
+
+        if any(word in text.lower() for word in voicebuoidau):
+            user_id = message.from_user.id
+            warning_count = user_warnings.get(user_id, 0) + 1
+            user_warnings[user_id] = warning_count
+
+            if warning_count >= 2:
+                until_date = int(time.time()) + 86400  # Mute 1 ngày
+                bot.restrict_chat_member(
+                    chat_id=message.chat.id,
+                    user_id=user_id,
+                    permissions=types.ChatPermissions(can_send_messages=False),
+                    until_date=until_date
+                )
+                bot.reply_to(message, f"Bạn đã bị mute 1 ngày vì tiếp tục sử dụng từ cấm.")
+            else:
+                bot.reply_to(message, f"⚠️ Cảnh báo: Không được dùng từ ngữ không phù hợp. Lần sau sẽ bị mute.")
+
     except Exception as e:
         bot.reply_to(message, f'Đã xảy ra lỗi: {e}')
     
     finally:
         if os.path.exists(temp_file_path):
             os.remove(temp_file_path)
-
 
 
 GROUP_CHAT_IDS = [-1002639856138, 1002282514761]
