@@ -1,3 +1,4 @@
+
 import telebot
 import subprocess
 import sys
@@ -124,7 +125,7 @@ Người Gọi Lệnh : @{username}
 • /code - Lấy code web
 • /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
-• /fltt - buff follow tiktok
+• /like - buff like ff
 
 | LỆNH GAME |
 • /dangky - Đăng ký tài khoản và nhận 500k
@@ -390,6 +391,51 @@ def fltt_handler(message):
 
     except ValueError as e:
         bot.reply_to(message, "⚠️ *Không thể phân tích JSON từ phản hồi.* Có thể server trả về HTML hoặc lỗi định dạng.", parse_mode="MarkdownV2")
+
+@bot.message_handler(commands=['like'])
+def like_handler(message: Message):
+    command_parts = message.text.split()  
+    if len(command_parts) != 2:  
+        bot.reply_to(message, "<blockquote>like 1733997441</blockquote>", parse_mode="HTML")  
+        return  
+
+    idgame = command_parts[1]  
+    urllike = f"https://dichvukey.site/likeff2.php?uid={idgame}"  
+
+    def safe_get(data, key):
+        value = data.get(key)
+        return value if value not in [None, ""] else "Không xác định"
+
+    try:
+        response = requests.get(urllike, timeout=15)
+        response.raise_for_status()
+        data = response.json()
+    except requests.exceptions.RequestException:
+        bot.reply_to(message, "<blockquote>Server đang quá tải, vui lòng thử lại sau.</blockquote>", parse_mode="HTML")
+        return
+    except ValueError:
+        bot.reply_to(message, "<blockquote>Phản hồi từ server không hợp lệ.</blockquote>", parse_mode="HTML")
+        return
+
+    status_code = data.get("status")
+
+    reply_text = (
+        "<blockquote>"
+        "BUFF LIKE THÀNH CÔNG✅\n"
+        f"╭👤 Name: {safe_get(data, 'username')}\n"
+        f"├🆔 UID : {safe_get(data, 'uid')}\n"
+        f"├🌏 Region : {safe_get(data, 'region') or 'vn'}\n"
+        f"├📉 Like trước đó: {safe_get(data, 'likes_before')}\n"
+        f"├📈 Like sau khi gửi: {safe_get(data, 'likes_after')}\n"
+        f"╰👍 Like được gửi: {safe_get(data, 'likes_given')}"
+    )
+
+    if status_code == 2:
+        reply_text += "\n⚠️ Giới hạn like hôm nay, mai hãy thử lại sau."
+
+    reply_text += "</blockquote>"
+
+    bot.reply_to(message, reply_text, parse_mode="HTML")
 
 
 
