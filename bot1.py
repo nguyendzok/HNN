@@ -452,52 +452,56 @@ def like_handler(message: Message):
 
 
 @bot.message_handler(commands=['visit'])
-def visit_details(message):
+def visit_handler(message):
+    args = message.text.split()
+    if len(args) != 2:
+        bot.reply_to(message, "<b>❗ Dùng đúng cú pháp:</b>\n<code>/visit 1733997441</code>", parse_mode="HTML")
+        return
+
+    idgame = args[1]
+    url = f'https://visit-plum.vercel.app/send_visit?uid={idgame}'
+
     try:
-        args = message.text.split()
-        if len(args) != 2:
-            bot.reply_to(message, "Vui lòng dùng đúng cú pháp: /visit <uid>")
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+
+        if "application/json" not in response.headers.get("Content-Type", ""):
+            bot.reply_to(message, "❌ API không trả về định dạng JSON hợp lệ.", parse_mode="HTML")
             return
-        
-        uid = args[1]
-        msg = bot.reply_to(message, "⏳ Đang xử lý thông tin...")
 
-        res = requests.get(f"https://visit-plum.vercel.app/send_visit?uid={uid}")
-        data = res.json()
+        data = response.json()
 
-        if not data.get("success"):
-            bot.edit_message_text("Không thể lấy thông tin từ UID này.", chat_id=msg.chat.id, message_id=msg.message_id)
+        if not data.get("success", False):
+            bot.reply_to(message, "⚠️ UID không hợp lệ hoặc không có dữ liệu.", parse_mode="HTML")
             return
 
         name = data.get("name", "Unknown")
         level = data.get("level", "N/A")
         region = data.get("region", "Unknown")
 
-        tokens = data.get("tokens_used", "N/A")
         views = data.get("total_views_sent", "N/A")
         time_taken = data.get("total_time_takes", "N/A")
+        tokens = data.get("tokens_used", "N/A")
 
-        result = f"""
+        reply_text = f"""
 <pre>
 ╭── Thông tin người chơi ──
-├ Tên     : {name}
-├ Cấp độ  : {level}
-├ Khu vực : {region}
-╰───────────────
+├ 🧑 Tên     : {name}
+├ 🎯 Cấp độ  : {level}
+├ 🌍 Khu vực : {region}
+╰─────────────────────
 
 ╭── Kết quả Visit ──
-├ Tokens đã dùng : {tokens}
-├ Thời gian       : {time_taken}s
-├ Lượt view đã gửi: {views}
-╰───────────────
+├ 🔄 Tokens dùng : {tokens}
+├ ⏱ Thời gian    : {time_taken}s
+├ 👀 View đã gửi : {views}
+╰─────────────────────
 </pre>
 """
+        bot.reply_to(message, reply_text, parse_mode="HTML")
 
-        bot.edit_message_text(result, chat_id=msg.chat.id, message_id=msg.message_id, parse_mode="HTML")
-
-    except Exception as e:
-        bot.reply_to(message, f"Đã xảy ra lỗi: {e}")
-
+    except requests.exceptions.RequestException:
+        bot.reply_to(message, "❗ <b>Sever đang quá tải, vui lòng thử lại sau.</b>", parse_mode="HTML")
 
 
 
