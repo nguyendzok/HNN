@@ -631,45 +631,12 @@ def ngl(message):
 
 
 
-@bot.message_handler(commands=['code'])
-def handle_code_command(message):
-    command_args = message.text.split(maxsplit=1)
-    if len(command_args) < 2:
-        bot.reply_to(message, "Ví dụ: /code Https://linkwebcuaban")
-        return
-
-    url = command_args[1]
-    domain = urlparse(url).netloc
-    file_name = f"{domain}.txt"
-    
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  
-
-        with open(file_name, 'w', encoding='utf-8') as file:
-            file.write(response.text)
-        with open(file_name, 'rb') as file:
-            bot.send_document(message.chat.id, file, caption=f"HTML của trang web {url}")
-        bot.reply_to(message, "Đã gửi mã nguồn HTML của trang web cho bạn.")
-
-    except requests.RequestException as e:
-        bot.reply_to(message, f"Đã xảy ra lỗi khi tải trang web: {e}")
-
-    finally:
-        if os.path.exists(file_name):
-            try:
-                os.remove(file_name)
-            except Exception as e:
-                bot.reply_to(message, f"Đã xảy ra lỗi khi xóa file: {e}")
-
-
-
-
 
 
 import requests
-def fetch_data(user_id):
-    url = f'https://scromnyimodz-444.vercel.app/api/player-info?id={user_id}'
+
+def fetch_data(user_id, region):
+    url = f'https://freefireinfo-tanhung.onrender.com/info?uid={user_id}&region={region}'
     response = requests.get(url)
     if response.status_code != 200:
         return None
@@ -678,16 +645,22 @@ def fetch_data(user_id):
 @bot.message_handler(commands=['ff'])
 def handle_command(message):
     parts = message.text.split()
-    if len(parts) != 2:
-        bot.reply_to(message, "<blockquote>❌ Sai cú pháp!\nVí dụ: /ff 12345678</blockquote>", parse_mode="HTML")
+    if len(parts) != 3:
+        try:
+            bot.reply_to(message, "<blockquote>❌ Sai cú pháp!\nVí dụ: /ff 12345678 vn</blockquote>", parse_mode="HTML")
+        except:
+            bot.send_message(message.chat.id, "<blockquote>❌ Sai cú pháp!\nVí dụ: /ff 12345678 vn</blockquote>", parse_mode="HTML")
         return
 
-    _, user_id = parts
+    _, user_id, region = parts
 
     try:
-        data = fetch_data(user_id)
+        data = fetch_data(user_id, region)
         if not data or data.get('status') != 'success':
-            bot.reply_to(message, "<blockquote>❌ Không tìm thấy người chơi hoặc server quá tải!</blockquote>", parse_mode="HTML")
+            try:
+                bot.reply_to(message, "<blockquote>❌ Không tìm thấy người chơi hoặc server quá tải!</blockquote>", parse_mode="HTML")
+            except:
+                bot.send_message(message.chat.id, "<blockquote>❌ Không tìm thấy người chơi hoặc server quá tải!</blockquote>", parse_mode="HTML")
             return
 
         basic = data['data'].get('basic_info', {})
@@ -720,10 +693,16 @@ Lượt thích: {g('likes', leader)}
 Ngày tạo: {g('account_created', leader)}
 </blockquote>
 """
-        bot.reply_to(message, info.strip(), parse_mode="HTML")
+        try:
+            bot.reply_to(message, info.strip(), parse_mode="HTML")
+        except:
+            bot.send_message(message.chat.id, info.strip(), parse_mode="HTML")
 
     except Exception as e:
-        bot.reply_to(message, "<blockquote>⚠️ Đã xảy ra lỗi khi xử lý yêu cầu.</blockquote>", parse_mode="HTML")
+        try:
+            bot.reply_to(message, "<blockquote>⚠️ Đã xảy ra lỗi khi xử lý yêu cầu.</blockquote>", parse_mode="HTML")
+        except:
+            bot.send_message(message.chat.id, "<blockquote>⚠️ Đã xảy ra lỗi khi xử lý yêu cầu.</blockquote>", parse_mode="HTML")
         print(e)
 
 
