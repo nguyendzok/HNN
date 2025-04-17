@@ -110,7 +110,9 @@ Người Gọi Lệnh : @{username}
 • /start or /bot - Hiển thị danh sách lệnh và hướng dẫn sử dụng.  
 • /ff - Check Info  
 • /checkban - Kiểm tra tk có khoá không  
-• /searchff - Tìm tk bằng tên  
+• /searchff - Tìm tk bằng tên 
+• /like - buff like ff
+• /vist - buff lượt xem
 
 | LỆNH SPAM SMS |  
 • /spam - spam sms max 1000  
@@ -122,10 +124,8 @@ Người Gọi Lệnh : @{username}
 • /anhgai - Random ảnh gái xinh
 • /tv - Dịch tiếng Anh qua tiếng Việt  
 • /id - Lấy id bản thân
-• /code - Lấy code web
 • /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
-• /like - buff like ff
 
 | LỆNH GAME |
 • /dangky - Đăng ký tài khoản và nhận 500k
@@ -449,6 +449,55 @@ def like_handler(message: Message):
     reply_text += "</blockquote>"
 
     bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
+
+
+@bot.message_handler(commands=['visit'])
+def visit_details(message):
+    try:
+        args = message.text.split()
+        if len(args) != 2:
+            bot.reply_to(message, "Vui lòng dùng đúng cú pháp: /visit <uid>")
+            return
+        
+        uid = args[1]
+        msg = bot.reply_to(message, "⏳ Đang xử lý thông tin...")
+
+        res = requests.get(f"https://visit-plum.vercel.app/send_visit?uid={uid}")
+        data = res.json()
+
+        if not data.get("success"):
+            bot.edit_message_text("Không thể lấy thông tin từ UID này.", chat_id=msg.chat.id, message_id=msg.message_id)
+            return
+
+        name = data.get("name", "Unknown")
+        level = data.get("level", "N/A")
+        region = data.get("region", "Unknown")
+
+        tokens = data.get("tokens_used", "N/A")
+        views = data.get("total_views_sent", "N/A")
+        time_taken = data.get("total_time_takes", "N/A")
+
+        result = f"""
+<pre>
+╭── Thông tin người chơi ──
+├ Tên     : {name}
+├ Cấp độ  : {level}
+├ Khu vực : {region}
+╰───────────────
+
+╭── Kết quả Visit ──
+├ Tokens đã dùng : {tokens}
+├ Thời gian       : {time_taken}s
+├ Lượt view đã gửi: {views}
+╰───────────────
+</pre>
+"""
+
+        bot.edit_message_text(result, chat_id=msg.chat.id, message_id=msg.message_id, parse_mode="HTML")
+
+    except Exception as e:
+        bot.reply_to(message, f"Đã xảy ra lỗi: {e}")
+
 
 
 
