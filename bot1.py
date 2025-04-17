@@ -400,28 +400,34 @@ def like_handler(message: Message):
         return  
 
     idgame = command_parts[1]  
-    urllike = f"https://dichvukey.site/likeff2.php?uid={idgame}"  
+    urllike = f"https://dichvukey.site/likeff2.php?key=vlong&uid={idgame}"  
 
     def safe_get(data, key):
         value = data.get(key)
         return value if value not in [None, ""] else "Không xác định"
 
     def extract_number(text):
-        # Lấy số đầu tiên trong chuỗi (loại bỏ quảng cáo phía sau)
+        if not text:
+            return "Không xác định"
         for part in text.split():
             if part.isdigit():
                 return part
         return "Không xác định"
+
+    # Gửi loading message
+    loading_msg = bot.reply_to(message, "<blockquote>⏳ Đang tiến hành buff like...</blockquote>", parse_mode="HTML")
 
     try:
         response = requests.get(urllike, timeout=15)
         response.raise_for_status()
         data = response.json()
     except requests.exceptions.RequestException:
-        bot.reply_to(message, "<blockquote>Server đang quá tải, vui lòng thử lại sau.</blockquote>", parse_mode="HTML")
+        bot.edit_message_text("<blockquote>Server đang quá tải, vui lòng thử lại sau.</blockquote>",
+                              chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
         return
     except ValueError:
-        bot.reply_to(message, "<blockquote>Phản hồi từ server không hợp lệ.</blockquote>", parse_mode="HTML")
+        bot.edit_message_text("<blockquote>Phản hồi từ server không hợp lệ.</blockquote>",
+                              chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
         return
 
     status_code = data.get("status")
@@ -442,7 +448,7 @@ def like_handler(message: Message):
 
     reply_text += "</blockquote>"
 
-    bot.reply_to(message, reply_text, parse_mode="HTML")
+    bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
 
 
 
