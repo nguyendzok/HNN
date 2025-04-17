@@ -394,6 +394,34 @@ def fltt_handler(message):
 
 
 
+voicebuoidau = ["lồn", "đong", "hao", "bú", "vlong", "buồi", "cặc"]
+
+@bot.message_handler(commands=['voice'])
+def text_to_voice(message):
+    text = message.text[7:].strip()  
+    if not text:
+        bot.reply_to(message, 'Nhập nội dung đi VD: /voice abc')
+        return
+
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.mp3') as temp_file:
+            tts = gTTS(text, lang='vi')
+            tts.save(temp_file.name)
+            temp_file_path = temp_file.name  
+       
+        with open(temp_file_path, 'rb') as f:
+            bot.send_voice(message.chat.id, f, reply_to_message_id=message.message_id)
+        if any(word in text.lower() for word in voicebuoidau):
+            user_id = message.from_user.id
+            bot.reply_to(message, f"ID {user_id} !")
+
+    except Exception as e:
+        bot.reply_to(message, f'Đã xảy ra lỗi')
+    
+    finally:
+        if os.path.exists(temp_file_path):
+            os.remove(temp_file_path)
+
 
 
 
