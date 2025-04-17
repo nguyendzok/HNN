@@ -406,6 +406,13 @@ def like_handler(message: Message):
         value = data.get(key)
         return value if value not in [None, ""] else "Không xác định"
 
+    def extract_number(text):
+        # Lấy số đầu tiên trong chuỗi (loại bỏ quảng cáo phía sau)
+        for part in text.split():
+            if part.isdigit():
+                return part
+        return "Không xác định"
+
     try:
         response = requests.get(urllike, timeout=15)
         response.raise_for_status()
@@ -422,12 +429,12 @@ def like_handler(message: Message):
     reply_text = (
         "<blockquote>"
         "BUFF LIKE THÀNH CÔNG✅\n"
-        f"╭👤 Name: {safe_get(data, 'username')}\n"
+        f"╭👤 Name: {safe_get(data, 'PlayerNickname')}\n"
         f"├🆔 UID : {safe_get(data, 'uid')}\n"
-        f"├🌏 Region : {safe_get(data, 'region') or 'vn'}\n"
+        f"├🌏 Region : vn\n"
         f"├📉 Like trước đó: {safe_get(data, 'likes_before')}\n"
         f"├📈 Like sau khi gửi: {safe_get(data, 'likes_after')}\n"
-        f"╰👍 Like được gửi: {safe_get(data, 'likes_given')}"
+        f"╰👍 Like được gửi: {extract_number(data.get('likes_given'))}"
     )
 
     if status_code == 2:
