@@ -450,7 +450,6 @@ def like_handler(message: Message):
 
     bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
 
-
 @bot.message_handler(commands=['visit'])
 def visit_handler(message):
     args = message.text.split()
@@ -464,44 +463,22 @@ def visit_handler(message):
     try:
         response = requests.get(url, timeout=10)
         response.raise_for_status()
-
-        if "application/json" not in response.headers.get("Content-Type", ""):
-            bot.reply_to(message, "❌ API không trả về định dạng JSON hợp lệ.", parse_mode="HTML")
-            return
-
         data = response.json()
 
         if not data.get("success", False):
-            bot.reply_to(message, "⚠️ UID không hợp lệ hoặc không có dữ liệu.", parse_mode="HTML")
+            bot.reply_to(message, "Lỗi rồi, báo admin fix đi.", parse_mode="Markdown")
             return
 
-        name = data.get("name", "Unknown")
-        level = data.get("level", "N/A")
-        region = data.get("region", "Unknown")
-
-        views = data.get("total_views_sent", "N/A")
-        time_taken = data.get("total_time_takes", "N/A")
-        tokens = data.get("tokens_used", "N/A")
-
-        reply_text = f"""
-<pre>
-╭── Thông tin người chơi ──
-├ 🧑 Tên     : {name}
-├ 🎯 Cấp độ  : {level}
-├ 🌍 Khu vực : {region}
-╰─────────────────────
-
-╭── Kết quả Visit ──
-├ 🔄 Tokens dùng : {tokens}
-├ ⏱ Thời gian    : {time_taken}s
-├ 👀 View đã gửi : {views}
-╰─────────────────────
-</pre>
-"""
-        bot.reply_to(message, reply_text, parse_mode="HTML")
+        reply_text = (
+            f"✅ *Thành công*\n"
+            f"👀 *Tổng lượt xem:* {data['total_views_sent']}\n"
+            f"⏳ *Thời gian xử lý:* {data['total_time_takes']} giây"
+        )
+        bot.reply_to(message, reply_text, parse_mode="Markdown")
 
     except requests.exceptions.RequestException:
-        bot.reply_to(message, "❗ <b>Sever đang quá tải, vui lòng thử lại sau.</b>", parse_mode="HTML")
+        bot.reply_to(message, "*Sever đang quá tải, vui lòng thử lại sau.*", parse_mode="Markdown")
+
 
 
 
