@@ -244,11 +244,30 @@ def like_handler(message: Message):
 
     bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
 
+import time
+
+# Dict lưu thời gian dùng lệnh gần nhất
+last_visit_time = {}
+
 @bot.message_handler(commands=['visit'])
 def visit_handler(message):
+    user_id = message.from_user.id
+    now = time.time()
+
+    # Kiểm tra nếu user vừa dùng lệnh < 60 giây trước
+    if user_id in last_visit_time:
+        elapsed = now - last_visit_time[user_id]
+        if elapsed < 60:
+            bot.reply_to(
+                message,
+                f"⏳ Vui lòng đợi `{int(60 - elapsed)}` giây trước khi dùng lại.",
+                parse_mode="Markdown"
+            )
+            return
+
     args = message.text.split()
     if len(args) != 2:
-        bot.reply_to(message, "<b>❗ Dùng đúng cú pháp:</b>\n<code>/visit 1733997441</code>", parse_mode="HTML")
+        bot.reply_to(message, "`/visit 1733997441`", parse_mode="Markdown")
         return
 
     idgame = args[1]
@@ -263,15 +282,18 @@ def visit_handler(message):
             bot.reply_to(message, "Lỗi rồi, báo admin fix đi.", parse_mode="Markdown")
             return
 
+        # Cập nhật thời gian dùng lệnh mới nhất
+        last_visit_time[user_id] = now
+
         reply_text = (
-            f"✅ *Thành công*\n"
-            f"👀 *Tổng lượt xem:* {data['total_views_sent']}\n"
-            f"⏳ *Thời gian xử lý:* {data['total_time_takes']} giây"
+            "✅ *Thành công*\n"
+            f"> | *Tổng lượt xem:* `{data['total_views_sent']}`\n"
+            f"> | *Thời gian xử lý:* `{data['total_time_takes']} giây`"
         )
         bot.reply_to(message, reply_text, parse_mode="Markdown")
 
     except requests.exceptions.RequestException:
-        bot.reply_to(message, "*Sever đang quá tải, vui lòng thử lại sau.*", parse_mode="Markdown")
+        bot.reply_to(message, "*Server đang quá tải, vui lòng thử lại sau.*", parse_mode="Markdown")
 
 
 
