@@ -112,19 +112,15 @@ Người Gọi Lệnh : @{username}
 • /checkban - Kiểm tra tk có khoá không 
 • /like - buff like ff
 • /vist - buff lượt xem
-• /gettoken 
 
 | Lệnh Spam Sms |  
-• /spam - spam sms max 1000  
-• /sms - spam max 5  
+• /spam - spam sms max 1000   
 
 | Lệnh Cơ Bản |  
 • /voice - Chuyển đổi văn bản thành giọng nói  
 • /video - Random video gái xinh
-• /anhgai - Random ảnh gái xinh
 • /tv - Dịch tiếng Anh qua tiếng Việt  
 • /id - Lấy id bản thân
-• /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
 
 | Lệnh Admin |  
@@ -317,48 +313,6 @@ def visit_handler(message):
 
 
 
-def fetch_token(uid, password):
-    url = f"https://ariflexlabs-jwt-gen.onrender.com/fetch-token?uid={uid}&password={password}"
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            return data.get('JWT TOKEN')
-        else:
-            return None
-    except Exception:
-        return None
-
-@bot.message_handler(commands=['gettoken'])
-def handle_get_token(message):
-    try:
-        args = message.text.split(maxsplit=1)
-        if len(args) != 2 or '|' not in args[1]:
-            bot.reply_to(message, "❌ Vui lòng dùng đúng định dạng:\n/gettoken `uid|password`", parse_mode="Markdown")
-            return
-        
-        uid, password = args[1].split('|', 1)
-        msg = bot.reply_to(message, f"⏳ Đang tạo token cho UID `{uid}`...", parse_mode="Markdown")
-
-        token = fetch_token(uid.strip(), password.strip())
-        if token:
-            bot.edit_message_text(
-                chat_id=msg.chat.id,
-                message_id=msg.message_id,
-                text=f"✅ Token cho UID `{uid}`:\n\n`{token}`",
-                parse_mode="Markdown"
-            )
-        else:
-            bot.edit_message_text(
-                chat_id=msg.chat.id,
-                message_id=msg.message_id,
-                text=f"❌ Không thể tạo token cho UID `{uid}`. Vui lòng kiểm tra lại.",
-                parse_mode="Markdown"
-            )
-    except Exception as e:
-        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi: `{str(e)}`", parse_mode="Markdown")
-
-
 
 
 voicebuoidau = ["lồn", "đong", "hao", "bú", "vlong", "buồi", "cặc"]
@@ -473,79 +427,6 @@ def copy_username_callback(call):
 
 
 
-@bot.message_handler(commands=['anhgai'])
-def send_random_image(message):
-    try:
-        response = requests.get("https://freerose.onrender.com/random-image")
-        data = response.json()
-        image_url = data.get("image_url")
-
-        if image_url:
-            bot.send_photo(message.chat.id, image_url, caption="Ảnh ngẫu nhiên nè!")
-        else:
-            bot.reply_to(message, "Không tìm được ảnh nào cả.")
-    except Exception as e:
-        bot.reply_to(message, f"Đã xảy ra lỗi: {e}")
-
-
-@bot.message_handler(commands=['ngl'])
-def ngl(message):
-    args = message.text.split()
-    if len(args) != 3:
-        bot.reply_to(message, "<blockquote>Ví dụ: /ngl username 10 (tối đa 20)</blockquote>", parse_mode="HTML")
-        return
-
-    username = args[1]
-    try:
-        count = min(20, int(args[2]))
-    except ValueError:
-        bot.reply_to(message, "<blockquote>Vui lòng nhập một số hợp lệ!</blockquote>", parse_mode="HTML")
-        return
-
-    url = "https://ngl.link/api/submit"
-    headers = {
-        'Host': 'ngl.link',
-        'accept': '*/*',
-        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-        'x-requested-with': 'XMLHttpRequest',
-        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.93 Safari/537.36',
-        'origin': 'https://ngl.link',
-        'referer': f'https://ngl.link/{username}',
-    }
-
-    data = {
-        'username': username,
-        'question': 'Tin nhắn spam từ bot vLong https://t.me/spamsmsvlong',
-        'deviceId': '0',
-        'gameSlug': '',
-        'referrer': '',
-    }
-
-    success_count = 0
-    for _ in range(count):
-        try:
-            response = requests.post(url, headers=headers, data=data, timeout=10)
-            response.raise_for_status()
-            success_count += 1
-        except requests.exceptions.RequestException:
-            pass
-
-    sender = message.from_user.username or "Không rõ"
-
-    reply_text = (
-        f"<blockquote>"
-        f"✅ Thành công!\n"
-        f"👤 Người gửi: @{sender}\n"
-        f"📨 Đã gửi: {success_count}/{count} tin nhắn\n"
-        f"🎯 Người nhận: @{username}"
-        f"</blockquote>"
-    )
-
-    bot.reply_to(message, reply_text, parse_mode="HTML")
-
-
-
-
 
 import requests
 
@@ -639,48 +520,6 @@ def random_video(message):
         bot.send_message(message.chat.id, "Đã xảy ra lỗi khi lấy video.")
 
 
-import time
-import threading
-@bot.message_handler(content_types=['new_chat_members'])
-def welcome_new_member(message):
-    for member in message.new_chat_members:
-        name = member.first_name
-        username = f"@{member.username}" if member.username else "@None"
-        chat_id = message.chat.id
-
-        # Nút URL
-        markup = types.InlineKeyboardMarkup()
-        btn = types.InlineKeyboardButton("Liên Hệ Admin", url="https://t.me/@HaoEsports05")
-        markup.add(btn)
-
-        caption = f"""
-🌟 Xin chào Bạn {name} 🌟
-Chào mừng bạn đến với Nhóm - Nơi để share Api FF & Hack FF 
-🚫 Luật Box 🚫
-📌 Cấm buôn bán , quãng cáo dưới mọi hình thức 
-📌 Chat séc = Ban 🗣
-
-Vui lòng đọc nội quy trước khi thảo luận nhé.
-"""
-
-        # Gửi video và lưu message
-        sent_msg = bot.send_video(
-            chat_id,
-            video="https://i.imgur.com/8jtefrx.mp4",
-            caption=caption,
-            reply_markup=markup,
-            parse_mode="Markdown"
-        )
-
-        # Tạo thread để xóa tin nhắn sau 60 giây
-        threading.Thread(target=delete_after_delay, args=(chat_id, sent_msg.message_id, 50)).start()
-
-def delete_after_delay(chat_id, message_id, delay):
-    time.sleep(delay)
-    try:
-        bot.delete_message(chat_id, message_id)
-    except Exception as e:
-        print(f"Lỗi xoá message: {e}")
 
 
 
