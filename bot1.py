@@ -633,31 +633,58 @@ def thongbao_to_groups(message):
 
 
 
+import time
+import requests
+
+cooldown_checkban = {}
+COOLDOWN_SECONDS = 60  # Thời gian cooldown 60 giây
+
 @bot.message_handler(commands=['checkban'])
 def check_ban(message):
+    user_id_telegram = message.from_user.id
+    current_time = time.time()
+
+    # Kiểm tra cooldown
+    if user_id_telegram in cooldown_checkban:
+        elapsed = current_time - cooldown_checkban[user_id_telegram]
+        if elapsed < COOLDOWN_SECONDS:
+            remaining = int(COOLDOWN_SECONDS - elapsed)
+            bot.reply_to(message, f"⏳ Vui lòng đợi {remaining} giây trước khi sử dụng lại lệnh này.")
+            return
+
     try:
         args = message.text.split()
         if len(args) < 2:
             bot.reply_to(message, "❗ Vui lòng nhập ID. Ví dụ: /checkban 8324665667")
             return
 
-        user_id = args[1]
-        api_url = f"https://scromnyi.vercel.app/region/ban-info?uid={user_id}"
+        uid = args[1]
+        api_url = f"https://scromnyi.vercel.app/region/ban-info?uid={uid}"
         response = requests.get(api_url)
         data = response.json()
 
-        if data.get("is_banned") == True:
+        nickname = data.get("nickname", "Không rõ")
+        ban_status = data.get("ban_status", "Không xác định")
+        ban_period = data.get("ban_period", "Không có")
+        region = data.get("region", "Không rõ")
+        if ban_status.lower() != "not banned":
             reply_text = (
-                f"🚫 **ID `{user_id}` đã bị BAN**\n"
-                f"📆 Thời hạn ban: {data.get('ban_period', 'Không rõ')} ngày"
+                f"🚫 **ID `{uid}` đã bị BAN**\n"
+                f"📛 Nickname: `{nickname}`\n"
+                f"🌍 Khu vực: `{region}`\n"
+                f"📆 Thời hạn ban: `{ban_period}"
+                
             )
         else:
             reply_text = (
-                f"✅ **ID `{user_id}` không bị ban**\n"
-                f"📄 Trạng thái: {data.get('status', 'Không xác định')}"
+                f"✅ **ID `{uid}` không bị ban**\n"
+                f"📛 Nickname: `{nickname}`\n"
+                f"🌍 Khu vực: `{region}`\n"
+                f"📄 Trạng thái: `{ban_status}`"
             )
 
         bot.reply_to(message, reply_text, parse_mode="Markdown")
+        cooldown_checkban[user_id_telegram] = current_time  # Cập nhật cooldown
 
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
