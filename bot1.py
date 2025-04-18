@@ -163,6 +163,8 @@ def themvip(message: Message):
 
 
 import time
+import requests
+from telebot.types import Message
 
 # dict lưu user_id và thời gian cuối cùng gọi lệnh
 user_last_like_time = {}
@@ -174,6 +176,13 @@ LIKE_COOLDOWN = 400
 def like_handler(message: Message):
     user_id = message.from_user.id
     current_time = time.time()
+
+    # Nếu bot không có quyền gửi tin nhắn
+    try:
+        bot.send_chat_action(message.chat.id, "typing")
+    except Exception as e:
+        print(f"Bot không thể gửi tin nhắn trong group: {e}")
+        return
 
     last_time = user_last_like_time.get(user_id, 0)
     time_diff = current_time - last_time
@@ -187,7 +196,7 @@ def like_handler(message: Message):
 
     command_parts = message.text.split()  
     if len(command_parts) != 2:  
-        bot.reply_to(message, "<blockquote>like 1733997441</blockquote>", parse_mode="HTML")  
+        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like 1733997441</blockquote>", parse_mode="HTML")  
         return  
 
     idgame = command_parts[1]  
@@ -205,7 +214,11 @@ def like_handler(message: Message):
                 return part
         return "Không xác định"
 
-    loading_msg = bot.reply_to(message, "<blockquote>⏳ Đang tiến hành buff like...</blockquote>", parse_mode="HTML")
+    try:
+        loading_msg = bot.reply_to(message, "<blockquote>⏳ Đang tiến hành buff like...</blockquote>", parse_mode="HTML")
+    except Exception as e:
+        print(f"Lỗi gửi tin nhắn loading: {e}")
+        return
 
     try:
         response = requests.get(urllike, timeout=15)
@@ -238,7 +251,10 @@ def like_handler(message: Message):
 
     reply_text += "</blockquote>"
 
-    bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
+    try:
+        bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
+    except Exception as e:
+        print(f"Lỗi gửi kết quả: {e}")
 
 
 import time
