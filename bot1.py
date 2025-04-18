@@ -246,7 +246,6 @@ def like_handler(message: Message):
 
 import time
 
-# Dict lưu thời gian dùng lệnh gần nhất
 last_visit_time = {}
 
 @bot.message_handler(commands=['visit'])
@@ -254,10 +253,9 @@ def visit_handler(message):
     user_id = message.from_user.id
     now = time.time()
 
-    # Kiểm tra nếu user vừa dùng lệnh < 60 giây trước
     if user_id in last_visit_time:
         elapsed = now - last_visit_time[user_id]
-        if elapsed < 60:
+        if elapsed < 160:
             bot.reply_to(
                 message,
                 f"⏳ Vui lòng đợi `{int(60 - elapsed)}` giây trước khi dùng lại.",
@@ -275,26 +273,41 @@ def visit_handler(message):
 
     try:
         response = requests.get(url, timeout=10)
-        response.raise_for_status()
         data = response.json()
 
         if not data.get("success", False):
             bot.reply_to(message, "Lỗi rồi, báo admin fix đi.", parse_mode="Markdown")
             return
 
-        # Cập nhật thời gian dùng lệnh mới nhất
         last_visit_time[user_id] = now
 
+        name = data.get("name", "Không rõ")
+        level = data.get("level", "Không rõ")
+        region = data.get("region", "Không rõ")
+        tokens_used = data.get("tokens_used", 0)
+        views_sent = data.get("total_views_sent", 0)
+        time_taken = data.get("total_time_takes", 0)
+
         reply_text = (
-            "✅ *Thành công*\n"
-            f"> | *Tổng lượt xem:* `{data['total_views_sent']}`\n"
-            f"> | *Thời gian xử lý:* `{data['total_time_takes']} giây`"
+            "✅ *Đã gửi lượt xem thành công!*\n\n"
+            "*Thông tin người chơi:*\n"
+            f"> 👤 *Tên:* `{name}`\n"
+            f"> 🧬 *Level:* `{level}`\n"
+            f"> 🌍 *Khu vực:* `{region}`\n\n"
+            "*Kết quả visit:*\n"
+            f"> 🎯 *Lượt xem:* `{views_sent}`\n"
+            f"> ⚡ *Token tiêu tốn:* `{tokens_used}`\n"
+            f"> ⏳ *Thời gian xử lý:* `{time_taken:.2f} giây`"
         )
+
         bot.reply_to(message, reply_text, parse_mode="Markdown")
 
-    except requests.exceptions.RequestException:
-        bot.reply_to(message, "*Server đang quá tải, vui lòng thử lại sau.*", parse_mode="Markdown")
-
+    except requests.exceptions.Timeout:
+        bot.reply_to(message, "*Kết nối quá lâu, thử lại sau.*", parse_mode="Markdown")
+    except requests.exceptions.RequestException as e:
+        bot.reply_to(message, f"*Lỗi kết nối:* `{str(e)}`", parse_mode="Markdown")
+    except ValueError:
+        bot.reply_to(message, "*Phản hồi không phải JSON hợp lệ.*", parse_mode="Markdown")
 
 
 def fetch_token(uid, password):
