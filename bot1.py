@@ -109,8 +109,7 @@ Người Gọi Lệnh : @{username}
 | Lệnh Free Fire |  
 • /start or /bot - Hiển thị danh sách lệnh và hướng dẫn sử dụng.  
 • /ff - Check Info  
-• /checkban - Kiểm tra tk có khoá không  
-• /searchff - Tìm tk bằng tên 
+• /checkban - Kiểm tra tk có khoá không 
 • /like - buff like ff
 • /vist - buff lượt xem
 
@@ -172,7 +171,7 @@ import time
 user_last_like_time = {}
 
 # thời gian chờ (giây)
-LIKE_COOLDOWN = 300
+LIKE_COOLDOWN = 400
 
 @bot.message_handler(commands=['like'])
 def like_handler(message: Message):
@@ -637,7 +636,7 @@ import time
 import requests
 
 cooldown_checkban = {}
-COOLDOWN_SECONDS = 60  # Thời gian cooldown 60 giây
+COOLDOWN_SECONDS = 500  # Thời gian cooldown 60 giây
 
 @bot.message_handler(commands=['checkban'])
 def check_ban(message):
