@@ -257,7 +257,7 @@ def visit_handler(message):
 
     if user_id in last_visit_time:
         elapsed = now - last_visit_time[user_id]
-        if elapsed < 60:
+        if elapsed < 160:
             bot.reply_to(
                 message,
                 f"⏳ Vui lòng đợi `{int(60 - elapsed)}` giây trước khi dùng lại.",
@@ -267,7 +267,7 @@ def visit_handler(message):
 
     args = message.text.split()
     if len(args) != 2:
-        bot.reply_to(message, "`/visit 1733997441`", parse_mode="Markdown")
+        bot.reply_to(message, "`/visit 1733997441`", parse_mode="HTML")
         return
 
     idgame = args[1]
@@ -296,21 +296,22 @@ def visit_handler(message):
         last_visit_time[user_id] = now
 
         reply_text = (
+            "<blockquote>"
             "✅ *Đã gửi lượt xem thành công!*\n\n"
             "*Thông tin người chơi:*\n"
-            f"> 👤 *Tên:* `{name}`\n"
-            f"> 🧬 *Level:* `{level}`\n"
-            f"> 🌍 *Khu vực:* `{region}`\n\n"
+            f"╭👤 *Tên:* `{name}`\n"
+            f"├🧬 *Level:* `{level}`\n"
+            f"╰🌍 *Khu vực:* `{region}`\n\n"
             "*Kết quả visit:*\n"
-            f"> 🎯 *Lượt xem:* `{views_sent}`\n"
-            f"> ⚡ *Token tiêu tốn:* `{tokens_used}`\n"
-            f"> ⏳ *Thời gian xử lý:* `{time_taken} giây`"
+            f"╭🎯 *Lượt xem:* `{views_sent}`\n"
+            f"├⚡ *Token tiêu tốn:* `{tokens_used}`\n"
+            f"╰⏳ *Thời gian xử lý:* `{time_taken} giây`"
         )
 
-        bot.reply_to(message, reply_text, parse_mode="Markdown")
+        bot.reply_to(message, reply_text, parse_mode="HTML")
 
     except requests.exceptions.RequestException as e:
-        bot.reply_to(message, f"*Lỗi kết nối:* `{str(e)}`", parse_mode="Markdown")
+        bot.reply_to(message, f"*Lỗi kết nối:* `{str(e)}`", parse_mode="HTML")
 
 
 def fetch_token(uid, password):
