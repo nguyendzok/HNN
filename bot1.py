@@ -255,19 +255,21 @@ def visit_handler(message):
     user_id = message.from_user.id
     now = time.time()
 
+    cooldown = 160  # giây
+
     if user_id in last_visit_time:
         elapsed = now - last_visit_time[user_id]
-        if elapsed < 160:
+        if elapsed < cooldown:
             bot.reply_to(
                 message,
-                f"⏳ Vui lòng đợi `{int(60 - elapsed)}` giây trước khi dùng lại.",
-                parse_mode="Markdown"
+                f"⏳ Vui lòng đợi <b>{int(cooldown - elapsed)}</b> giây trước khi dùng lại.",
+                parse_mode="HTML"
             )
             return
 
     args = message.text.split()
     if len(args) != 2:
-        bot.reply_to(message, "`/visit 1733997441`", parse_mode="HTML")
+        bot.reply_to(message, "<code>/visit 1733997441</code>", parse_mode="HTML")
         return
 
     idgame = args[1]
@@ -278,7 +280,7 @@ def visit_handler(message):
         text = response.text
 
         if not text.strip():
-            bot.reply_to(message, "*API không trả về dữ liệu (rỗng). Vui lòng thử lại sau.*", parse_mode="Markdown")
+            bot.reply_to(message, "❌ API không trả về dữ liệu (rỗng). Vui lòng thử lại sau.", parse_mode="HTML")
             return
 
         # Dùng regex để trích xuất các giá trị
@@ -296,22 +298,23 @@ def visit_handler(message):
         last_visit_time[user_id] = now
 
         reply_text = (
-            "<blockquote>"
-            "✅ *Đã gửi lượt xem thành công!*\n\n"
-            "*Thông tin người chơi:*\n"
-            f"╭👤 *Tên:* `{name}`\n"
-            f"├🧬 *Level:* `{level}`\n"
-            f"╰🌍 *Khu vực:* `{region}`\n\n"
-            "*Kết quả visit:*\n"
-            f"╭🎯 *Lượt xem:* `{views_sent}`\n"
-            f"├⚡ *Token tiêu tốn:* `{tokens_used}`\n"
-            f"╰⏳ *Thời gian xử lý:* `{time_taken} giây`"
+            "✅ <b>Đã gửi lượt xem thành công!</b>\n\n"
+            "<b>Thông tin người chơi:</b>\n"
+            f"╭👤 <b>Tên:</b> <code>{name}</code>\n"
+            f"├🧬 <b>Level:</b> <code>{level}</code>\n"
+            f"╰🌍 <b>Khu vực:</b> <code>{region}</code>\n\n"
+            "<b>Kết quả visit:</b>\n"
+            f"╭🎯 <b>Lượt xem:</b> <code>{views_sent}</code>\n"
+            f"├⚡ <b>Token tiêu tốn:</b> <code>{tokens_used}</code>\n"
+            f"╰⏳ <b>Thời gian xử lý:</b> <code>{time_taken} giây</code>"
         )
+        reply_text += "</blockquote>"
 
         bot.reply_to(message, reply_text, parse_mode="HTML")
 
     except requests.exceptions.RequestException as e:
-        bot.reply_to(message, f"*Lỗi kết nối:* `{str(e)}`", parse_mode="HTML")
+        bot.reply_to(message, f"<b>Lỗi kết nối:</b> <code>{str(e)}</code>", parse_mode="HTML")
+
 
 
 def fetch_token(uid, password):
