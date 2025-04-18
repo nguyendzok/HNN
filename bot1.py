@@ -120,7 +120,7 @@ Người Gọi Lệnh : @{username}
 
 | Lệnh Cơ Bản |  
 • /voice - Chuyển đổi văn bản thành giọng nói  
-• /uptime - Random video gái xinh
+• /video - Random video gái xinh
 • /anhgai - Random ảnh gái xinh
 • /tv - Dịch tiếng Anh qua tiếng Việt  
 • /id - Lấy id bản thân
@@ -538,7 +538,7 @@ Ngày tạo: {g('account_created', leader)}
 
 
 import requests
-@bot.message_handler(commands=['uptime'])
+@bot.message_handler(commands=['video'])
 def random_video(message):
     
     try:
@@ -561,7 +561,7 @@ import threading
 def welcome_new_member(message):
     for member in message.new_chat_members:
         name = member.first_name
-        username = f"@{member.username}" if member.username else "Không có username"
+        username = f"@{member.username}" if member.username else "@None"
         chat_id = message.chat.id
 
         # Nút URL
@@ -570,7 +570,7 @@ def welcome_new_member(message):
         markup.add(btn)
 
         caption = f"""
-🌟 Xin chào con vợ {username} 🌟
+🌟 Xin chào Bạn {name} 🌟
 Chào mừng bạn đến với Nhóm - Nơi để share Api FF & Hack FF 
 🚫 Luật Box 🚫
 📌 Cấm buôn bán , quãng cáo dưới mọi hình thức 
@@ -589,7 +589,7 @@ Vui lòng đọc nội quy trước khi thảo luận nhé.
         )
 
         # Tạo thread để xóa tin nhắn sau 60 giây
-        threading.Thread(target=delete_after_delay, args=(chat_id, sent_msg.message_id, 60)).start()
+        threading.Thread(target=delete_after_delay, args=(chat_id, sent_msg.message_id, 50)).start()
 
 def delete_after_delay(chat_id, message_id, delay):
     time.sleep(delay)
