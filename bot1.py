@@ -172,7 +172,7 @@ import time
 user_last_like_time = {}
 
 # thời gian chờ (giây)
-LIKE_COOLDOWN = 60
+LIKE_COOLDOWN = 300
 
 @bot.message_handler(commands=['like'])
 def like_handler(message: Message):
