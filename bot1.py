@@ -642,7 +642,7 @@ def check_ban(message):
             return
 
         user_id = args[1]
-        api_url = f"https://wlx-scorpion.vercel.app/Checkban?key=Scromnyi&id={user_id}"
+        api_url = f"https://scromnyi.vercel.app/region/ban-info?uid={user_id}"
         response = requests.get(api_url)
         data = response.json()
 
