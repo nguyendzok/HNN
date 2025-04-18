@@ -244,7 +244,9 @@ def like_handler(message: Message):
 
     bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
 
+
 import time
+import re
 
 last_visit_time = {}
 
@@ -255,7 +257,7 @@ def visit_handler(message):
 
     if user_id in last_visit_time:
         elapsed = now - last_visit_time[user_id]
-        if elapsed < 160:
+        if elapsed < 60:
             bot.reply_to(
                 message,
                 f"⏳ Vui lòng đợi `{int(60 - elapsed)}` giây trước khi dùng lại.",
@@ -273,20 +275,25 @@ def visit_handler(message):
 
     try:
         response = requests.get(url, timeout=10)
-        data = response.json()
+        text = response.text
 
-        if not data.get("success", False):
-            bot.reply_to(message, "Lỗi rồi, báo admin fix đi.", parse_mode="Markdown")
+        if not text.strip():
+            bot.reply_to(message, "*API không trả về dữ liệu (rỗng). Vui lòng thử lại sau.*", parse_mode="Markdown")
             return
 
-        last_visit_time[user_id] = now
+        # Dùng regex để trích xuất các giá trị
+        def extract(field, default="Không rõ"):
+            match = re.search(fr"{field}:\s*(.+)", text)
+            return match.group(1).strip() if match else default
 
-        name = data.get("name", "Không rõ")
-        level = data.get("level", "Không rõ")
-        region = data.get("region", "Không rõ")
-        tokens_used = data.get("tokens_used", 0)
-        views_sent = data.get("total_views_sent", 0)
-        time_taken = data.get("total_time_takes", 0)
+        name = extract("name")
+        level = extract("level")
+        region = extract("region")
+        tokens_used = extract("tokens_used", "0")
+        views_sent = extract("total_views_sent", "0")
+        time_taken = extract("total_time_takes", "0")
+
+        last_visit_time[user_id] = now
 
         reply_text = (
             "✅ *Đã gửi lượt xem thành công!*\n\n"
@@ -297,17 +304,13 @@ def visit_handler(message):
             "*Kết quả visit:*\n"
             f"> 🎯 *Lượt xem:* `{views_sent}`\n"
             f"> ⚡ *Token tiêu tốn:* `{tokens_used}`\n"
-            f"> ⏳ *Thời gian xử lý:* `{time_taken:.2f} giây`"
+            f"> ⏳ *Thời gian xử lý:* `{time_taken} giây`"
         )
 
         bot.reply_to(message, reply_text, parse_mode="Markdown")
 
-    except requests.exceptions.Timeout:
-        bot.reply_to(message, "*Kết nối quá lâu, thử lại sau.*", parse_mode="Markdown")
     except requests.exceptions.RequestException as e:
         bot.reply_to(message, f"*Lỗi kết nối:* `{str(e)}`", parse_mode="Markdown")
-    except ValueError:
-        bot.reply_to(message, "*Phản hồi không phải JSON hợp lệ.*", parse_mode="Markdown")
 
 
 def fetch_token(uid, password):
