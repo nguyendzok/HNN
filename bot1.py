@@ -180,7 +180,7 @@ def like_handler(message: Message):
         return  
 
     idgame = command_parts[1]  
-    urllike = f"https://dichvukey.site/likeff2.php?key=vlong&uid={idgame}"  
+    urllike = f"https://likes-api-ff.vercel.app/likes?uid={idgame}&region=sg&key=Scromnyi225"  
 
     def safe_get(data, key):
         value = data.get(key)
