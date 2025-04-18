@@ -308,7 +308,7 @@ def visit_handler(message):
             f"├⚡ <b>Token tiêu tốn:</b> <code>{tokens_used}</code>\n"
             f"╰⏳ <b>Thời gian xử lý:</b> <code>{time_taken} giây</code>"
         )
-        reply_text += "</blockquote>"
+        
 
         bot.reply_to(message, reply_text, parse_mode="HTML")
 
