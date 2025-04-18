@@ -844,26 +844,6 @@ def unknown_command(message):
         bot.reply_to(message, "Lệnh này không tồn tại vui lòng sử dụng lệnh /bot để xem.")
 
 
-# Hàm gọi API T
-def react_to_message(chat_id, message_id, emoji="❤️"):
-    url = f"https://api.telegram.org/bot{os.environ.get('BOT_TOKEN')}/setMessageReaction"
-    payload = {
-        "chat_id": chat_id,
-        "message_id": message_id,
-        "reaction": [{"type": "emoji", "emoji": emoji}],
-        "is_big": True
-    }
-    requests.post(url, json=payload)
-
-import random
-
-# Danh sách emoji tuỳ thích
-emojis = ["❤️", "😂", "🔥", "🤔", "👍", "😍", "😎", "💯", "👏", "😢", "😡"]
-
-@bot.message_handler(func=lambda message: True)
-def auto_like(message):
-    emoji = random.choice(emojis)  # Lấy emoji ngẫu nhiên
-    react_to_message(message.chat.id, message.message_id, emoji=emoji)
 
 
 
