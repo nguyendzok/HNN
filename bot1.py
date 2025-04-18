@@ -165,8 +165,30 @@ def themvip(message: Message):
 
 
 
+
+import time
+
+# dict lưu user_id và thời gian cuối cùng gọi lệnh
+user_last_like_time = {}
+
+# thời gian chờ (giây)
+LIKE_COOLDOWN = 60
+
 @bot.message_handler(commands=['like'])
 def like_handler(message: Message):
+    user_id = message.from_user.id
+    current_time = time.time()
+
+    last_time = user_last_like_time.get(user_id, 0)
+    time_diff = current_time - last_time
+
+    if time_diff < LIKE_COOLDOWN:
+        wait_time = int(LIKE_COOLDOWN - time_diff)
+        bot.reply_to(message, f"<blockquote>⏳ Vui lòng chờ {wait_time} giây trước khi dùng lại lệnh này.</blockquote>", parse_mode="HTML")
+        return
+
+    user_last_like_time[user_id] = current_time  # cập nhật thời gian sử dụng
+
     command_parts = message.text.split()  
     if len(command_parts) != 2:  
         bot.reply_to(message, "<blockquote>like 1733997441</blockquote>", parse_mode="HTML")  
@@ -187,7 +209,6 @@ def like_handler(message: Message):
                 return part
         return "Không xác định"
 
-    # Gửi loading message
     loading_msg = bot.reply_to(message, "<blockquote>⏳ Đang tiến hành buff like...</blockquote>", parse_mode="HTML")
 
     try:
@@ -579,65 +600,6 @@ def delete_after_delay(chat_id, message_id, delay):
 
 
 
-@bot.message_handler(commands=['searchff'])
-def search_ff(message):
-    if message.chat.id not in GROUP_CHAT_IDS:
-        bot.reply_to(message, "Bot này chỉ hoạt động trong nhóm Này https://t.me/+AhM8n6X-63JmNTQ1.")
-    try:
-        args = message.text.split(maxsplit=1)
-        if len(args) < 2:
-            bot.reply_to(message, "❗ Vui lòng nhập tên cần tìm. Ví dụ: /searchff Scromnyi")
-            return
-
-        username = args[1].strip()
-        api_url = f"https://ariflexlabs-search-api.vercel.app/search?name={username}"
-        response = requests.get(api_url)
-
-        if response.status_code != 200:
-            bot.reply_to(message, f"⚠️ Lỗi từ máy chủ API: {response.status_code}")
-            return
-
-        try:
-            regions = response.json()
-        except ValueError:
-            bot.reply_to(message, "⚠️ Không thể phân tích dữ liệu từ API.")
-            return
-
-        all_players = []
-        for region_data in regions:
-            players = region_data.get("result", {}).get("player", [])
-            for player in players:
-                all_players.append({
-                    "nickname": player.get("nickname", "?"),
-                    "accountId": player.get("accountId", "?"),
-                    "level": player.get("level", "?"),
-                    "region": player.get("region", "?"),
-                    "lastLogin": format_timestamp(player.get("lastLogin", 0))
-                })
-
-        if not all_players:
-            bot.reply_to(message, f"❌ Không tìm thấy kết quả cho <code>{escape_html(username)}</code>.", parse_mode="HTML")
-            return
-
-        max_results = 10
-        reply_text = f"🔎 <b>Kết quả tìm kiếm cho</b> <code>{escape_html(username)}</code>:\n\n"
-        for i, player in enumerate(all_players[:max_results], 1):
-            reply_text += (
-                f"<blockquote>\n"
-                f"<b>{i}. {escape_html(player['nickname'])}</b>\n"
-                f"🆔 UID: <code>{escape_html(player['accountId'])}</code>\n"
-                f"🎮 Level: {player['level']} | 🌍 Region: {escape_html(player['region'])}\n"
-                f"⏰ Đăng nhập cuối: {escape_html(player['lastLogin'])}\n"
-                f"</blockquote>\n"
-            )
-
-        if len(all_players) > max_results:
-            reply_text += f"📌 Hiển thị {max_results}/{len(all_players)} kết quả đầu tiên."
-
-        bot.reply_to(message, reply_text, parse_mode="HTML")
-
-    except Exception as e:
-        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n<code>{escape_html(str(e))}</code>", parse_mode="HTML")
 
 ADMINS = [7658079324]  # Thay bằng user_id admin của bạn
 GROUP_CHAT_IDS = [-1002639856138]  # Thay bằng chat_id nhóm
