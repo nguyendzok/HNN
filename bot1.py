@@ -112,6 +112,7 @@ Người Gọi Lệnh : @{username}
 • /checkban - Kiểm tra tk có khoá không 
 • /like - buff like ff
 • /vist - buff lượt xem
+• /gettoken 
 
 | Lệnh Spam Sms |  
 • /spam - spam sms max 1000  
@@ -272,6 +273,48 @@ def visit_handler(message):
     except requests.exceptions.RequestException:
         bot.reply_to(message, "*Sever đang quá tải, vui lòng thử lại sau.*", parse_mode="Markdown")
 
+
+
+def fetch_token(uid, password):
+    url = f"https://ariflexlabs-jwt-gen.onrender.com/fetch-token?uid={uid}&password={password}"
+    try:
+        response = requests.get(url, timeout=10)
+        if response.status_code == 200:
+            data = response.json()
+            return data.get('JWT TOKEN')
+        else:
+            return None
+    except Exception:
+        return None
+
+@bot.message_handler(commands=['gettoken'])
+def handle_get_token(message):
+    try:
+        args = message.text.split(maxsplit=1)
+        if len(args) != 2 or '|' not in args[1]:
+            bot.reply_to(message, "❌ Vui lòng dùng đúng định dạng:\n/gettoken `uid|password`", parse_mode="Markdown")
+            return
+        
+        uid, password = args[1].split('|', 1)
+        msg = bot.reply_to(message, f"⏳ Đang tạo token cho UID `{uid}`...", parse_mode="Markdown")
+
+        token = fetch_token(uid.strip(), password.strip())
+        if token:
+            bot.edit_message_text(
+                chat_id=msg.chat.id,
+                message_id=msg.message_id,
+                text=f"✅ Token cho UID `{uid}`:\n\n`{token}`",
+                parse_mode="Markdown"
+            )
+        else:
+            bot.edit_message_text(
+                chat_id=msg.chat.id,
+                message_id=msg.message_id,
+                text=f"❌ Không thể tạo token cho UID `{uid}`. Vui lòng kiểm tra lại.",
+                parse_mode="Markdown"
+            )
+    except Exception as e:
+        bot.reply_to(message, f"⚠️ Đã xảy ra lỗi: `{str(e)}`", parse_mode="Markdown")
 
 
 
