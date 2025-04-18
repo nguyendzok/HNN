@@ -106,7 +106,7 @@ Thời Gian : {current_time}
 Ngày : {current_date}  
 Người Gọi Lệnh : @{username}  
 
-| LỆNH FREE FIRE |  
+| Lệnh Free Fire |  
 • /start or /bot - Hiển thị danh sách lệnh và hướng dẫn sử dụng.  
 • /ff - Check Info  
 • /checkban - Kiểm tra tk có khoá không  
@@ -114,11 +114,11 @@ Người Gọi Lệnh : @{username}
 • /like - buff like ff
 • /vist - buff lượt xem
 
-| LỆNH SPAM SMS |  
+| Lệnh Spam Sms |  
 • /spam - spam sms max 1000  
 • /sms - spam max 5  
 
-| LỆNH CƠ BẢN |  
+| Lệnh Cơ Bản |  
 • /voice - Chuyển đổi văn bản thành giọng nói  
 • /uptime - Random video gái xinh
 • /anhgai - Random ảnh gái xinh
@@ -127,7 +127,7 @@ Người Gọi Lệnh : @{username}
 • /ngl - spam ngl
 • /tiktok - xem thông tin tiktok
 
-| LỆNH ADMIN |  
+| Lệnh Admin |  
 • /thongbao - Thông báo đến nhóm  
 </blockquote>""", parse_mode="HTML")
 
