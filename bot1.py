@@ -141,26 +141,6 @@ def save_vip_user(user_id):
 
 
 
-ADMIN_ID = 7658079324  # thay bằng ID Telegram của bạn
-
-@bot.message_handler(commands=['themvip'])
-def themvip(message: Message):
-    if message.from_user.id != ADMIN_ID:
-        bot.reply_to(message, "🚫 Bạn không có quyền sử dụng lệnh này.")
-        return
-
-    parts = message.text.split()
-    if len(parts) != 2 or not parts[1].isdigit():
-        bot.reply_to(message, "❓ Dùng đúng cú pháp: /themvip <user_id>")
-        return
-
-    user_id_to_add = int(parts[1])
-    save_vip_user(user_id_to_add)
-    bot.reply_to(message, f"✅ Đã thêm ID {user_id_to_add} vào danh sách VIP.")
-
-
-
-
 
 import time
 import requests
