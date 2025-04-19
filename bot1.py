@@ -1,4 +1,3 @@
-
 import telebot
 import subprocess
 import sys
@@ -17,8 +16,6 @@ import re
 import string
 import os
 import io
-import base64
-import hashlib
 from flask import Flask, request
 from telebot.types import Message
 from threading import Lock
@@ -36,17 +33,11 @@ bot = telebot.TeleBot(BOT_TOKEN)         # <- bot dùng biến này
 
 print(BOT_TOKEN)  # Kiểm tra token có tồn tại không
 print("Bot đã được khởi động thành công")
-admin_diggory = "HaoEsport" 
-name_bot = "SPAM PRO BOT"
 ADMIN_ID = '7658079324'
-facebook = "no"
-users_keys = {}
-key = ""
 blacklist = set()# hoặc set(), hoặc list chứa sẵn các số
 user_cooldown = {}
 active_processes = {}
 last_usage = {} 
-share_log = []
 auto_spam_active = False
 last_sms_time = {}
 global_lock = Lock()
