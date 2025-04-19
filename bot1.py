@@ -780,14 +780,6 @@ def tieng_viet(message):
     keyboard.add(url_button)
     bot.send_message(chat_id, '<blockquote>Click vào nút "<b>Tiếng Việt</b>" để đổi ngôn ngữ sang Tiếng Việt 🇻🇳</blockquote>', reply_markup=keyboard, parse_mode='HTML')
 ######
-@bot.message_handler(func=lambda message: message.text and message.text.startswith("/"))
-def unknown_command(message):
-    known_commands = ['start', 'bot', 'spam', 'uptime', 'voice', 'ngl', 'ff', 'tv', 'checkban', 'tiktok']  # Thêm các lệnh hợp lệ bạn có
-
-    command = message.text.split()[0][1:].split('@')[0]  # Lấy tên lệnh, bỏ dấu "/" và @botname nếu có
-
-    if command not in known_commands:
-        bot.send_message(message.chat.id, "Lệnh này không tồn tại, vui lòng dùng /bot để xem danh sách.")
 
 
 
