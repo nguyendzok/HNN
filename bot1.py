@@ -124,7 +124,6 @@ import requests
 from telebot.types import Message
 
 user_last_like_time = {}
-LIKE_COOLDOWN = 400
 
 @bot.message_handler(commands=['like'])
 def like_handler(message: Message):
@@ -137,10 +136,13 @@ def like_handler(message: Message):
         print(f"Bot không thể gửi hành động typing: {e}")
         return
 
-    last_time = user_last_like_time.get(user_id, 0)
-    if current_time - last_time < LIKE_COOLDOWN:
-        wait_time = int(LIKE_COOLDOWN - (current_time - last_time))
-        bot.reply_to(message, f"<blockquote>⏳ Vui lòng chờ {wait_time} giây trước khi dùng lại lệnh này.</blockquote>", parse_mode="HTML")
+    # Lấy thời gian hiện tại theo ngày (chỉ so sánh ngày)
+    current_day = time.strftime("%Y-%m-%d", time.gmtime(current_time))
+    last_time = user_last_like_time.get(user_id, None)
+
+    # Kiểm tra nếu người dùng đã thực hiện lệnh trong ngày hôm nay
+    if last_time and last_time == current_day:
+        bot.reply_to(message, "<blockquote>⏳ Bạn chỉ có thể sử dụng lệnh này một lần mỗi ngày.</blockquote>", parse_mode="HTML")
         return
 
     parts = message.text.split()
@@ -190,7 +192,8 @@ def like_handler(message: Message):
         )
         return
 
-    user_last_like_time[user_id] = current_time
+    # Lưu lại ngày người dùng thực hiện lệnh
+    user_last_like_time[user_id] = current_day
 
     name = safe_get(data, 'PlayerNickname')
     uid_str = safe_get(data, 'UID')
