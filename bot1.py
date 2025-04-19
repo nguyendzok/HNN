@@ -150,11 +150,13 @@ def like_handler(message: Message):
     user_last_like_time[user_id] = current_time
 
     command_parts = message.text.split()
-    if len(command_parts) != 2:
-        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like 1733997441</blockquote>", parse_mode="HTML")
+    if len(command_parts) < 2:
+        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like 1733997441 [api2]</blockquote>", parse_mode="HTML")
         return
 
     uid = command_parts[1]
+    force_api2 = len(command_parts) == 3 and command_parts[2].lower() == "api2"
+
     primary_api = f"https://dichvukey.site/likeff2.php?key=vlong&uid={uid}"
     fallback_api = f"https://likes-api-ff.vercel.app/likes?uid={uid}&region=vn&key=Scromnyi225"
 
@@ -186,17 +188,21 @@ def like_handler(message: Message):
         print(f"Lỗi gửi tin nhắn loading: {e}")
         return
 
-    data = fetch_api(primary_api)
-
+    data = None
     source = "primary"
-    if not data:
-        print("API chính lỗi, thử API phụ...")
+
+    if force_api2:
         data = fetch_api(fallback_api)
-        if not data:
-            bot.edit_message_text("<blockquote>Server đang bảo trì hoặc quá tải, vui lòng thử lại sau.</blockquote>",
-                                  chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
-            return
         source = "fallback"
+    else:
+        data = fetch_api(primary_api)
+        if not data or data.get("status") != 1:
+            data = fetch_api(fallback_api)
+            source = "fallback"
+            if not data or data.get("status") != 1:
+                bot.edit_message_text("<blockquote>Server đang bảo trì hoặc quá tải, vui lòng thử lại sau.</blockquote>",
+                                      chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
+                return
 
     status_code = data.get("status")
 
@@ -206,7 +212,7 @@ def like_handler(message: Message):
         like_before = safe_get(data, 'likes_before')
         like_after = safe_get(data, 'likes_after')
         like_sent = extract_number(data.get('likes_given'))
-    else:  # fallback API
+    else:
         name = safe_get(data, 'PlayerNickname')
         uid_str = safe_get(data, 'UID')
         like_before = safe_get(data, 'LikesbeforeCommand')
@@ -215,7 +221,7 @@ def like_handler(message: Message):
 
     reply_text = (
         "<blockquote>"
-        "BUFF LIKE THÀNH CÔNG✅\n"
+        f"BUFF LIKE THÀNH CÔNG✅ (Dùng {'API phụ' if source == 'fallback' else 'API chính'})\n"
         f"╭👤 Name: {name}\n"
         f"├🆔 UID : {uid_str}\n"
         f"├🌏 Region : vn\n"
