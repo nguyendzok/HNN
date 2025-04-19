@@ -205,7 +205,7 @@ def like_handler(message: Message):
         response.raise_for_status()
         data = response.json()
     except requests.exceptions.RequestException:
-        bot.edit_message_text("<blockquote>Server đang quá tải, vui lòng thử lại sau.</blockquote>",
+        bot.edit_message_text("<blockquote>Server đang bảo trì vui lòng sử dụng lại sau.</blockquote>",
                               chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
         return
     except ValueError:
