@@ -441,41 +441,42 @@ def handle_command(message):
 
     try:
         data = fetch_data(user_id, region)
-        if not data or data.get('status') != 'success':
+        if not data:
             try:
                 bot.reply_to(message, "<blockquote>❌ Không tìm thấy người chơi hoặc server quá tải!</blockquote>", parse_mode="HTML")
             except:
                 bot.send_message(message.chat.id, "<blockquote>❌ Không tìm thấy người chơi hoặc server quá tải!</blockquote>", parse_mode="HTML")
             return
 
-        basic = data['data'].get('basic_info', {})
-        clan = data['data'].get('clan', {})
-        leader = clan.get('leader', {})
+        basic = data['basicInfo']
+        if not basic:
+            try:
+                bot.reply_to(message, "<blockquote>❌ Không có thông tin người chơi!</blockquote>", parse_mode="HTML")
+            except:
+                bot.send_message(message.chat.id, "<blockquote>❌ Không có thông tin người chơi!</blockquote>", parse_mode="HTML")
+            return
+
+        clan = data.get('clanBasicInfo', {})
+        leader = clan.get('captainId', 'Không có')
 
         def g(key, dic): return dic.get(key, 'Không có')
 
         info = f"""
 <blockquote>
 <b>📌 Thông tin tài khoản:</b>
-Tên: {g('name', basic)}
-ID: {g('id', basic)}
+Tên: {g('nickname', basic)}
+ID: {g('accountId', basic)}
 Cấp độ: {g('level', basic)}
-Booyah Pass: {g('booyah_pass_level', basic)}
-Lượt thích: {g('likes', basic)}
-Máy chủ: {g('server', basic)}
-Tiểu sử: {g('bio', basic)}
-Ngày tạo: {g('account_created', basic)}
+Lượt thích: {g('liked', basic)}
+Máy chủ: {g('region', basic)}
 
 <b>👥 Thông tin quân đoàn:</b>
-Tên: {g('name', clan)}
-Cấp độ: {g('level', clan)}
-Thành viên: {g('members_count', clan)}
+Tên: {g('clanName', clan)}
+Cấp độ: {g('clanLevel', clan)}
+Chỉ huy: {g('captainId', clan)}
 
 <b>👑 Chủ quân đoàn:</b>
-Tên: {g('name', leader)}
-Cấp độ: {g('level', leader)}
-Lượt thích: {g('likes', leader)}
-Ngày tạo: {g('account_created', leader)}
+ID chủ quân đoàn: {leader}
 </blockquote>
 """
         try:
@@ -489,25 +490,6 @@ Ngày tạo: {g('account_created', leader)}
         except:
             bot.send_message(message.chat.id, "<blockquote>⚠️ Đã xảy ra lỗi khi xử lý yêu cầu.</blockquote>", parse_mode="HTML")
         print(e)
-
-
-
-import requests
-@bot.message_handler(commands=['video'])
-def random_video(message):
-    
-    try:
-        res = requests.get("https://api.ffcommunity.site/randomvideo.php")
-        data = res.json()
-        video_url = data.get("url")
-
-        if video_url:
-            bot.send_chat_action(message.chat.id, "upload_video")
-            bot.send_video(message.chat.id, video=video_url, caption="Video gái xinh hôm nay nè!")
-        else:
-            bot.send_message(message.chat.id, "Không lấy được video, thử lại sau nhé!")
-    except Exception as e:
-        bot.send_message(message.chat.id, "Đã xảy ra lỗi khi lấy video.")
 
 
 
