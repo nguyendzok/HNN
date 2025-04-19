@@ -119,8 +119,6 @@ Người Gọi Lệnh : @{username}
 </blockquote>""", parse_mode="HTML")
 
 
-
-
 import time
 import requests
 from telebot.types import Message
@@ -136,51 +134,22 @@ def like_handler(message: Message):
     try:
         bot.send_chat_action(message.chat.id, "typing")
     except Exception as e:
-        print(f"Bot không thể gửi tin nhắn trong group: {e}")
+        print(f"Bot không thể gửi hành động typing: {e}")
         return
 
     last_time = user_last_like_time.get(user_id, 0)
-    time_diff = current_time - last_time
-
-    if time_diff < LIKE_COOLDOWN:
-        wait_time = int(LIKE_COOLDOWN - time_diff)
+    if current_time - last_time < LIKE_COOLDOWN:
+        wait_time = int(LIKE_COOLDOWN - (current_time - last_time))
         bot.reply_to(message, f"<blockquote>⏳ Vui lòng chờ {wait_time} giây trước khi dùng lại lệnh này.</blockquote>", parse_mode="HTML")
         return
 
-    user_last_like_time[user_id] = current_time
-
-    command_parts = message.text.split()
-    if len(command_parts) < 2:
-        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like 1733997441 [api2]</blockquote>", parse_mode="HTML")
+    parts = message.text.split()
+    if len(parts) < 2:
+        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like UID</blockquote>", parse_mode="HTML")
         return
 
-    uid = command_parts[1]
-    force_api2 = len(command_parts) == 3 and command_parts[2].lower() == "api2"
-
-    primary_api = f"https://dichvukey.site/likeff2.php?key=vlong&uid={uid}"
-    fallback_api = f"https://likes-api-ff.vercel.app/likes?uid={uid}&region=vn&key=Scromnyi225"
-
-    def safe_get(data, key):
-        value = data.get(key)
-        return str(value) if value not in [None, "", "null"] else "Không xác định"
-
-    def extract_number(text):
-        if not text:
-            return "Không xác định"
-        if isinstance(text, int):
-            return str(text)
-        for part in str(text).split():
-            if part.isdigit():
-                return part
-        return "Không xác định"
-
-    def fetch_api(url):
-        try:
-            response = requests.get(url, timeout=15)
-            response.raise_for_status()
-            return response.json()
-        except:
-            return None
+    uid = parts[1]
+    api_url = f"https://likes-api-ff.vercel.app/likes?uid={uid}&region=vn&key=Scromnyi225"
 
     try:
         loading_msg = bot.reply_to(message, "<blockquote>⏳ Đang tiến hành buff like...</blockquote>", parse_mode="HTML")
@@ -188,40 +157,50 @@ def like_handler(message: Message):
         print(f"Lỗi gửi tin nhắn loading: {e}")
         return
 
-    data = None
-    source = "primary"
+    def safe_get(data, key):
+        value = data.get(key)
+        return str(value) if value not in [None, "", "null"] else "Không xác định"
 
-    if force_api2:
-        data = fetch_api(fallback_api)
-        source = "fallback"
-    else:
-        data = fetch_api(primary_api)
-        if not data or data.get("status") != 1:
-            data = fetch_api(fallback_api)
-            source = "fallback"
-            if not data or data.get("status") != 1:
-                bot.edit_message_text("<blockquote>Server đang bảo trì hoặc quá tải, vui lòng thử lại sau.</blockquote>",
-                                      chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
-                return
+    def extract_number(text):
+        if isinstance(text, int):
+            return str(text)
+        for part in str(text).split():
+            if part.isdigit():
+                return part
+        return "Không xác định"
 
-    status_code = data.get("status")
+    try:
+        response = requests.get(api_url, timeout=15)
+        data = response.json()
+    except Exception as e:
+        bot.edit_message_text(
+            "<blockquote>Lỗi kết nối đến API. Vui lòng thử lại sau.</blockquote>",
+            chat_id=loading_msg.chat.id,
+            message_id=loading_msg.message_id,
+            parse_mode="HTML"
+        )
+        return
 
-    if source == "primary":
-        name = safe_get(data, 'PlayerNickname')
-        uid_str = safe_get(data, 'uid')
-        like_before = safe_get(data, 'likes_before')
-        like_after = safe_get(data, 'likes_after')
-        like_sent = extract_number(data.get('likes_given'))
-    else:
-        name = safe_get(data, 'PlayerNickname')
-        uid_str = safe_get(data, 'UID')
-        like_before = safe_get(data, 'LikesbeforeCommand')
-        like_after = safe_get(data, 'LikesafterCommand')
-        like_sent = extract_number(data.get('LikesGivenByAPI'))
+    if not data or data.get("status") != 1:
+        bot.edit_message_text(
+            "<blockquote>Server đang bảo trì hoặc quá tải, vui lòng thử lại sau.</blockquote>",
+            chat_id=loading_msg.chat.id,
+            message_id=loading_msg.message_id,
+            parse_mode="HTML"
+        )
+        return
+
+    user_last_like_time[user_id] = current_time
+
+    name = safe_get(data, 'PlayerNickname')
+    uid_str = safe_get(data, 'UID')
+    like_before = safe_get(data, 'LikesbeforeCommand')
+    like_after = safe_get(data, 'LikesafterCommand')
+    like_sent = extract_number(data.get('LikesGivenByAPI'))
 
     reply_text = (
         "<blockquote>"
-        f"BUFF LIKE THÀNH CÔNG✅ (Dùng {'API phụ' if source == 'fallback' else 'API chính'})\n"
+        f"BUFF LIKE THÀNH CÔNG✅ (Dùng API chính)\n"
         f"╭👤 Name: {name}\n"
         f"├🆔 UID : {uid_str}\n"
         f"├🌏 Region : vn\n"
@@ -230,15 +209,23 @@ def like_handler(message: Message):
         f"╰👍 Like được gửi: {like_sent}"
     )
 
-    if status_code == 2:
+    if data.get("status") == 2:
         reply_text += "\n⚠️ Giới hạn like hôm nay, mai hãy thử lại sau."
 
     reply_text += "</blockquote>"
 
     try:
-        bot.edit_message_text(reply_text, chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
+        bot.edit_message_text(
+            reply_text,
+            chat_id=loading_msg.chat.id,
+            message_id=loading_msg.message_id,
+            parse_mode="HTML"
+        )
     except Exception as e:
         print(f"Lỗi gửi kết quả: {e}")
+
+
+
 
 
 import time
