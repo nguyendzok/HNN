@@ -118,18 +118,6 @@ Người Gọi Lệnh : @{username}
 • /thongbao - Thông báo đến nhóm  
 </blockquote>""", parse_mode="HTML")
 
-VIP_FILE = "vip_users.txt"
-
-def is_user_vip(user_id):
-    if not os.path.exists(VIP_FILE):
-        return False
-    with open(VIP_FILE, "r") as f:
-        return str(user_id) in f.read()
-
-def save_vip_user(user_id):
-    with open(VIP_FILE, "a") as f:
-        f.write(f"{user_id}\n")
-
 
 
 
