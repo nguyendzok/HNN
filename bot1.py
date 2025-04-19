@@ -464,16 +464,16 @@ def handle_command(message):
         info = f"""
 <blockquote>
 <b>📌 Thông tin tài khoản:</b>
-Tên: {g('nickname', basic)}
-ID: {g('accountId', basic)}
-Cấp độ: {g('level', basic)}
-Lượt thích: {g('liked', basic)}
-Máy chủ: {g('region', basic)}
+╭Tên: {g('nickname', basic)}
+├ID: {g('accountId', basic)}
+├Cấp độ: {g('level', basic)}
+├Lượt thích: {g('liked', basic)}
+╰Máy chủ: {g('region', basic)}
 
 <b>👥 Thông tin quân đoàn:</b>
-Tên: {g('clanName', clan)}
-Cấp độ: {g('clanLevel', clan)}
-Chỉ huy: {g('captainId', clan)}
+╭Tên: {g('clanName', clan)}
+├Cấp độ: {g('clanLevel', clan)}
+╰Chỉ huy: {g('captainId', clan)}
 
 <b>👑 Chủ quân đoàn:</b>
 ID chủ quân đoàn: {leader}
