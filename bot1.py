@@ -674,8 +674,7 @@ import tempfile
 import requests
 
 user_last_command_time = {}
-#anh sách số bị cấm, bạn có thể cập nhật thêm
-# users = {}  # Nếu bạn dùng để lấy plan, username...
+blacklist = []  # Danh sách số bị cấm, bạn có thể thêm vào
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -686,12 +685,12 @@ def supersms(message):
         elapsed_time = current_time - user_last_command_time[user_id]
         if elapsed_time < 100:
             remaining_time = 100 - elapsed_time
-            bot.reply_to(message, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
+            bot.send_message(message.chat.id, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
             return
 
     params = message.text.split()[1:]
     if len(params) != 2:
-        bot.reply_to(message, 
+        bot.send_message(message.chat.id,
             "<blockquote>» SAI ĐỊNH DẠNG!!!\n\n"
             "» Vui Lòng Nhập Đúng Định Dạng Bên Dưới\n\n"
             "» /spam + SĐT + SỐ_LẦN\n"
@@ -703,25 +702,28 @@ def supersms(message):
     sdt, count = params
 
     if not count.isdigit():
-        bot.reply_to(message, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
+        bot.send_message(message.chat.id, "Số lần spam không hợp lệ. Vui lòng chỉ nhập số.")
         return
 
     count = int(count)
 
     if count > 1000:
-        bot.reply_to(message, "/spam sdt số_lần tối đa là 1000")
+        bot.send_message(message.chat.id, "/spam sdt số_lần tối đa là 1000")
         return
 
     if sdt in blacklist:
-        bot.reply_to(message, f"Số điện thoại {sdt} đã bị cấm spam.")
+        bot.send_message(message.chat.id, f"Số điện thoại {sdt} đã bị cấm spam.")
         return
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
     # Gửi hiệu ứng đồng hồ cát
-    loading_msg = bot.reply_to(message, "⏳")
+    loading_msg = bot.send_message(message.chat.id, "⏳")
     time.sleep(1.3)
-    bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
+    try:
+        bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
+    except Exception as e:
+        print(f"Lỗi khi chuyển ⏳ -> ⌛: {e}")
     time.sleep(1.3)
 
     diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
@@ -734,12 +736,15 @@ def supersms(message):
 │ 📎 Vòng Lặp: {count}
 └────────────⭓'''
 
-    bot.edit_message_text(
-        chat_id=loading_msg.chat.id,
-        message_id=loading_msg.message_id,
-        text=f"<blockquote>{diggory_chat3}</blockquote>",
-        parse_mode="HTML"
-    )
+    try:
+        bot.edit_message_text(
+            chat_id=loading_msg.chat.id,
+            message_id=loading_msg.message_id,
+            text=f"<blockquote>{diggory_chat3}</blockquote>",
+            parse_mode="HTML"
+        )
+    except Exception as e:
+        print(f"Lỗi khi chỉnh tin nhắn kết quả: {e}")
 
     user_last_command_time[user_id] = time.time()
 
