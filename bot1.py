@@ -125,10 +125,7 @@ import time
 import requests
 from telebot.types import Message
 
-# dict lưu user_id và thời gian cuối cùng gọi lệnh
 user_last_like_time = {}
-
-# thời gian chờ (giây)
 LIKE_COOLDOWN = 400
 
 @bot.message_handler(commands=['like'])
@@ -136,7 +133,6 @@ def like_handler(message: Message):
     user_id = message.from_user.id
     current_time = time.time()
 
-    # Nếu bot không có quyền gửi tin nhắn
     try:
         bot.send_chat_action(message.chat.id, "typing")
     except Exception as e:
@@ -151,27 +147,38 @@ def like_handler(message: Message):
         bot.reply_to(message, f"<blockquote>⏳ Vui lòng chờ {wait_time} giây trước khi dùng lại lệnh này.</blockquote>", parse_mode="HTML")
         return
 
-    user_last_like_time[user_id] = current_time  # cập nhật thời gian sử dụng
+    user_last_like_time[user_id] = current_time
 
-    command_parts = message.text.split()  
-    if len(command_parts) != 2:  
-        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like 1733997441</blockquote>", parse_mode="HTML")  
-        return  
+    command_parts = message.text.split()
+    if len(command_parts) != 2:
+        bot.reply_to(message, "<blockquote>Cú pháp đúng: /like 1733997441</blockquote>", parse_mode="HTML")
+        return
 
-    idgame = command_parts[1]  
-    urllike = f"https://dichvukey.site/likeff2.php?key=vlong&uid={idgame}"  
+    uid = command_parts[1]
+    primary_api = f"https://dichvukey.site/likeff2.php?key=vlong&uid={uid}"
+    fallback_api = f"https://likes-api-ff.vercel.app/likes?uid={uid}&region=vn&key=Scromnyi225"
 
     def safe_get(data, key):
         value = data.get(key)
-        return value if value not in [None, ""] else "Không xác định"
+        return str(value) if value not in [None, "", "null"] else "Không xác định"
 
     def extract_number(text):
         if not text:
             return "Không xác định"
-        for part in text.split():
+        if isinstance(text, int):
+            return str(text)
+        for part in str(text).split():
             if part.isdigit():
                 return part
         return "Không xác định"
+
+    def fetch_api(url):
+        try:
+            response = requests.get(url, timeout=15)
+            response.raise_for_status()
+            return response.json()
+        except:
+            return None
 
     try:
         loading_msg = bot.reply_to(message, "<blockquote>⏳ Đang tiến hành buff like...</blockquote>", parse_mode="HTML")
@@ -179,30 +186,42 @@ def like_handler(message: Message):
         print(f"Lỗi gửi tin nhắn loading: {e}")
         return
 
-    try:
-        response = requests.get(urllike, timeout=15)
-        response.raise_for_status()
-        data = response.json()
-    except requests.exceptions.RequestException:
-        bot.edit_message_text("<blockquote>Server đang bảo trì vui lòng sử dụng lại sau.</blockquote>",
-                              chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
-        return
-    except ValueError:
-        bot.edit_message_text("<blockquote>Phản hồi từ server không hợp lệ.</blockquote>",
-                              chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
-        return
+    data = fetch_api(primary_api)
+
+    source = "primary"
+    if not data:
+        print("API chính lỗi, thử API phụ...")
+        data = fetch_api(fallback_api)
+        if not data:
+            bot.edit_message_text("<blockquote>Server đang bảo trì hoặc quá tải, vui lòng thử lại sau.</blockquote>",
+                                  chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, parse_mode="HTML")
+            return
+        source = "fallback"
 
     status_code = data.get("status")
+
+    if source == "primary":
+        name = safe_get(data, 'PlayerNickname')
+        uid_str = safe_get(data, 'uid')
+        like_before = safe_get(data, 'likes_before')
+        like_after = safe_get(data, 'likes_after')
+        like_sent = extract_number(data.get('likes_given'))
+    else:  # fallback API
+        name = safe_get(data, 'PlayerNickname')
+        uid_str = safe_get(data, 'UID')
+        like_before = safe_get(data, 'LikesbeforeCommand')
+        like_after = safe_get(data, 'LikesafterCommand')
+        like_sent = extract_number(data.get('LikesGivenByAPI'))
 
     reply_text = (
         "<blockquote>"
         "BUFF LIKE THÀNH CÔNG✅\n"
-        f"╭👤 Name: {safe_get(data, 'PlayerNickname')}\n"
-        f"├🆔 UID : {safe_get(data, 'uid')}\n"
+        f"╭👤 Name: {name}\n"
+        f"├🆔 UID : {uid_str}\n"
         f"├🌏 Region : vn\n"
-        f"├📉 Like trước đó: {safe_get(data, 'likes_before')}\n"
-        f"├📈 Like sau khi gửi: {safe_get(data, 'likes_after')}\n"
-        f"╰👍 Like được gửi: {extract_number(data.get('likes_given'))}"
+        f"├📉 Like trước đó: {like_before}\n"
+        f"├📈 Like sau khi gửi: {like_after}\n"
+        f"╰👍 Like được gửi: {like_sent}"
     )
 
     if status_code == 2:
