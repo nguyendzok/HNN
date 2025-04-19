@@ -221,9 +221,9 @@ def like_handler(message: Message):
         f"╭👤 Name: {safe_get(data, 'PlayerNickname')}\n"
         f"├🆔 UID : {safe_get(data, 'uid')}\n"
         f"├🌏 Region : vn\n"
-        f"├📉 Like trước đó: {safe_get(data, 'LikesbeforeCommand')}\n"
-        f"├📈 Like sau khi gửi: {safe_get(data, 'LikesafterCommand')}\n"
-        f"╰👍 Like được gửi: {extract_number(data.get('LikesGivenByAPI'))}"
+        f"├📉 Like trước đó: {safe_get(data, 'likes_before')}\n"
+        f"├📈 Like sau khi gửi: {safe_get(data, 'likes_after')}\n"
+        f"╰👍 Like được gửi: {extract_number(data.get('likes_given'))}"
     )
 
     if status_code == 2:
