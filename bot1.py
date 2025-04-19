@@ -787,7 +787,8 @@ def unknown_command(message):
     command = message.text.split()[0][1:].split('@')[0]  # Lấy tên lệnh, bỏ dấu "/" và @botname nếu có
 
     if command not in known_commands:
-        bot.reply_to(message, "Lệnh này không tồn tại vui lòng sử dụng lệnh /bot để xem.")
+        bot.send_message(message.chat.id, "Lệnh này không tồn tại, vui lòng dùng /bot để xem danh sách.")
+
 
 
 
