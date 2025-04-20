@@ -269,7 +269,7 @@ def visit_handler(message):
             return
 
         # Dùng regex để trích xuất các giá trị
-        def extract(field, default="Không rõ"):
+        def extract(field, default="Hết Hạn"):
             match = re.search(fr"{field}:\s*(.+)", text)
             return match.group(1).strip() if match else default
 
