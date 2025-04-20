@@ -102,7 +102,7 @@ Người Gọi Lệnh : @{username}
 • /ff - Check Info  
 • /checkban - Kiểm tra tk có khoá không 
 • /like - buff like ff
-• /vist - buff lượt xem
+• /search - tìm acc bằng name
 
 | Lệnh Spam Sms |  
 • /spam - spam sms max 1000   
@@ -225,6 +225,66 @@ def like_handler(message: Message):
         )
     except Exception as e:
         print(f"Lỗi gửi kết quả: {e}")
+
+
+last_used_time = {}
+COOLDOWN = 100  # Thời gian chờ giữa các lần dùng lệnh (giây)
+
+def format_time(timestamp):
+    return datetime.utcfromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+
+@bot.message_handler(commands=['search'])
+def search_nickname(message):
+    user_id = message.from_user.id
+    now = time.time()
+
+    # Kiểm tra cooldown
+    if user_id in last_used_time:
+        elapsed = now - last_used_time[user_id]
+        if elapsed < COOLDOWN:
+            remaining = int(COOLDOWN - elapsed)
+            bot.reply_to(message, f"Vui lòng chờ {remaining}s trước khi sử dụng lại lệnh này.")
+            return
+
+    last_used_time[user_id] = now  # Cập nhật thời gian dùng lệnh
+
+    args = message.text.split(' ', 1)
+    if len(args) < 2:
+        bot.reply_to(message, "Vui lòng nhập nickname để tìm kiếm.\nVí dụ: /search HàoEsports|")
+        return
+
+    nickname = args[1].strip()
+    url = f"https://search-name-tanhung.vercel.app/name?nickname={nickname}"
+
+    try:
+        res = requests.get(url)
+        data = res.json()
+
+        if not data:
+            bot.reply_to(message, f"Không tìm thấy kết quả nào với nickname: <b>{nickname}</b>", parse_mode="HTML")
+            return
+
+        # Giới hạn 10 kết quả
+        data = data[:10]
+
+        results = []
+        for idx, acc in enumerate(data, start=1):
+            info = (
+                f"<blockquote>"
+                f"<b>{idx}.</b> <b>Nickname:</b> {acc['nickname']}<br>"
+                f"<b>ID:</b> {acc['accountId']}<br>"
+                f"<b>Cấp:</b> {acc['level']}<br>"
+                f"<b>Khu vực:</b> {acc['region']}<br>"
+                f"<b>Đăng nhập gần nhất:</b> {format_time(acc['lastLogin'])}"
+                f"</blockquote>"
+            )
+            results.append(info)
+
+        reply_text = "\n".join(results)
+        bot.reply_to(message, reply_text, parse_mode="HTML")
+
+    except Exception as e:
+        bot.reply_to(message, "Đã xảy ra lỗi khi truy cập API.")
 
 
 
