@@ -109,7 +109,6 @@ Người Gọi Lệnh : @{username}
 
 | Lệnh Cơ Bản |  
 • /voice - Chuyển đổi văn bản thành giọng nói  
-• /video - Random video gái xinh
 • /tv - Dịch tiếng Anh qua tiếng Việt  
 • /id - Lấy id bản thân
 • /tiktok - xem thông tin tiktok
@@ -502,17 +501,17 @@ GROUP_CHAT_IDS = [-1002639856138]  # Thay bằng chat_id nhóm
 @bot.message_handler(commands=['thongbao'])
 def thongbao_to_groups(message):
     if message.chat.type != 'private':
-        bot.reply_to(message, "⚠️ Vui lòng dùng lệnh này trong chat riêng với bot.")
+        safe_reply(message, "⚠️ Vui lòng dùng lệnh này trong chat riêng với bot.")
         return
 
     if message.from_user.id not in ADMINS:
-        bot.reply_to(message, "🚫 Bạn không có quyền dùng lệnh này.")
+        safe_reply(message, "🚫 Bạn không có quyền dùng lệnh này.")
         return
 
     try:
         announcement = message.text.split(' ', 1)[1]
     except IndexError:
-        bot.reply_to(message, "❗ Vui lòng nhập nội dung: /announce <nội dung>")
+        safe_reply(message, "❗ Vui lòng nhập nội dung: /thongbao <nội dung>")
         return
 
     success = 0
@@ -523,7 +522,8 @@ def thongbao_to_groups(message):
         except Exception as e:
             print(f"Lỗi gửi nhóm {chat_id}: {e}")
 
-    bot.reply_to(message, f"✅ Đã gửi thông báo đến {success} nhóm.")
+    safe_reply(message, f"✅ Đã gửi thông báo đến {success} nhóm.")
+
 
 
 
