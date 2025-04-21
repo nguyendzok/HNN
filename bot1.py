@@ -695,8 +695,8 @@ def supersms(message):
 
     if user_id in user_last_command_time:
         elapsed_time = current_time - user_last_command_time[user_id]
-        if elapsed_time < 100:
-            remaining_time = 100 - elapsed_time
+        if elapsed_time < 400:
+            remaining_time = 400 - elapsed_time
             bot.send_message(message.chat.id, f"Vui lòng đợi {remaining_time:.1f} giây trước khi sử dụng lệnh lại.")
             return
 
@@ -731,21 +731,19 @@ def supersms(message):
 
     # Gửi hiệu ứng đồng hồ cát
     loading_msg = bot.send_message(message.chat.id, "⏳")
-    time.sleep(1.3)
+    time.sleep(2)
     try:
         bot.edit_message_text(chat_id=loading_msg.chat.id, message_id=loading_msg.message_id, text="⌛")
     except Exception as e:
         print(f"Lỗi khi chuyển ⏳ -> ⌛: {e}")
-    time.sleep(1.3)
+    time.sleep(2)
 
     diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
-│ 🚀 Attack Sent Successfully
+│ 🚀 Spam Thành Công
 │ 💳 Plan Vip: Min 1 | Max 1000
 │ 📞 Phone: {sdt}
-│ ⚔️ Attack By: @{message.from_user.username or "None"}
-│ 🔗 Api: 1x (MAX)
-│ ⏳ Delay: 20s
-│ 📎 Vòng Lặp: {count}
+│ ⚔️ Người Dùng : @{message.from_user.username or "None"}
+│ 📎 Vòng Lặp : {count}
 └────────────⭓'''
 
     try:
