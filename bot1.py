@@ -107,7 +107,8 @@ Người Gọi Lệnh : @{username}
 | Lệnh Spam Sms |  
 • /spam - spam sms max 1000   
 
-| Lệnh Cơ Bản |  
+| Lệnh Cơ Bản |
+• /info - xem info tk
 • /voice - Chuyển đổi văn bản thành giọng nói  
 • /tv - Dịch tiếng Anh qua tiếng Việt  
 • /id - Lấy id bản thân
@@ -287,6 +288,48 @@ def search_nickname(message):
         bot.reply_to(message, "Đã xảy ra lỗi khi truy cập API.")
 
 
+@bot.message_handler(commands=['info'])
+def handle_check(message: Message):
+    # Lấy thông tin người dùng
+    user = message.reply_to_message.from_user if message.reply_to_message else message.from_user
+    user_photos = bot.get_user_profile_photos(user.id)
+    bio = bot.get_chat(user.id).bio or "Không có bio"
+
+    # Lấy chi tiết người dùng
+    user_first_name = user.first_name
+    user_last_name = user.last_name or ""
+    user_username = ("@" + user.username) if user.username else "Không có username"
+    user_language = user.language_code or "Không xác định"
+
+    # Lấy trạng thái của người dùng trong nhóm
+    status_dict = {
+        "creator": "Admin chính",
+        "administrator": "Admin",
+        "member": "Thành viên",
+        "restricted": "Bị hạn chế",
+        "left": "Rời nhóm",
+        "kicked": "Bị đuổi khỏi nhóm"
+    }
+    status = status_dict.get(bot.get_chat_member(message.chat.id, user.id).status, "Không xác định")
+
+    # Chuẩn bị nội dung tin nhắn
+    caption = (
+        f"👤 Thông Tin Của {'Bạn' if user.id == message.from_user.id else 'Người Dùng'}\n"
+        f"<blockquote>┌ ID: <code>{user.id}</code>\n"
+        f"├ Tên: {user_first_name} {user_last_name}\n"
+        f"├ Username: {user_username}\n"
+        f"├ Ngôn ngữ: {user_language}\n"
+        f"├ Trạng thái: {status}\n"
+        f"├ Bio: {bio}\n"
+        f"└ Avatar: {'Đã có avatar' if user_photos.total_count > 0 else 'Chưa có avatar'}</blockquote>"
+    )
+
+    # Gửi ảnh đại diện nếu có, nếu không thì chỉ gửi tin nhắn văn bản
+    if user_photos.total_count > 0:
+        avatar_file_id = user_photos.photos[0][-1].file_id
+        bot.send_photo(message.chat.id, avatar_file_id, caption=caption, parse_mode='HTML', reply_to_message_id=message.message_id)
+    else:
+        bot.reply_to(message, caption, parse_mode='HTML')
 
 
 
