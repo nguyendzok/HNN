@@ -844,7 +844,23 @@ def tieng_viet(message):
 
 
 
-if __name__ == "__main__":
-    bot_active = True
-    bot.polling()  #
-    
+def run_flask():
+    app = Flask(__name__)
+
+    @app.route('/')
+    def home():
+        return "Bot đang chạy!"
+
+    app.run(host="0.0.0.0", port=8080)  # Cổng phải là 8080 nếu chạy trên Heroku
+
+# Chạy Flask trên một thread riêng
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.start()
+
+# Chạy bot trong một thread riêng để không bị gián đoạn khi Flask đang chạy
+def run_bot():
+    bot.polling(none_stop=True)
+
+# Chạy bot
+bot_thread = threading.Thread(target=run_bot)
+bot_thread.start()
