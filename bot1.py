@@ -28,13 +28,12 @@ import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
 keep_alive()
-BOT_TOKEN = os.environ.get('BOT_TOKEN')  # <- thêm dòng này
-bot = telebot.TeleBot(BOT_TOKEN)         # <- bot dùng biến này
-
-print(BOT_TOKEN)  # Kiểm tra token có tồn tại không
+BOT_TOKEN = os.environ.get('7760706295:AAEt3CTNHqiJZyFQU7lJrvatXZST_JwD5Ds')
+bot = telebot.TeleBot(BOT_TOKEN)
+print(BOT_TOKEN)
 print("Bot đã được khởi động thành công")
-ADMIN_ID = '7658079324'
-blacklist = set()# hoặc set(), hoặc list chứa sẵn các số
+ADMIN_ID = '6367528163'
+blacklist = set()
 user_cooldown = {}
 active_processes = {}
 last_usage = {} 
@@ -45,7 +44,7 @@ allowed_users = []
 processes = []
 user_warnings = {}
 admin_mode = False
-ADMIN_ID = 7658079324 #nhớ thay id nhé nếu k thay k duyệt dc vip đâu v.L..ong.a
+ADMIN_ID = 6367528163 
 connection = sqlite3.connect('user_data.db')
 cursor = connection.cursor()
 last_command_time = {}
@@ -77,7 +76,7 @@ def TimeStamp():
   now = str(datetime.date.today())
   return now
 
-#vLong zz#v
+
 
 
 
@@ -132,11 +131,11 @@ def like_handler(message: Message):
         print(f"Bot không thể gửi hành động typing: {e}")
         return
 
-    # Lấy thời gian hiện tại theo ngày (chỉ so sánh ngày)
+
     current_day = time.strftime("%Y-%m-%d", time.gmtime(current_time))
     last_time = user_last_like_time.get(user_id, None)
 
-    # Kiểm tra nếu người dùng đã thực hiện lệnh trong ngày hôm nay
+
     if last_time and last_time == current_day:
         bot.reply_to(message, "<blockquote>⏳ Bạn chỉ có thể sử dụng lệnh này một lần mỗi ngày.</blockquote>", parse_mode="HTML")
         return
@@ -188,7 +187,7 @@ def like_handler(message: Message):
         )
         return
 
-    # Lưu lại ngày người dùng thực hiện lệnh
+
     user_last_like_time[user_id] = current_day
 
     name = safe_get(data, 'PlayerNickname')
@@ -227,18 +226,18 @@ def like_handler(message: Message):
 
 @bot.message_handler(commands=['info'])
 def handle_check(message: Message):
-    # Lấy thông tin người dùng
+
     user = message.reply_to_message.from_user if message.reply_to_message else message.from_user
     user_photos = bot.get_user_profile_photos(user.id)
     bio = bot.get_chat(user.id).bio or "Không có bio"
 
-    # Lấy chi tiết người dùng
+
     user_first_name = user.first_name
     user_last_name = user.last_name or ""
     user_username = ("@" + user.username) if user.username else "Không có username"
     user_language = user.language_code or "Không xác định"
 
-    # Lấy trạng thái của người dùng trong nhóm
+
     status_dict = {
         "creator": "Admin chính",
         "administrator": "Admin",
@@ -249,7 +248,7 @@ def handle_check(message: Message):
     }
     status = status_dict.get(bot.get_chat_member(message.chat.id, user.id).status, "Không xác định")
 
-    # Chuẩn bị nội dung tin nhắn
+
     caption = (
         f"👤 Thông Tin Của {'Bạn' if user.id == message.from_user.id else 'Người Dùng'}\n"
         f"<blockquote>┌ ID: <code>{user.id}</code>\n"
@@ -261,7 +260,7 @@ def handle_check(message: Message):
         f"└ Avatar: {'Đã có avatar' if user_photos.total_count > 0 else 'Chưa có avatar'}</blockquote>"
     )
 
-    # Gửi ảnh đại diện nếu có, nếu không thì chỉ gửi tin nhắn văn bản
+
     if user_photos.total_count > 0:
         avatar_file_id = user_photos.photos[0][-1].file_id
         bot.send_photo(message.chat.id, avatar_file_id, caption=caption, parse_mode='HTML', reply_to_message_id=message.message_id)
@@ -280,7 +279,7 @@ def visit_handler(message):
     user_id = message.from_user.id
     now = time.time()
 
-    cooldown = 160  # giây
+    cooldown = 160
 
     if user_id in last_visit_time:
         elapsed = now - last_visit_time[user_id]
@@ -308,7 +307,7 @@ def visit_handler(message):
             bot.reply_to(message, "❌ API không trả về dữ liệu (rỗng). Vui lòng thử lại sau.", parse_mode="HTML")
             return
 
-        # Dùng regex để trích xuất các giá trị
+
         def extract(field, default="Hết Hạn"):
             match = re.search(fr"{field}:\s*(.+)", text)
             return match.group(1).strip() if match else default
@@ -344,7 +343,7 @@ def visit_handler(message):
 
 
 
-voicebuoidau = ["lồn", "đong", "hao", "bú", "vlong", "buồi", "cặc"]
+voicebuoidau = ["lồn", "đong", "bú", "vlong", "buồi", "cặc"]
 
 @bot.message_handler(commands=['voice'])
 def text_to_voice(message):
@@ -398,7 +397,7 @@ def get_tiktok_info(message):
 
         data = response.json()
 
-        # Escape toàn bộ để an toàn
+
         name = html.escape(data.get('name', 'Không rõ'))
         user_id = data.get('user_id', 'Không rõ')
         followers = f"{data.get('followers', 0):,}"
@@ -412,7 +411,7 @@ def get_tiktok_info(message):
         profile_pic = data.get('profile_picture', '')
         link = f"https://www.tiktok.com/@{username}"
 
-        # Tạo nội dung blockquote
+
         blockquote = (
             f"📊 Thông Tin Tài Khoản TikTok\n\n"
             f"✨ Thống Kê:\n"
@@ -432,7 +431,7 @@ def get_tiktok_info(message):
 
         caption = f"<blockquote>{blockquote}</blockquote>"
 
-        # Nút inline
+
         markup = telebot.types.InlineKeyboardMarkup()
         markup.add(
             telebot.types.InlineKeyboardButton("🔗 Mở TikTok", url=link),
@@ -447,7 +446,7 @@ def get_tiktok_info(message):
     except Exception as e:
         bot.reply_to(message, f"Đã xảy ra lỗi: {html.escape(str(e))}", parse_mode="HTML")
 
-# Xử lý callback khi bấm "Copy Username"
+
 @bot.callback_query_handler(func=lambda call: call.data.startswith("copy_"))
 def copy_username_callback(call):
     username = call.data.replace("copy_", "")
@@ -574,8 +573,8 @@ ID chủ quân đoàn: {leader}
 
 
 
-ADMINS = [7658079324]  # Thay bằng user_id admin của bạn
-GROUP_CHAT_IDS = [-1002639856138]  # Thay bằng chat_id nhóm
+ADMINS = [6367528163]
+GROUP_CHAT_IDS = [-1002639856138]
 
 @bot.message_handler(commands=['thongbao'])
 def thongbao_to_groups(message):
@@ -611,14 +610,14 @@ import time
 import requests
 
 cooldown_checkban = {}
-COOLDOWN_SECONDS = 500  # Thời gian cooldown 60 giây
+COOLDOWN_SECONDS = 500
 
 @bot.message_handler(commands=['checkban'])
 def check_ban(message):
     user_id_telegram = message.from_user.id
     current_time = time.time()
 
-    # Kiểm tra cooldown
+
     if user_id_telegram in cooldown_checkban:
         elapsed = current_time - cooldown_checkban[user_id_telegram]
         if elapsed < COOLDOWN_SECONDS:
@@ -658,7 +657,7 @@ def check_ban(message):
             )
 
         bot.reply_to(message, reply_text, parse_mode="Markdown")
-        cooldown_checkban[user_id_telegram] = current_time  # Cập nhật cooldown
+        cooldown_checkban[user_id_telegram] = current_time
 
     except Exception as e:
         bot.reply_to(message, f"⚠️ Đã xảy ra lỗi:\n`{e}`", parse_mode="Markdown")
@@ -670,7 +669,7 @@ def handle_hoi(message):
     text = message.text[len('/hoi '):].strip()
     
 
-    # Nếu hợp lệ, cho spam
+
     if text:
         url = f"https://dichvukey.site/apishare/hoi.php?text={text}"
         response = requests.get(url)
@@ -725,7 +724,7 @@ import tempfile
 import requests
 
 user_last_command_time = {}
-blacklist = []  # Danh sách số bị cấm, bạn có thể thêm vào
+blacklist = []
 
 @bot.message_handler(commands=['spam'])
 def supersms(message):
@@ -768,7 +767,7 @@ def supersms(message):
 
     sdt_request = f"84{sdt[1:]}" if sdt.startswith("0") else sdt
 
-    # Gửi hiệu ứng đồng hồ cát
+
     loading_msg = bot.send_message(message.chat.id, "⏳")
     time.sleep(2)
     try:
@@ -777,7 +776,7 @@ def supersms(message):
         print(f"Lỗi khi chuyển ⏳ -> ⌛: {e}")
     time.sleep(2)
 
-    diggory_chat3 = f'''┌──⭓ Bot Hào Vip 😘
+    diggory_chat3 = f'''┌──⭓ Bot  Vip 😘
 │ 🚀 Spam Thành Công
 │ 💳 Plan Vip: Min 1 | Max 1000
 │ 📞 Phone: {sdt}
@@ -851,16 +850,15 @@ def run_flask():
     def home():
         return "Bot đang chạy!"
 
-    app.run(host="0.0.0.0", port=8080)  # Cổng phải là 8080 nếu chạy trên Heroku
+    app.run(host="0.0.0.0", port=8080)
 
-# Chạy Flask trên một thread riêng
+
 flask_thread = threading.Thread(target=run_flask)
 flask_thread.start()
 
-# Chạy bot trong một thread riêng để không bị gián đoạn khi Flask đang chạy
 def run_bot():
     bot.polling(none_stop=True)
 
-# Chạy bot
+
 bot_thread = threading.Thread(target=run_bot)
 bot_thread.start()
