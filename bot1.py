@@ -28,7 +28,7 @@ import pytz
 from datetime import timedelta
 from keep_alive import keep_alive
 keep_alive()
-BOT_TOKEN = os.environ.get('7760706295:AAEt3CTNHqiJZyFQU7lJrvatXZST_JwD5Ds')
+BOT_TOKEN = '7760706295:AAEt3CTNHqiJZyFQU7lJrvatXZST_JwD5Ds'
 bot = telebot.TeleBot(BOT_TOKEN)
 print(BOT_TOKEN)
 print("Bot đã được khởi động thành công")
