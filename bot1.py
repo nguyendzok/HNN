@@ -453,6 +453,54 @@ def copy_username_callback(call):
     bot.answer_callback_query(call.id, text="Đã sao chép!")
     bot.send_message(call.message.chat.id, f"📋 Username: @{username}")
 
+@bot.message_handler(commands=['checkban'])
+def checkban_user(message):
+    args = message.text.split()
+    if len(args) < 2:
+        bot.reply_to(message, "Vui lòng nhập UID. Ví dụ: /checkban 12345678")
+        return
+
+    uid = args[1]
+    url = f"https://check-band-p-3uv9.vercel.app/haoesports-region/ban-info?uid={uid}"
+
+    try:
+        # Gửi tin nhắn đang xử lý
+        sent = bot.reply_to(message, "⏳ Đang kiểm tra UID...")
+
+        response = requests.get(url)
+        data = response.json()
+
+        nickname = data.get('nickname', 'Không có dữ liệu')
+        uid = data.get('uid', 'Không Có Uid')
+        region = data.get('region', 'Không xác định')
+        ban_status = data.get('ban_status', 'Không rõ')
+        ban_period = data.get('ban_period')
+
+        reply = (
+            "<blockquote>"
+            f"✅ <b>Thông tin người chơi:</b>\n"
+            f"• 👤 Nickname: <code>{nickname}</code>\n"
+            f"• 🆔 ID: <code>{uid}</code>\n"
+            f"• 🌎 Khu vực: <code>{region}</code>\n"
+            f"• 🚫 Trạng thái ban: <code>{ban_status}</code>\n"
+            f"• ⏳ Thời gian ban: <code>{ban_period if ban_period else 'Không bị ban'}</code>"
+            "</blockquote>"
+        )
+
+        bot.edit_message_text(
+            chat_id=sent.chat.id,
+            message_id=sent.message_id,
+            text=reply,
+            parse_mode='HTML'
+        )
+
+    except Exception as e:
+        bot.edit_message_text(
+            chat_id=sent.chat.id,
+            message_id=sent.message_id,
+            text=f"Đã xảy ra lỗi: {e}"
+        )
+
 
 import html
 @bot.message_handler(commands=['fl'])
